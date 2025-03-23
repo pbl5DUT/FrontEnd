@@ -1,0 +1,62 @@
+.project-management-container {
+  padding: 20px;
+  background-color: #f8f9fc;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.create-project-btn {
+  background-color: #000;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.search-input {
+  border-radius: 25px;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.project-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.project-table th,
+.project-table td {
+  padding: 15px;
+  text-align: center; /* Căn giữa theo chiều ngang */
+  vertical-align: middle; /* Căn giữa theo chiều dọc */
+  border-bottom: 1px solid #ddd;
+}
+
+.project-table th {
+  background-color: #f2f2f2;
+}
+
+.edit-btn,
+.delete-btn {
+  background-color: transparent;
+  padding: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.edit-btn svg,
+.delete-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.edit-btn:hover {
+  color: #007bff;
+}
+
+.delete-btn:hover {
+  color: #ff0000;
+}
