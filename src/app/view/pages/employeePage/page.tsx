@@ -128,6 +128,23 @@ export default function EmployeePage() {
                 </Popover>
             )}
 
+            {popoverType === 'edit' && selectedEmployee && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <EditEmployee
+                        employee={selectedEmployee} // Truyền user_id của nhân viên
+                        onSave={(updatedEmployee: Employee) => {
+                            setEmployees((prevEmployees) =>
+                                prevEmployees.map((emp) =>
+                                    emp.user_id === updatedEmployee.user_id ? updatedEmployee : emp
+                                )
+                            );
+                            setPopoverType(null); 
+                        }}
+                        onClose={() => setPopoverType(null)} 
+                    />
+                </Popover>
+            )}
+
             {popoverType === 'delete' && selectedEmployee.user_id && (
                 <Popover onClose={() => setPopoverType(null)}>
                     <DeleteEmployee
@@ -143,19 +160,17 @@ export default function EmployeePage() {
                 </Popover>
             )}
 
-            {popoverType === 'edit' && selectedEmployee && (
+            {popoverType === 'delete' && selectedEmployee.user_id && (
                 <Popover onClose={() => setPopoverType(null)}>
-                    <EditEmployee
-                        employeeId={selectedEmployee.user_id}
-                        onClose={() => setPopoverType(null)}
-                        onSave={(updatedEmployee) => {
+                    <DeleteEmployee
+                        employee={selectedEmployee} // Truyền nhân viên được chọn, bao gồm user_id
+                        onDeleteSuccess={() => {
                             setEmployees((prevEmployees) =>
-                                prevEmployees.map((emp) =>
-                                    emp.user_id === updatedEmployee.user_id ? updatedEmployee : emp
-                                )
+                                prevEmployees.filter((emp) => emp.user_id !== selectedEmployee.user_id)
                             );
-                            setPopoverType(null);
+                            setPopoverType(null); 
                         }}
+                        onCancel={() => setPopoverType(null)} 
                     />
                 </Popover>
             )}
