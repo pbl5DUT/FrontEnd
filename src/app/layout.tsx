@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
     return (
         <html lang="en">
             <body>
@@ -14,23 +13,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     {/* Top Bar */}
                     <header className="topBar">
                         <div className="rightSection">
-                            <img src="/flag.png" alt="Flag" className="icon" />
-                            <img src="/notification.png" alt="Notification" className="icon" />
-                            <img src="/message.png" alt="Message" className="icon" />
+                            <img src="/assets/flag.png" alt="Flag" className="icon" />
+                            <img src="/assets/notification.png" alt="Notification" className="icon" />
                             <div className="userInfo">
-                                <span>Nguyen Van A</span>
                                 <img src="/user-avatar.png" alt="User Avatar" className="avatar" />
+                                <span>Nguyen Van A</span>
                             </div>
                         </div>
                     </header>
-
                     {/* Sidebar */}
                     <aside className="sidebar">
-                        <div className="logo">Logo</div>
+                        <Link href="/view/pages/Home">
+                            <img src="/assets/logo.png" className="logo" />
+                        </Link>
+                        
                         <nav>
                             <ul>
-                                <li className={pathname === '#' ? 'active' : ''}>
-                                    <Link href="#">Bảng tổng kết</Link>
+                                <li className={pathname === '/view/pages/Home' ? 'active' : ''}>
+                                    <Link href="/view/pages/Home">Bảng tổng kết</Link>
                                 </li>
                                 <li className={pathname === '#' ? 'active' : ''}>
                                     <Link href="#">Quản lý dự án</Link>

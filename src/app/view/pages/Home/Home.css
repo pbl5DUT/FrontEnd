@@ -1,0 +1,67 @@
+
+  
+  /* Main Content */
+  
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .flag-icon {
+    width: 30px;
+    height: 20px;
+  }
+  
+  .icons {
+    display: flex;
+  }
+  
+  .icon {
+    margin-right: 15px;
+    cursor: pointer;
+  }
+  
+  .profile {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Thêm margin cho tên người dùng */
+  .profile-name {
+    margin-left: 10px;
+  }
+  
+  /* Stats */
+  .stats {
+    display: flex;
+    justify-content: space-between; /* Căn đều các ô */
+    height: fit-content;
+    gap: 20px;
+    margin-top: 50px;
+  }
+  
+  .stat-box {
+    background-color: #ffffff; /* Màu nền trắng */
+    padding: 20px;
+    border-radius: 10px;
+    width: 30%; /* Điều chỉnh chiều rộng mỗi ô */
+    text-align: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Bóng mờ nhẹ */
+    border: 1px solid #000000; /* Viền đen nhẹ */
+  }
+  
+  .stat-box h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #000000; /* Màu đen cho tiêu đề */
+  }
+  
+  .stat-box p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000000; /* Màu đen cho nội dung */
+  }
+  

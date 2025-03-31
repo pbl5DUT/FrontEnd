@@ -72,7 +72,7 @@
     color: #e74c3c;
 }
 
-/* Form Container */
+/* FORM  */
 .form {
     display: flex;
     flex-direction: column;
@@ -162,9 +162,7 @@
 }
 
 
-
-
-/* Container cho ViewEmployee Header */
+/* XEM NHÂN VIÊN */
 .viewEmployeeHeaderContainer {
     padding: 20px;
     background-color: #F5F5F5; /* Màu nền khớp với ảnh mẫu */
@@ -237,6 +235,8 @@
     background-color: #c0392b;
 }
 
+
+/* XEM NHÂN VIÊN */
 /* Header */
 .viewEmployeeHeader {
     display: flex;
@@ -293,4 +293,10 @@
 
 .btnClose:hover {
     background-color: #c0392b;
+}
+
+.btnDelete:hover {
+    background-color: #c0392b;
+    color: white;
+    border-radius: 5px;
 }
