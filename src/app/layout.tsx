@@ -35,8 +35,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                                 <li className={pathname === '#' ? 'active' : ''}>
                                     <Link href="#">Quản lý dự án</Link>
                                 </li>
-                                <li className={pathname === 'view/pages/employeePage' ? 'active' : ''}>
-                                    <Link href="view/pages/employeePage">Quản lý nhân viên</Link>
+                                <li className={pathname === '/view/pages/employeePage' ? 'active' : ''}>
+                                    <Link href="/view/pages/employeePage">Quản lý nhân viên</Link>
                                 </li>
                                 <li className={pathname === '#' ? 'active' : ''}>
                                     <Link href="#">Phòng trò chuyện</Link>

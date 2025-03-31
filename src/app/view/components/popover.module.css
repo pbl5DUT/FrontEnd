@@ -15,8 +15,8 @@
 /* Popover chính */
 .popover {
     background-color: white;
-    width: 90%; /* Chiều rộng nhỏ hơn trang */
-    max-width: 600px; /* Giới hạn chiều rộng tối đa */
+    width: 100vh; /* Chiều rộng nhỏ hơn trang */
+    max-width: 900px; /* Giới hạn chiều rộng tối đa */
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     padding: 20px;

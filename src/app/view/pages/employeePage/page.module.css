@@ -154,3 +154,143 @@
     background-color: #b3b3b3;
 }
 
+/* Thông báo lỗi */
+.error {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+
+
+
+/* Container cho ViewEmployee Header */
+.viewEmployeeHeaderContainer {
+    padding: 20px;
+    background-color: #F5F5F5; /* Màu nền khớp với ảnh mẫu */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Header */
+.viewEmployeeHeader {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Avatar */
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+/* Thông tin nhân viên */
+.employeeInfo p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Bảng dự án */
+.projectTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.projectTable th,
+.projectTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.projectTable th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Nút đóng */
+.btnClose {
+    margin-top: 20px;
+    background-color: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btnClose:hover {
+    background-color: #c0392b;
+}
+
+/* Header */
+.viewEmployeeHeader {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Avatar */
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+/* Thông tin nhân viên */
+.employeeInfo p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Bảng dự án */
+.projectTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.projectTable th,
+.projectTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.projectTable th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Nút đóng */
+.btnClose {
+    margin-top: 20px;
+    background-color: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btnClose:hover {
+    background-color: #c0392b;
+}

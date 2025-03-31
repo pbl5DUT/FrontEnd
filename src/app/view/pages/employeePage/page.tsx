@@ -4,10 +4,24 @@ import { useEffect, useState } from 'react';
 import Popover from '../../components/popover';
 import styles from './page.module.css';
 import CreateEmployee from './newEmployee';
+import ViewEmployee from './viewEmployee';
+import DeleteEmployee from './deleteEmployee';
+import EditEmployee from './editEmployee';
 
 export default function EmployeePage() {
-    const [employees, setEmployees] = useState([]);
-    const [isCreatePopoverOpen, setIsCreatePopoverOpen] = useState(false); // Trạng thái mở Popover "Tạo nhân viên"
+
+    type Employee = {
+        user_id: string;
+        full_name: string;
+        email: string;
+        department: string;
+        role: string;
+        employeeId: string; 
+        [key: string]: any;
+    };
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [popoverType, setPopoverType] = useState<null | 'create' | 'edit' | 'delete' | 'view'>(null);
+    const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -17,7 +31,14 @@ export default function EmployeePage() {
                     throw new Error('Failed to fetch employees');
                 }
                 const data = await response.json();
-                setEmployees(data);
+    
+                // Thêm thuộc tính `projects` mặc định nếu không có
+                const updatedData = data.map((employee: any) => ({
+                    ...employee,
+                    projects: [], // Thêm `projects` mặc định là mảng rỗng
+                }));
+    
+                setEmployees(updatedData);
             } catch (error) {
                 console.error('Error fetching employees:', error);
             }
@@ -30,7 +51,7 @@ export default function EmployeePage() {
             <header className={styles.header}>
                 <button
                     className={styles.btnCreate}
-                    onClick={() => setIsCreatePopoverOpen(true)} // Mở Popover "Tạo nhân viên"
+                    onClick={() => setPopoverType('create')}
                 >
                     Tạo nhân viên mới
                 </button>
@@ -58,20 +79,87 @@ export default function EmployeePage() {
                             <td>{employee.department}</td>
                             <td>{employee.role}</td>
                             <td>
-                                <button className={styles.btnEdit}>✏️</button>
-                                <button className={styles.btnDelete}>🗑️</button>
+                                <button
+                                    className={styles.btnView}
+                                    onClick={() => {
+                                        setPopoverType('view');
+                                        setSelectedEmployee(employee);
+                                    }}
+                                >
+                                    👁️
+                                </button>
+                                <button
+                                    className={styles.btnEdit}
+                                    onClick={() => {
+                                        setPopoverType('edit');
+                                        setSelectedEmployee(employee);
+                                    }}
+                                >
+                                    ✏️
+                                </button>
+                                <button
+                                    className={styles.btnDelete}
+                                    onClick={() => {
+                                        setPopoverType('delete');
+                                        setSelectedEmployee(employee);
+                                    }}
+                                >
+                                    🗑️
+                                </button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            {isCreatePopoverOpen && (
-                <Popover onClose={() => setIsCreatePopoverOpen(false)}>
+            {popoverType === 'create' && (
+                <Popover onClose={() => setPopoverType(null)}>
                     <h3>Thêm nhân viên mới</h3>
-                    <CreateEmployee onClose={() => setIsCreatePopoverOpen(false)} />
+                    <CreateEmployee onClose={() => setPopoverType(null)} />
+                </Popover>
+            )}
+
+            {popoverType === 'view' && selectedEmployee && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <ViewEmployee
+                        employee={selectedEmployee || { projects: [] }} // Đảm bảo `projects` luôn là một mảng
+                        onClose={() => setPopoverType(null)}
+                    />
+                </Popover>
+            )}
+
+            {popoverType === 'delete' && selectedEmployee.user_id && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <DeleteEmployee
+                        employee={selectedEmployee}
+                        onDeleteSuccess={() => {
+                            setEmployees((prevEmployees) =>
+                                prevEmployees.filter((emp) => emp.user_id !== selectedEmployee.user_id)
+                            );
+                            setPopoverType(null); 
+                        }}
+                        onCancel={() => setPopoverType(null)} 
+                    />
+                </Popover>
+            )}
+
+            {popoverType === 'edit' && selectedEmployee && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <EditEmployee
+                        employeeId={selectedEmployee.user_id}
+                        onClose={() => setPopoverType(null)}
+                        onSave={(updatedEmployee) => {
+                            setEmployees((prevEmployees) =>
+                                prevEmployees.map((emp) =>
+                                    emp.user_id === updatedEmployee.user_id ? updatedEmployee : emp
+                                )
+                            );
+                            setPopoverType(null);
+                        }}
+                    />
                 </Popover>
             )}
         </div>
     );
 }
+
