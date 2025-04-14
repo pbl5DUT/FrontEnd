@@ -7,7 +7,7 @@ export default function Page() {
     const router = useRouter();
 
     useEffect(() => {
-        router.push('/view/pages/Home');
+        router.push('/view/pages/Login');
     }, [router]);
 
     return null; 

@@ -1,6 +1,6 @@
 /* Container */
 .container {
-    padding-top: 60px; /* Tạo khoảng trống bằng chiều cao của Top Bar */
+    padding-top: 60px; 
     background-color: #f8f9fa;
 }
 
@@ -245,13 +245,53 @@
 }
 
 /* Avatar */
-.avatar {
-    width: 100px;
-    height: 100px;
+/* .avatar {
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1px solid #ddd;
+    border: 2px solid #ddd;
+} */
+
+.avatarContainer {
+    display: flex;
+    flex-direction: column; /* Sắp xếp ảnh và nút bấm theo chiều dọc */
+    align-items: center; /* Căn giữa ảnh và nút bấm */
+    gap: 10px; /* Khoảng cách giữa ảnh và nút bấm */
+    padding-right: 50px;
+    padding-left: 30px;
 }
+
+/* Avatar */
+.avatar {
+    width: 120px; 
+    height: 120px;
+    border-radius: 50%; 
+    object-fit: cover; 
+    border: 2px solid #ddd; 
+}
+
+/* Nút thay đổi ảnh đại diện */
+.changeAvatarButton {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+}
+
+.changeAvatarButton:hover {
+    background-color: #0056b3;
+}
+
+/* Input file (ẩn) */
+.avatarInput {
+    display: none; /* Ẩn input file */
+}
+
 
 /* Thông tin nhân viên */
 .employeeInfo p {

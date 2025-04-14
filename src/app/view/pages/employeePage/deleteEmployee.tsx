@@ -1,6 +1,9 @@
 import styles from './page.module.css';
 
-export default function DeleteEmployee({ employee, onDeleteSuccess, onCancel }: { employee: any; onDeleteSuccess: () => void; onCancel: () => void }) {
+export default function DeleteEmployee({ employee, onDeleteSuccess, onCancel }: 
+    { employee: any; onDeleteSuccess: () => void;
+     onCancel: () => void }) 
+    {
     const handleDelete = async () => {
         try {
             const response = await fetch(`https://backend-pbl5-134t.onrender.com/api/users/${employee.user_id}/`, {

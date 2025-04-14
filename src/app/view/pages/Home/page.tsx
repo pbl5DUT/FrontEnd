@@ -1,8 +1,10 @@
 import React from 'react';
-import './Home.css'; // Import file CSS
+import './Home.css'; 
+import Head from 'next/head';
 
 const Home = () => {
   return (
+    <>
     <div className="container">
         {/* Statistics */}
         <div className="stats">
@@ -20,6 +22,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      </>
   );
 };
 
