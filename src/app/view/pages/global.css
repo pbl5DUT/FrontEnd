@@ -156,10 +156,11 @@
     margin-left: 20%; /* Đẩy nội dung sang phải bằng chiều rộng của sidebar */
     width: calc(100% - 20%); /* Chiều rộng còn lại sau sidebar */
     background-color: #f8f9fa;
-    height: calc(100vh - 50px); /* Chiều cao còn lại sau topbar */
+    height: 100%; /* Chiều cao còn lại sau topbar */
     padding: 20px;
     box-sizing: border-box;
     overflow-x: hidden;
+    overflow-y: hidden;
   }
   
   body.excluded .mainContent {

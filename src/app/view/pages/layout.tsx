@@ -69,8 +69,8 @@ export default function PagesLayout({ children }: { children: React.ReactNode })
             <li className={pathname === '/view/pages/employeePage' ? 'active' : ''}>
               <Link href="/view/pages/employeePage">Quản lý nhân viên</Link>
             </li>
-            <li className={pathname === '#' ? 'active' : ''}>
-              <Link href="#">Phòng trò chuyện</Link>
+            <li className={pathname === '/view/pages/chatroomPage' ? 'active' : ''}>
+              <Link href="/view/pages/chatroomPage">Phòng trò chuyện</Link>
             </li>
           </ul>
         </nav>
