@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Sử dụng useRouter để điều hướng
-import './ProjectManagement.css'; // Import file CSS
-
+import { useRouter } from 'next/navigation';
+import styles from './project.module.css'; 
+import Popover from '../../components/popover';
+import DeleteProject from './editProject';
+import CreateProject from './createProject';
+import ViewProject from './viewProject';
 const ProjectManagement = () => {
-
     type Project = {
         project_name: string;
         description: string;
@@ -15,124 +17,85 @@ const ProjectManagement = () => {
         manager: number;
     };
 
-    const router = useRouter(); // Khởi tạo hook điều hướng
-    const [projects, setProjects] = useState<Project[]>([]); 
-    const [searchTerm, setSearchTerm] = useState(''); // State cho từ khóa tìm kiếm
-    const [searchQuery, setSearchQuery] = useState(''); // State cho từ khóa khi bấm nút tìm kiếm
+    const router = useRouter();
+    const [popoverType, setPopoverType] = useState<null | 'create' | 'edit' | 'delete' | 'view'>(null);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedProject, setSelectedProject] = useState<any>(null);
 
-    // Hàm lấy dữ liệu từ API sử dụng JSON
     useEffect(() => {
         const fetchProjects = async () => {
             try {
                 const response = await fetch('https://backend-pbl5-134t.onrender.com/api/projects/', {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json(); // Chuyển đổi dữ liệu nhận được sang JSON
-                setProjects(data); // Lưu dữ liệu dự án vào state
+                if (!response.ok) throw new Error('Network error');
+                const data = await response.json();
+                setProjects(data);
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu dự án:', error);
             }
         };
         fetchProjects();
-    }, []); // Chỉ chạy 1 lần khi component được mount
-
-    const handleCreateProject = () => {
-        router.push('./createProject'); // Điều hướng đến trang tạo dự án
-    };
-
-    const handleViewProjectDetail = (projectName : string) => {
-        router.push(`/projects/${projectName}`); // Điều hướng đến trang chi tiết dự án
-    };
-
-    // Hàm xử lý xóa dự án
-    const handleDeleteProject = async (projectName : string) => {
-        const confirmed = window.confirm("Bạn có chắc muốn xóa dự án này không?");
-        if (!confirmed) return;
-
-        try {
-            const response = await fetch(`https://backend-pbl5-134t.onrender.com/api/projects/${projectName}/`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                setProjects(projects.filter(project => project.project_name !== projectName));
-            } else {
-                throw new Error('Lỗi khi xóa dự án');
-            }
-        } catch (error) {
-            console.error('Lỗi khi xóa dự án:', error);
-        }
-    };
-
-    // Lọc danh sách dự án theo nhiều thuộc tính
-    const filteredProjects = projects.filter(project =>
-        (project.project_name && project.project_name.toLowerCase().includes(searchQuery.toLowerCase())) || 
-        (project.status && project.status.toLowerCase().includes(searchQuery.toLowerCase())) || 
-        (project.manager && project.manager.toString().includes(searchQuery)) ||
-        (project.start_date && project.start_date.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (project.end_date && project.end_date.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-
-    const handleSearch = () => {
-        setSearchQuery(searchTerm); // Cập nhật từ khóa tìm kiếm khi bấm nút
-    };
-
+    }, []);
     return (
-        <div className="project-management-container">
-            <div className="header">
-                <button className="create-project-btn" onClick={handleCreateProject}>
+        <div className={styles.container}>
+            <header className={styles.header}>
+                <button
+                    className={styles.btnCreate}
+                    onClick={() => setPopoverType('create')}
+                >
                     Tạo dự án mới
                 </button>
-                <input
-                    className="search-input"
-                    type="text"
-                    placeholder="Tìm kiếm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)} // Cập nhật giá trị input khi người dùng nhập
-                />
-                <button className="search-btn" onClick={handleSearch}>
-                    Tìm kiếm
-                </button>
-            </div>
-            <table className="project-table">
+                <input type="text" placeholder="Tìm kiếm" className={styles.searchBar} />
+            </header>
+            <table className={styles.table}>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Dự án</th>
+                        <th>Tên dự án</th>
                         <th>Mô tả</th>
                         <th>Thời gian</th>
-                        <th>Tiến độ</th>
+                        <th>Tiến độ </th>
                         <th>Quản lý</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredProjects.map((project, index) => (
+                       {projects.map((project, index) => (
                         <tr key={project.project_name || index}>
                             <td>{index + 1}</td>
-                            <td
-                                className="project-name-link"
-                                onClick={() => handleViewProjectDetail(project.project_name || '')}
-                            >
-                                {project.project_name || 'N/A'}
-                            </td>
+                            <td>  {project.project_name || 'N/A'} </td>
                             <td>{project.description || 'Không xác định'}</td>
                             <td>{`${project.start_date || 'Không xác định'} - ${project.end_date || 'Không xác định'}`}</td>
                             <td>{project.status || 'Không xác định'}</td>
                             <td>{project.manager || 'Không xác định'}</td>
                             <td>
-                                <button className="edit-btn" onClick={() => handleViewProjectDetail(project.project_name || '')}>
+                                <button
+                                    className={styles.btnView}
+                                    onClick={() => {
+                                        setPopoverType('view');
+                                        setSelectedProject(projects);
+                                    }}
+                                >
+                                    👁️
+                                </button>
+                                <button
+                                    className={styles.btnEdit}
+                                    onClick={() => {
+                                        setPopoverType('edit');
+                                        setSelectedProject(projects);
+                                    }}
+                                >
                                     ✏️
                                 </button>
-                                <button className="delete-btn" onClick={() => handleDeleteProject(project.project_name || '')}>
+                                <button
+                                    className={styles.btnDelete}
+                                    onClick={() => {
+                                        setPopoverType('delete');
+                                        setSelectedProject(projects);
+                                    }}
+                                >
                                     🗑️
                                 </button>
                             </td>
@@ -140,6 +103,70 @@ const ProjectManagement = () => {
                     ))}
                 </tbody>
             </table>
+
+            {popoverType === 'create' && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <h3>Thêm dự án mới</h3>
+                    <CreateProject onClose={() => setPopoverType(null)} />
+                </Popover>
+            )}
+
+            {popoverType === 'view' && selectedProject && (
+                            <Popover onClose={() => setPopoverType(null)}>
+                                <ViewProject
+                                    project_name="manager"
+                                    // {selectedProject.project_name}
+                                    onClose={() => setPopoverType(null)}
+                                />
+                            </Popover>
+                        )}
+
+            {/* {popoverType === 'edit' && selectedEmployee && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <EditEmployee
+                        employee={selectedEmployee} // Truyền user_id của nhân viên
+                        onSave={(updatedEmployee: Employee) => {
+                            setEmployees((prevEmployees) =>
+                                prevEmployees.map((emp) =>
+                                    emp.user_id === updatedEmployee.user_id ? updatedEmployee : emp
+                                )
+                            );
+                            setPopoverType(null); 
+                        }}
+                        onClose={() => setPopoverType(null)} 
+                    />
+                </Popover>
+            )} */}
+
+            {/* {popoverType === 'delete' && selectedEmployee.user_id && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <DeleteEmployee
+                        employee={selectedEmployee}
+                        onDeleteSuccess={() => {
+                            setEmployees((prevEmployees) =>
+                                prevEmployees.filter((emp) => emp.user_id !== selectedEmployee.user_id)
+                            );
+                            setPopoverType(null); 
+                        }}
+                        onCancel={() => setPopoverType(null)} 
+                    />
+                </Popover>
+            )} */}
+
+            {/* {popoverType === 'delete' && selectedEmployee.user_id && (
+                <Popover onClose={() => setPopoverType(null)}>
+                    <DeleteProject
+                        project={selectedProject} // Truyền nhân viên được chọn, bao gồm user_id
+                        onDeleteSuccess={() => {
+                            setEmployees((prevEmployees) =>
+                                prevEmployees.filter((emp) => emp.user_id !== selectedEmployee.user_id)
+                            );
+                            setPopoverType(null); 
+                        }}
+                        onCancel={() => setPopoverType(null)} 
+                    />
+                </Popover>
+            )} */}
         </div>
     );
 };
