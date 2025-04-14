@@ -1,9 +1,13 @@
+:root {
+  --sidebar-width: 19%;
+}
+
 /* Top Bar */
 .topBar {
     position: fixed; /* Giữ topbar cố định */
     top: 0;
-    left: 20%; /* Đẩy topbar sang phải bằng chiều rộng của sidebar */
-    width: 80%; /* Chiều rộng còn lại sau sidebar */
+    left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width)); 
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -11,7 +15,7 @@
     padding: 10px 20px;
     border-bottom: 1px solid #ddd;
     height: 50px;
-    box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
+    box-sizing: border-box; 
   }
   
   .topBar .rightSection {
@@ -92,14 +96,15 @@
   } */
   /* Sidebar */
 .sidebar {
-    width: 20%;
+    width: var(--sidebar-width);
+    min-width: 150px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
     height: 100vh; 
     background-color: #2c3e50; 
-    padding: 20px; 
+    padding: 10px; 
     box-sizing: border-box; 
     position: fixed; 
     top: 0;
@@ -107,22 +112,26 @@
   }
   
   .logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%; 
     height: auto;
     margin-bottom: 20px; 
-    margin-left: 160%; 
   }
-  
+  .sidebar nav {
+    width: 100%;
+  }
+
   .sidebar nav ul {
     list-style: none;
     padding-right: 20px;
-    width: 100%;
+    width: 100%; 
   }
   
   .sidebar nav ul li {
     margin: 10px 0;
     padding: 15px;
-    padding-right: 90px;
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.3s;
@@ -150,13 +159,14 @@
     font-size: 15px;
     margin-bottom: 100px;
   }
+
   
   /* Main Content */
   .container .mainContent {
-    margin-left: 20%; /* Đẩy nội dung sang phải bằng chiều rộng của sidebar */
-    width: calc(100% - 20%); /* Chiều rộng còn lại sau sidebar */
+    margin-left: 20%;
+    width: calc(100% - 20%); 
     background-color: #f8f9fa;
-    height: 100%; /* Chiều cao còn lại sau topbar */
+    height: 100%; 
     padding: 20px;
     box-sizing: border-box;
     overflow-x: hidden;

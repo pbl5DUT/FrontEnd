@@ -34,7 +34,7 @@ export default function PagesLayout({ children }: { children: React.ReactNode })
           <img src="/assets/flag.png" alt="Flag" className="icon" />
           <img src="/assets/notification.png" alt="Notification" className="icon" />
           <div className="userInfo">
-            <img src="/user-avatar.png" alt="User Avatar" className="avatar" />
+            <img src="/assets/user.png" alt="User Avatar" className="avatar" />
             <span
               className="userName"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -54,8 +54,8 @@ export default function PagesLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside className="sidebar">
-        <Link href="/view/pages/Home">
-          <img src="/assets/logo.png" className="logo" />
+        <Link href="/view/pages/Home" className="logo">
+          <img src="/assets/logo.png"  />
         </Link>
 
         <nav>

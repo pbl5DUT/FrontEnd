@@ -73,7 +73,7 @@ const ChatRoomPage = () => {
       {/* Right Section */}
       <div className={styles.rightSection}>
         <h3>Tệp đính kèm</h3>
-        {/* File attachments will go here */}
+        {/* File attachments*/}
       </div>
     </div>
   );
