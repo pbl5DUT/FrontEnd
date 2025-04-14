@@ -22,6 +22,16 @@ export default function EmployeePage() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [popoverType, setPopoverType] = useState<null | 'create' | 'edit' | 'delete' | 'view'>(null);
     const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+
+    const filter = () => {
+        const filtered = employees.filter((emp) =>
+            emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            emp.department.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setEmployees(filtered);
+    };
 
     useEffect(() => {
         async function fetchData() {
@@ -55,7 +65,21 @@ export default function EmployeePage() {
                 >
                     Tạo nhân viên mới
                 </button>
-                <input type="text" placeholder="Tìm kiếm" className={styles.searchBar} />
+                <div className={styles.searchContainer}>
+                    <input 
+                        type="text" 
+                        placeholder="Tìm kiếm" 
+                        className={styles.searchBar}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <button
+                        className={styles.btnFilter}
+                        onClick={() => filter()}
+                    >
+                        Search
+                    </button>
+                </div>
             </header>
             <table className={styles.table}>
                 <thead>
@@ -114,7 +138,7 @@ export default function EmployeePage() {
 
             {popoverType === 'create' && (
                 <Popover onClose={() => setPopoverType(null)}>
-                    <h3>Thêm nhân viên mới</h3>
+                    <h3 style={{ textAlign: 'center' }}>Thêm nhân viên mới</h3>
                     <CreateEmployee onClose={() => setPopoverType(null)} />
                 </Popover>
             )}

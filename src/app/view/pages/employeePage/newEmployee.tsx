@@ -4,8 +4,7 @@ import styles from './page.module.css';
 export default function NewEmployee({ onClose }: { onClose: () => void }) {
     const [formData, setFormData] = useState({
         employeeId: "NV02",
-        firstName: "",
-        lastName: "",
+        fullName: "",
         gender: "male",
         birthDate: "",
         phone: "",
@@ -69,8 +68,7 @@ export default function NewEmployee({ onClose }: { onClose: () => void }) {
         const newErrors: { [key: string]: string } = {};
         const phoneRegex = /^(0|84)[0-9]{9}$/;
 
-        if (!formData.firstName) newErrors.firstName = "Họ và tên đệm là bắt buộc.";
-        if (!formData.lastName) newErrors.lastName = "Tên là bắt buộc.";
+        if (!formData.fullName) newErrors.fullName = "Tên là bắt buộc.";
         if (!formData.birthDate) newErrors.birthDate = "Ngày sinh là bắt buộc.";
         if (!formData.phone) newErrors.phone = "Số điện thoại là bắt buộc.";
         else if (!phoneRegex.test(formData.phone)) {
@@ -118,26 +116,15 @@ export default function NewEmployee({ onClose }: { onClose: () => void }) {
         </div>
         <div className={styles.row}>
             <div className={styles.column}>
-                <label className={styles.label}>Họ và tên đệm:</label>
+                <label className={styles.label}>Họ và tên :</label>
                 <input
                     type="text"
                     className={styles.input}
                     name="firstName"
-                    value={formData.firstName}
+                    value={formData.fullName}
                     onChange={handleChange}
                 />
                 {errors.firstName && <p className={styles.error}>{errors.firstName}</p>}
-            </div>
-            <div className={styles.column}>
-                <label className={styles.label}>Tên:</label>
-                <input
-                    type="text"
-                    className={styles.input}
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                />
-                {errors.firstName && <p className={styles.error}>{errors.lastName}</p>}
             </div>
         </div>
         <div>

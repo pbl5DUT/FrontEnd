@@ -35,7 +35,6 @@ const Login = () => {
       const data = await response.json();
       console.log('Login successful', data);
 
-      // Chuyển hướng người dùng đến trang home khi đăng nhập thành công
       router.push('/view/pages/Home');
 
     } catch (error) {

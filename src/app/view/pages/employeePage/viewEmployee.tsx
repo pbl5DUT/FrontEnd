@@ -6,7 +6,7 @@ export default function ViewEmployee({ employee, onClose }: { employee: any; onC
             {/* Header */}
             <div className={styles.viewEmployeeHeaderContainer}>
                 <img
-                    src={employee.avatar || '/default-avatar.png'} // Hiển thị ảnh đại diện hoặc ảnh mặc định
+                    src={employee.avatar || '/assets/user.png'} // Hiển thị ảnh đại diện hoặc ảnh mặc định
                     alt="Avatar"
                     className={styles.avatar}
                 />

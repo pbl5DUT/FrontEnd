@@ -10,10 +10,11 @@
 }
 
 .create-project-btn {
-  background-color: #000;
+  background-color: #3498db;
   color: #fff;
   padding: 10px 20px;
   border-radius: 8px;
+  border-color:  #3498db;
 }
 
 .search-input {
