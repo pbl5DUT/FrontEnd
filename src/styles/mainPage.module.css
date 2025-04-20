@@ -1,0 +1,29 @@
+.pageContainer {
+  background: white;
+  margin-top: 60px;
+  margin-left: 250px;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-height: calc(100vh - 80px);
+}
+
+.pageHeader {
+  margin-bottom: 20px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.pageContent {
+  padding: 20px;
+}
+@media (max-width: 768px) {
+  .pageContainer {
+    margin-left: 0;
+    width: 100%;
+  }
+}

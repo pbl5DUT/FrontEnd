@@ -1,0 +1,71 @@
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 0;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .topBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .rightSection {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .icon {
+    width: 24px;
+    height: 24px;
+  }
+  .avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .userInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .userName {
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .dropdown {
+    position: absolute;
+    top: 100%; /* Hiển thị ngay dưới tên tài khoản */
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 10px;
+  }
+  
+  /* Nút đăng xuất */
+  .logoutButton {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+  }
