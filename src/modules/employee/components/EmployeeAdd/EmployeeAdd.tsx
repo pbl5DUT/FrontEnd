@@ -168,8 +168,7 @@ export const EmployeeAdd: React.FC<EmployeeAddProps> = ({ onSave, onClose }) => 
               >
                 <option value="">Chọn vai trò</option>
                 <option value="Admin">Admin</option>
-                <option value="Manager">Manager</option>
-                <option value="Staff">Staff</option>
+                <option value="User">Manager</option>
               </select>
               {getFieldError('role') && (
                 <span className={styles.errorMessage}>{getFieldError('role')}</span>

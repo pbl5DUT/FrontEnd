@@ -29,7 +29,6 @@ export const EmployeeList = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  // Filter employees based on search term and department
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
       const matchesSearch = 
@@ -53,7 +52,6 @@ export const EmployeeList = () => {
       await createEmployee(newEmployee);
       setShowAddModal(false);
     } catch (error) {
-      // Lỗi sẽ được xử lý trong component EmployeeAdd
       throw error;
     }
   };
