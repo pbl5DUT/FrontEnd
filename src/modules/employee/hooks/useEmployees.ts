@@ -8,103 +8,80 @@ export const useEmployees = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [department, setDepartment] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [currentPage, searchTerm, department]);
 
   const fetchEmployees = async () => {
     try {
       setLoading(true);
       const data = await employeeService.getEmployees();
       setEmployees(data);
+      // Tạm thời set totalPages là 1, sau này có thể tính dựa trên số lượng nhân viên
+      setTotalPages(1);
       setError(null);
     } catch (err) {
-      setError('Không thể tải danh sách nhân viên');
+      setError('Có lỗi xảy ra khi tải danh sách nhân viên');
+      console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createEmployee = async (employee: Omit<Employee, 'user_id' | 'created_at'>): Promise<Employee> => {
+    try {
+      const newEmployee = await employeeService.createEmployee(employee);
+      await fetchEmployees(); // Tải lại danh sách sau khi thêm
+      return newEmployee;
+    } catch (error) {
+      console.error('Error creating employee:', error);
+      throw error;
     }
   };
 
   const deleteEmployee = async (id: number) => {
     try {
       await employeeService.deleteEmployee(id);
-      setEmployees(employees.filter(emp => emp.user_id !== id));
+      await fetchEmployees(); // Tải lại danh sách sau khi xóa
     } catch (err) {
-      setError('Không thể xóa nhân viên');
+      setError('Có lỗi xảy ra khi xóa nhân viên');
+      console.error(err);
     }
   };
 
-  const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = employee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = !department || employee.department === department;
-    return matchesSearch && matchesDepartment;
-  });
+  const updateEmployee = async (id: number, data: Partial<Employee>) => {
+    try {
+      await employeeService.updateEmployee(id, data);
+      await fetchEmployees(); // Tải lại danh sách sau khi cập nhật
+      return true;
+    } catch (err) {
+      setError('Có lỗi xảy ra khi cập nhật nhân viên');
+      console.error(err);
+      return false;
+    }
+  };
 
-  // Tính toán phân trang
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
-  const paginatedEmployees = filteredEmployees.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  // Tạo mảng số trang để hiển thị
   const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5; // Số trang hiển thị tối đa
-    
-    if (totalPages <= maxVisiblePages) {
-      // Nếu tổng số trang ít hơn hoặc bằng số trang hiển thị tối đa
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      // Nếu tổng số trang nhiều hơn số trang hiển thị tối đa
-      if (currentPage <= 3) {
-        // Nếu đang ở gần đầu
-        for (let i = 1; i <= 4; i++) {
-          pageNumbers.push(i);
-        }
-        pageNumbers.push('...');
-        pageNumbers.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        // Nếu đang ở gần cuối
-        pageNumbers.push(1);
-        pageNumbers.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pageNumbers.push(i);
-        }
-      } else {
-        // Nếu đang ở giữa
-        pageNumbers.push(1);
-        pageNumbers.push('...');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pageNumbers.push(i);
-        }
-        pageNumbers.push('...');
-        pageNumbers.push(totalPages);
-      }
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
     }
-    return pageNumbers;
+    return pages;
   };
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  // Reset về trang 1 khi thay đổi bộ lọc
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, department]);
 
   return {
-    employees: paginatedEmployees,
+    employees,
     loading,
     error,
     searchTerm,
     setSearchTerm,
     department,
     setDepartment,
+    createEmployee,
     deleteEmployee,
-    refreshEmployees: fetchEmployees,
+    updateEmployee,
     currentPage,
     setCurrentPage,
     totalPages,

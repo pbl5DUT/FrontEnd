@@ -8,10 +8,6 @@
   min-height: calc(100vh - 80px);
 }
 
-.pageHeader {
-  margin-bottom: 20px;
-}
-
 .pageTitle {
   font-size: 24px;
   font-weight: 600;

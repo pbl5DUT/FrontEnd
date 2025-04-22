@@ -9,7 +9,6 @@ export default function ViewEmployeePage() {
     <MainLayout title="Quản lý nhân viên">
       <div className={pageStyles.pageContainer}>
         <div className={pageStyles.pageHeader}>
-          <h1 className={pageStyles.pageTitle}>Quản lý nhân viên</h1>
         </div>
         <EmployeeList />
       </div>
