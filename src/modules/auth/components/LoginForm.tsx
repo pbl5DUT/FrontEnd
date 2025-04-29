@@ -26,7 +26,7 @@ const LoginForm = () => {
       }
      
       console.log('Login success:', data);
-      router.push('/home/home'); 
+      router.push('/home'); 
     } catch (error) {
       setError("Login failed, please check your credentials.");
     }

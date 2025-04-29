@@ -1,35 +1,39 @@
+// components/Sidebar.jsx
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
 import styles from './sidebar.module.css';
 
+const navItems = [
+  { href: '/home', label: 'Bảng tổng kết' },
+  { href: '/projects', label: 'Quản lý dự án' },
+  { href: '/employee', label: 'Quản lý nhân viên' },
+  { href: '/view/pages/chatroomPage', label: 'Phòng trò chuyện' },
+];
+
 export const Sidebar = () => {
+  const pathname = usePathname();
 
-    const pathname = usePathname();
-    
-    return (
-        <aside className={styles.sidebar}>
-          <Link href="/home/home" className={styles.logo}>
-            <img src="/assets/logo.png" />
-          </Link>
+  return (
+    <aside className={styles.sidebar}>
+      <Link href="/home" className={styles.logo}>
+        <img src="/assets/logo.png" alt="Logo" />
+      </Link>
 
-          <nav>
-            <ul>
-              <li className={pathname === '/home/home' ? styles.active : ''}>
-                <Link href="/home/home">Bảng tổng kết</Link>
-              </li>
-              <li className={pathname === '/view/pages/projectPage' ? styles.active : ''}>
-                <Link href="/view/pages/projectPage">Quản lý dự án</Link>
-              </li>
-              <li className={pathname === '/employee/page' ? styles.active : ''}>
-                <Link href="/employee/page">Quản lý nhân viên</Link>
-              </li>
-              <li className={pathname === '/view/pages/chatroomPage' ? styles.active : ''}>
-                <Link href="/view/pages/chatroomPage">Phòng trò chuyện</Link>
-              </li>
-            </ul>
-          </nav>
-      </aside>
-    )
-}
+      <nav>
+        <ul>
+          {navItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={pathname === item.href ? `${styles.link} ${styles.active}` : styles.link}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  );
+};

@@ -5,7 +5,7 @@ const LoginPage = () => {
   return (
     <>
       <Head>
-        <title>Loginttttttttttttttttttttttttttttttttt</title>
+        <title>Login</title>
         <link rel="icon" href="/assets/logo.png" />
       </Head>
       <LoginForm />
