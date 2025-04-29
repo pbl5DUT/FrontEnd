@@ -1,0 +1,431 @@
+.projectOverview {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.createButton {
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.3s;
+}
+
+.createButton:hover {
+  background-color: #40a9ff;
+}
+
+/* Thống kê */
+.statsContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.statsCard {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.statsCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.statsIcon {
+  font-size: 28px;
+  margin-right: 16px;
+}
+
+.statsContent {
+  flex: 1;
+}
+
+.statsValue {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.statsLabel {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Tiêu đề phần */
+.sectionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sectionTitle h2 {
+  font-size: 20px;
+  color: #333;
+  margin: 0;
+}
+
+.viewAllLink {
+  color: #1890ff;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.viewAllLink:hover {
+  color: #40a9ff;
+  text-decoration: underline;
+}
+
+/* Danh sách dự án */
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.projectCard {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.projectCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.projectHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.projectName {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+}
+
+.dangtienhanh {
+  background-color: #1890ff;
+}
+
+.hoanthanh {
+  background-color: #52c41a;
+}
+
+.chuabatdau {
+  background-color: #722ed1;
+}
+
+.tamdung {
+  background-color: #faad14;
+}
+
+.bitre {
+  background-color: #ff4d4f;
+}
+
+.projectDescription {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 16px;
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.projectMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+}
+
+.metaIcon {
+  margin-right: 8px;
+}
+
+.progressSection {
+  margin-bottom: 16px;
+}
+
+.progressText {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.progressBarContainer {
+  height: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: #1890ff;
+  border-radius: 4px;
+}
+
+.taskStats {
+  margin-bottom: 16px;
+}
+
+.taskStat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #666;
+}
+
+.projectActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.detailsButton {
+  text-decoration: none;
+  color: #1890ff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border: 1px solid #1890ff;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.detailsButton:hover {
+  background-color: #1890ff;
+  color: white;
+}
+
+/* Biểu đồ */
+.chartsSection {
+  margin-top: 32px;
+}
+
+.chartsContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.chartCard {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chartTitle {
+  font-size: 16px;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.chartPlaceholder {
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Biểu đồ tròn giả */
+.pieChartPlaceholder {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
+  margin-bottom: 24px;
+  background-color: #f0f0f0;
+}
+
+.pieSegment {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+}
+
+.pieCenterCircle {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.chartLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 6px;
+}
+
+/* Biểu đồ cột giả */
+.barChartPlaceholder {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 220px;
+  width: 100%;
+  gap: 40px;
+}
+
+.barGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60px;
+}
+
+.barContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 180px;
+}
+
+.barValue {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.bar {
+  width: 40px;
+  border-radius: 4px;
+}
+
+.barLabel {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .statsContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chartsContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .projectsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .statsContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .createButton,
+  .filterSelect {
+    width: 100%;
+  }
+}

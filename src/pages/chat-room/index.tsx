@@ -1,14 +1,14 @@
 import { MainLayout } from '@/layouts/Mainlayout';
 import pageStyles from '@/styles/mainPage.module.css';
-import ProjectOverview from '@/modules/home/components/project_overview';
-export default function HomePage() {
+import ChatRoom from '@/modules/chat-room/components/chat_room';
+export default function ChatRoomPage() {
   return (
-    <MainLayout title="Trang chủ">
+    <MainLayout title="chat room">
       <div className={pageStyles.pageContainer}>
         <div className={pageStyles.pageHeader}>
           <h1 className={pageStyles.pageTitle}></h1>
         </div>
-        <ProjectOverview />
+        <ChatRoom />
       </div>
     </MainLayout>
   );
