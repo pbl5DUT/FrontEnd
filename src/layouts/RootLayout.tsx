@@ -5,7 +5,10 @@ interface RootLayoutProps {
   title?: string;
 }
 
-export const RootLayout = ({ children, title = 'PBL5 Management System' }: RootLayoutProps) => {
+export const RootLayout = ({
+  children,
+  title = 'PBL5 Management System',
+}: RootLayoutProps) => {
   return (
     <>
       <Head>
