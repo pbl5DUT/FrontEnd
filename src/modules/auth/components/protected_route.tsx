@@ -1,5 +1,6 @@
-import React, { ReactNode, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+'use client';
+
+import { ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/auth_context';
 import { UserRole } from '../services/authService';
 
@@ -8,45 +9,53 @@ interface ProtectedRouteProps {
   requiredRoles?: UserRole[];
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+const ProtectedRoute = ({
   children,
   requiredRoles = [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
-}) => {
-  const { isAuthenticated, user, isLoading, checkPermission } = useAuth();
-  const router = useRouter();
+}: ProtectedRouteProps) => {
+  const { user, isLoading, checkPermission } = useAuth();
+  const [accessChecked, setAccessChecked] = useState(false);
 
   useEffect(() => {
-    // Chờ quá trình kiểm tra xác thực hoàn tất
+    // Chỉ kiểm tra quyền truy cập khi đã tải xong thông tin người dùng
     if (!isLoading) {
-      // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
-      if (!isAuthenticated) {
-        router.push('/auth/login');
+      // Nếu không có người dùng, chuyển hướng sang trang đăng nhập
+      if (!user) {
+        console.log(
+          '🔒 [ProtectedRoute] User not authenticated, redirecting to login'
+        );
+        window.location.href = '/auth/login';
         return;
       }
 
-      // Nếu đã đăng nhập nhưng không có quyền truy cập
+      // Nếu có người dùng nhưng không có quyền truy cập, chuyển hướng sang trang không có quyền
       if (!checkPermission(requiredRoles)) {
-        router.push('/unauthorized');
+        console.log(
+          '⛔ [ProtectedRoute] User does not have required permissions'
+        );
+        window.location.href = '/unauthorized';
+        return;
       }
-    }
-  }, [isLoading, isAuthenticated, requiredRoles, router, checkPermission]);
 
-  // Hiển thị loading khi đang kiểm tra xác thực
-  if (isLoading) {
+      // Đánh dấu đã kiểm tra quyền truy cập
+      console.log('✅ [ProtectedRoute] Access granted');
+      setAccessChecked(true);
+    }
+  }, [user, isLoading, checkPermission, requiredRoles]);
+
+  // Hiển thị trạng thái loading nếu đang tải hoặc chưa kiểm tra xong
+  if (isLoading || (!accessChecked && !user)) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Loading...</p>
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="text-xl mb-4">Đang kiểm tra quyền truy cập...</div>
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
       </div>
     );
   }
 
-  // Không hiển thị nội dung nếu chưa đăng nhập hoặc không có quyền
-  if (!isAuthenticated || !checkPermission(requiredRoles)) {
-    return null;
-  }
-
-  // Hiển thị nội dung khi đã đăng nhập và có quyền
+  // Nếu đã kiểm tra quyền và có quyền truy cập, hiển thị nội dung
   return <>{children}</>;
 };
 

@@ -17,21 +17,17 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
-  // Kiểm tra nếu đã đăng nhập thì chuyển hướng
-  // useEffect(() => {
-  //   if (isAuthenticated()) {
-  //     // Chuyển hướng dựa vào role
-  //     const user = getCurrentUser();
-  //     if (user) {
-  //       if (user.role === UserRole.ADMIN) {
-  //         router.push('/admin/dashboard');
-  //       } else {
-  //         router.push('/home');
-  //       }
-  //     }
-  //   }
-  // }, [router]);
+  // Kiểm tra nếu đã đăng nhập khi component mount
+  useEffect(() => {
+    console.log('LoginForm: Checking if already authenticated');
+    if (isAuthenticated()) {
+      console.log('LoginForm: Already authenticated, redirecting to home');
+      setRedirecting(false);
+      router.replace('/home');
+    }
+  }, [router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,29 +35,72 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
+      console.log('LoginForm: Attempting login with:', email);
       const data = await login(email, password);
-      console.log('Login success:', data);
+      console.log('LoginForm: Login success');
 
-      // Chuyển hướng dựa vào role
-      const user = data.user;
-      if (user.role === UserRole.ADMIN) {
-        router.push('/home');
-      } else {
-        router.push('/home');
-      }
+      // Đánh dấu đang chuyển hướng để tránh useEffect chạy lại
+      // setRedirecting(true);
+
+      // Thêm timeout nhỏ để đảm bảo localStorage đã được cập nhật
+      setTimeout(() => {
+        // ✅ Sử dụng replace thay vì push để không thêm vào history stack
+        console.log('LoginForm: Redirecting to home after successful login');
+        router.replace('/home');
+      }, 100);
     } catch (error: any) {
-      // Hiển thị lỗi cụ thể từ API nếu có
+      console.error('LoginForm: Login failed', error);
       if (error.response?.data?.detail) {
         setError(error.response.data.detail);
       } else {
-        setError(
-          'Đăng nhập thất bại, vui lòng kiểm tra lại thông tin đăng nhập.'
-        );
+        setError('Đăng nhập thất bại, vui lòng kiểm tra lại thông tin.');
       }
+      setRedirecting(false);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // // Nếu đang chuyển hướng, hiển thị thông báo
+  // if (redirecting) {
+  //   return (
+  //     <div className={styles['login-container']}>
+  //       <div
+  //         style={{
+  //           display: 'flex',
+  //           flexDirection: 'column',
+  //           alignItems: 'center',
+  //           justifyContent: 'center',
+  //           height: '100%',
+  //         }}
+  //       >
+  //         <div
+  //           style={{
+  //             border: '4px solid rgba(0, 0, 0, 0.1)',
+  //             borderRadius: '50%',
+  //             borderTop: '4px solid #3498db',
+  //             width: '40px',
+  //             height: '40px',
+  //             animation: 'spin 1s linear infinite',
+  //             marginBottom: '16px',
+  //           }}
+  //         ></div>
+  //         <p>Đang chuyển hướng đến trang chủ...</p>
+
+  //         <style jsx>{`
+  //           @keyframes spin {
+  //             0% {
+  //               transform: rotate(0deg);
+  //             }
+  //             100% {
+  //               transform: rotate(360deg);
+  //             }
+  //           }
+  //         `}</style>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className={styles['login-container']}>

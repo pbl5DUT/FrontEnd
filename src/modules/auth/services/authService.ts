@@ -57,12 +57,15 @@ export const logout = (): void => {
 
 // Lấy thông tin người dùng hiện tại
 export const getCurrentUser = (): User | null => {
+  if (typeof window === 'undefined') return null; // 🔐 Chỉ chạy khi đang ở client
   const userJson = localStorage.getItem('user');
   return userJson ? JSON.parse(userJson) : null;
 };
 
 // Kiểm tra người dùng có đăng nhập không
+
 export const isAuthenticated = (): boolean => {
+  if (typeof window === 'undefined') return false;
   return !!localStorage.getItem('access_token');
 };
 

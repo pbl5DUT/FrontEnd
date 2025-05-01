@@ -1,8 +1,10 @@
+'use client';
+
 import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
+  useState,
   ReactNode,
 } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,7 +17,6 @@ import {
   UserRole,
 } from '../services/authService';
 
-// Định nghĩa kiểu dữ liệu cho context
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -24,10 +25,9 @@ interface AuthContextType {
   isManager: boolean;
   login: (email: string, password: string) => Promise<any>;
   logout: () => void;
-  checkPermission: (requiredRoles: UserRole[]) => boolean;
+  checkPermission: (roles: UserRole[]) => boolean;
 }
 
-// Tạo context với giá trị mặc định
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
@@ -39,66 +39,88 @@ const AuthContext = createContext<AuthContextType>({
   checkPermission: () => false,
 });
 
-// Hook để sử dụng context
 export const useAuth = () => useContext(AuthContext);
 
-interface AuthProviderProps {
+interface Props {
   children: ReactNode;
 }
 
-// Provider component
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<Props> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Kiểm tra xác thực khi component mount
+  // Khởi tạo trạng thái xác thực khi component mount
   useEffect(() => {
-    const checkAuth = () => {
+    const initAuth = () => {
+      console.log('📣 [AuthContext] Initializing auth state');
+
       try {
-        if (isAuthenticated()) {
+        const isLoggedIn = isAuthenticated();
+        console.log('📣 [AuthContext] Is authenticated:', isLoggedIn);
+
+        if (isLoggedIn) {
           const currentUser = getCurrentUser();
-          setUser(currentUser);
+          console.log(
+            '📣 [AuthContext] Current user:',
+            currentUser ? currentUser.email : 'none'
+          );
+
+          if (currentUser) {
+            setUser(currentUser);
+          } else {
+            console.log('📣 [AuthContext] Token exists but no user found');
+            logoutService();
+            setUser(null);
+          }
+        } else {
+          console.log('📣 [AuthContext] No valid token found');
+          setUser(null);
         }
       } catch (error) {
-        console.error('Error checking authentication:', error);
+        console.error('📣 [AuthContext] Error initializing auth:', error);
+        logoutService();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkAuth();
+    initAuth();
   }, []);
 
-  // Hàm đăng nhập
   const login = async (email: string, password: string) => {
+    console.log('📣 [AuthContext] Login attempt for:', email);
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
       const response = await loginService(email, password);
+      console.log('📣 [AuthContext] Login successful');
       setUser(response.user);
       return response;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('📣 [AuthContext] Login failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Hàm đăng xuất
   const logout = () => {
+    console.log('📣 [AuthContext] Logging out');
     logoutService();
     setUser(null);
-    router.push('/auth/login');
+
+    // Sử dụng window.location thay vì router để đảm bảo làm mới hoàn toàn
+    window.location.href = '/auth/login';
   };
 
-  // Kiểm tra quyền
-  const checkPermission = (requiredRoles: UserRole[]): boolean => {
-    if (!user) return false;
-    return requiredRoles.includes(user.role as UserRole);
+  const checkPermission = (roles: UserRole[]): boolean => {
+    return user ? roles.includes(user.role) : false;
   };
 
-  const contextValue: AuthContextType = {
+  // Giá trị context được cung cấp cho các component con
+  const contextValue = {
     user,
     isLoading,
     isAuthenticated: !!user,
@@ -113,5 +135,3 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
-
-export default AuthContext;

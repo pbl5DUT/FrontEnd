@@ -1,3 +1,5 @@
+'use client';
+
 import { MainLayout } from '@/layouts/Mainlayout';
 import pageStyles from '@/styles/mainPage.module.css';
 import ProjectOverview from '@/modules/home/components/project_overview';
