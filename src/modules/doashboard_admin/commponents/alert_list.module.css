@@ -1,0 +1,53 @@
+.chartContainer {
+  width: 100%;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.chartTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.chartActions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.chartBody {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

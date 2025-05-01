@@ -17,7 +17,6 @@ interface MenuSection {
   title: string;
   items: MenuItem[];
 }
-
 const sections: MenuSection[] = [
   {
     title: 'ỨNG DỤNG',
@@ -41,10 +40,22 @@ const sections: MenuSection[] = [
         roles: [UserRole.ADMIN, UserRole.MANAGE],
       },
       {
+        href: '/manage/tasks',
+        label: 'Quản lý tasks nhóm',
+        icon: '/assets/icons/team-tasks.png',
+        roles: [UserRole.MANAGE],
+      },
+      {
         href: '/tasks',
-        label: 'Quản lý công việc',
-        icon: '/assets/icons/employee.png',
-        roles: [UserRole.USER],
+        label: 'Công việc của tôi',
+        icon: '/assets/icons/tasks.png',
+        roles: [UserRole.MANAGE, UserRole.USER],
+      },
+      {
+        href: '/reports',
+        label: 'Báo cáo công việc',
+        icon: '/assets/icons/report.png',
+        roles: [UserRole.MANAGE, UserRole.USER],
       },
     ],
   },
@@ -72,7 +83,7 @@ const sections: MenuSection[] = [
     ],
   },
   {
-    title: 'TIỆN TÍCH',
+    title: 'TIỆN ÍCH',
     items: [
       {
         href: '/chat-room',
@@ -86,10 +97,21 @@ const sections: MenuSection[] = [
         icon: '/assets/icons/calendar.png',
         roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
       },
+      {
+        href: '/documentation',
+        label: 'Tài liệu dự án',
+        icon: '/assets/icons/documentation.png',
+        roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
+      },
+      {
+        href: '/knowledge-base',
+        label: 'Cơ sở kiến thức',
+        icon: '/assets/icons/knowledge.png',
+        roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
+      },
     ],
   },
 ];
-
 export const Sidebar = () => {
   const pathname = usePathname();
   const { user, checkPermission, isLoading } = useAuth();

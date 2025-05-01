@@ -1,188 +1,65 @@
+/* Cấu trúc tổng thể của Layout */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
 
-/* Top Bar */
-.topBar {
-    position: fixed; /* Giữ topbar cố định */
-    top: 0;
-    left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width)); 
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    background-color: #ffffff;
-    padding: 10px 20px;
-    border-bottom: 1px solid #ddd;
-    height: 50px;
-    box-sizing: border-box; 
-  }
-  
-  .topBar .rightSection {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  
-  .topBar .rightSection .icon {
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-  }
-  
-  .topBar .rightSection .userInfo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .topBar .rightSection .userInfo .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-  
-  /* Dropdown container */
-  .dropdown {
-    position: absolute;
-    top: 100%; /* Hiển thị ngay dưới tên tài khoản */
-    right: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    padding: 10px;
-  }
-  
-  /* Nút đăng xuất */
-  .logoutButton {
-    background-color: #ff4d4f;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-  }
-  
-  .logoutButton:hover {
-    background-color: #d9363e;
-  }
-  
-  /* userInfo container */
-  .userInfo {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-  }
-  
-  .userName {
-    margin-left: 8px;
-    font-weight: bold;
-    cursor: pointer;
-  }
+/* Style cho Topbar - cố định ở đầu */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
 
-  /* Sidebar */
+/* Container cho sidebar và main content */
+.content-wrapper {
+  display: flex;
+  margin-top: 60px; /* Chiều cao của topbar */
+  height: calc(100vh - 60px); /* Chiều cao trừ đi topbar */
+}
+
+/* Style cho Sidebar - cố định bên trái */
 .sidebar {
-    width: var(--sidebar-width);
-    min-width: 150px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    height: 100vh; 
-    background-color: #2c3e50; 
-    padding: 10px; 
-    box-sizing: border-box; 
-    position: fixed; 
-    top: 0;
-    left: 0; 
-  }
-  
-  .logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%; 
-    height: auto;
-    margin-bottom: 20px; 
-  }
-  .sidebar nav {
-    width: 100%;
+  position: fixed;
+  top: 60px; /* Nằm dưới topbar */
+  left: 0;
+  width: 240px;
+  height: calc(100vh - 60px);
+  background-color: #2a3042;
+  overflow-y: auto; /* Cho phép sidebar scroll nếu cần */
+  z-index: 90;
+}
+
+/* Style cho main content - chỉ có phần này cuộn */
+.main-content {
+  margin-left: 240px; /* Lề trái bằng chiều rộng sidebar */
+  width: calc(100% - 240px); /* Chiều rộng còn lại sau khi trừ sidebar */
+  height: calc(100vh - 60px); /* Chiều cao còn lại sau khi trừ topbar */
+  overflow-y: auto; /* QUAN TRỌNG: cho phép cuộn nội dung chính */
+  background-color: #f8fafc;
+  padding: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -240px; /* Ẩn sidebar trên màn hình nhỏ */
   }
 
-  .sidebar nav ul {
-    list-style: none;
-    padding-right: 20px;
-    width: 100%; 
-  }
-  
-  .sidebar nav ul li {
-    margin: 10px 0;
-    padding: 15px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-  }
-  
-  .sidebar nav ul li a {
-    text-decoration: none; /* Loại bỏ gạch chân */
-    color: white; /* Màu chữ */
-    font-size: 16px;
-    display: block; /* Đảm bảo toàn bộ vùng li là clickable */
-  }
-  
-  .sidebar nav ul li.active {
-    background-color: #34495e; /* Nền sáng hơn */
-  }
-  
-  .sidebar nav ul li.active a {
-    color: #ffffff; /* Chữ sáng hơn */
-  }
-  .sidebar nav ul li:hover {
-    background-color: #34495e;
-  }
-  
-  .sidebar h1 {
-    font-size: 15px;
-    margin-bottom: 100px;
-  }
-
-  
-  /* Main Content */
-  .container .mainContent {
-    margin-left: 20%;
-    width: calc(100% - 20%); 
-    background-color: #f8f9fa;
-    height: 100%; 
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-x: hidden;
-    overflow-y: hidden;
-  }
-  
-  body.excluded .mainContent {
+  .main-content {
     margin-left: 0;
     width: 100%;
   }
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+
+  /* Thêm class cho khi sidebar hiện trên mobile */
+  .sidebar-open {
+    left: 0;
   }
-  
-  .btnCreate {
-    background-color: #3498db;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .searchBar {
-    padding: 10px;
-    width: 300px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
+}

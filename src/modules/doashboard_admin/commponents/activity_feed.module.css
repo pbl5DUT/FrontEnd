@@ -1,0 +1,164 @@
+.activityFeed {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.viewAllButton {
+  background: none;
+  border: none;
+  color: #4a6cf7;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.viewAllButton:hover {
+  text-decoration: underline;
+}
+
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-left: 16px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 4px;
+  width: 2px;
+  height: 100%;
+  background-color: #e5e7eb;
+}
+
+.activityItem {
+  position: relative;
+  display: flex;
+  gap: 16px;
+}
+
+.activityIcon {
+  position: absolute;
+  left: -16px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.activityContent {
+  flex: 1;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.activityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.userAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.activityTime {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.activityDescription {
+  font-size: 13px;
+  color: #4b5563;
+  margin-bottom: 8px;
+}
+
+.actionText {
+  font-style: italic;
+}
+
+.targetLink {
+  color: #4a6cf7;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.targetLink:hover {
+  text-decoration: underline;
+}
+
+.activityDetails {
+  font-size: 12px;
+  color: #6b7280;
+  background-color: #f1f5f9;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.moreActivities {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.loadMoreButton {
+  background: none;
+  border: none;
+  color: #4a6cf7;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.loadMoreButton:hover {
+  background-color: #f1f5f9;
+}
+
+.noActivities {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}

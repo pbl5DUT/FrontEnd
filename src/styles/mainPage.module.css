@@ -6,6 +6,9 @@
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   min-height: calc(100vh - 80px);
+
+  height: calc(100vh - 80px); /* sử dụng height thay vì min-height */
+  overflow-y: auto; /* thêm dòng này để có thể cuộn */
 }
 
 .pageHeader {
