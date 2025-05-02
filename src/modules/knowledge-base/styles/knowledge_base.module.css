@@ -1,0 +1,341 @@
+/* Styles cho Knowledge Base */
+
+/* Container chính */
+.knowledgeBaseContainer {
+  background-color: #fff;
+  border-radius: 8px;
+  min-height: calc(100vh - 200px);
+}
+
+/* Layout & Sidebar */
+.sidebarContainer {
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  padding: 15px;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.searchContainer {
+  margin-bottom: 20px;
+}
+
+.categoriesContainer {
+  height: calc(100% - 60px);
+  display: flex;
+  flex-direction: column;
+}
+
+.categoriesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.categoriesHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.categoryListContainer {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.categoryTree {
+  width: 100%;
+}
+
+/* Main Content */
+.mainContentContainer {
+  background-color: #fff;
+  border-radius: 8px;
+  height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+}
+
+.contentTabs {
+  height: 100%;
+}
+
+.contentTabs :global(.ant-tabs-content) {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Article List */
+.articleListContainer {
+  padding: 10px 0;
+}
+
+.articleCard {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.articleCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.articleCardMeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.articleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.articleTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex: 1;
+}
+
+.featuredTag {
+  margin-left: 10px;
+}
+
+.articleSummary {
+  color: #595959;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.articleTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.articleTag {
+  cursor: pointer;
+}
+
+.articleFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.articleAuthor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.articleMeta {
+  display: flex;
+  gap: 15px;
+}
+
+.articleDate,
+.articleViews,
+.articleLikes {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Article View */
+.articleViewContainer {
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.articleCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.articleViewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.closeButton {
+  margin-left: 10px;
+}
+
+.articleActions {
+  display: flex;
+  gap: 10px;
+}
+
+.articleMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #595959;
+}
+
+.articleAuthor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.articleStats {
+  display: flex;
+  gap: 15px;
+}
+
+.articleContent {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 5px;
+  line-height: 1.6;
+}
+
+.articleContent h1 {
+  font-size: 28px;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+.articleContent h2 {
+  font-size: 24px;
+  margin-top: 18px;
+  margin-bottom: 12px;
+}
+
+.articleContent h3 {
+  font-size: 20px;
+  margin-top: 16px;
+  margin-bottom: 10px;
+}
+
+.articleContent p {
+  margin: 12px 0;
+}
+
+.articleContent ul,
+.articleContent ol {
+  margin: 12px 0;
+  padding-left: 20px;
+}
+
+.articleContent pre {
+  background-color: #f5f5f5;
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 15px 0;
+}
+
+.articleContent code {
+  background-color: #f5f5f5;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.articleContent blockquote {
+  border-left: 4px solid #1890ff;
+  padding-left: 15px;
+  color: #595959;
+  margin: 15px 0;
+}
+
+/* Comments Section */
+.commentsSection {
+  margin-top: 20px;
+}
+
+.commentInput {
+  resize: none;
+}
+
+.commentList {
+  margin-top: 20px;
+}
+
+.commentItem {
+  padding: 10px 0;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.commentAuthor {
+  font-weight: 500;
+}
+
+.commentDate {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.commentContent {
+  white-space: pre-wrap;
+}
+
+.noComments {
+  text-align: center;
+  color: #8c8c8c;
+  padding: 20px 0;
+}
+
+/* Loading */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loadingText {
+  margin-top: 15px;
+  color: #8c8c8c;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .sidebarContainer,
+  .mainContentContainer,
+  .articleViewContainer {
+    height: auto;
+    min-height: 300px;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .knowledgeBaseContainer {
+    flex-direction: column;
+  }
+
+  .articleMeta,
+  .articleFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .articleStats {
+    margin-top: 10px;
+  }
+}
