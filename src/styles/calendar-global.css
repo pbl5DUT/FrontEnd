@@ -1,0 +1,70 @@
+/* Estilos globales para react-big-calendar */
+.rbc-calendar {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #222;
+}
+
+.rbc-today {
+  background-color: rgba(24, 144, 255, 0.1);
+}
+
+.rbc-header {
+  padding: 12px 3px;
+  font-weight: 600;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.rbc-date-cell {
+  padding: 5px;
+  text-align: center;
+}
+
+.rbc-event {
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s ease;
+}
+
+.rbc-event:hover {
+  transform: scale(1.02);
+}
+
+.rbc-btn-group button {
+  color: #595959;
+  background-color: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  font-size: 14px;
+  padding: 4px 15px;
+  height: 32px;
+}
+
+.rbc-btn-group button:hover,
+.rbc-btn-group button:focus {
+  color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.rbc-active {
+  color: #1890ff !important;
+  border-color: #1890ff !important;
+  background-color: #e6f7ff !important;
+}
+
+/* Estilos responsivos para react-big-calendar */
+@media (max-width: 768px) {
+  .rbc-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rbc-toolbar-label {
+    margin: 10px 0;
+  }
+
+  .rbc-btn-group {
+    margin-bottom: 10px;
+  }
+}

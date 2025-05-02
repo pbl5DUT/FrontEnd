@@ -1,6 +1,6 @@
 .chatContainer {
   display: flex;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 10px);
   max-height: 800px;
   border-radius: 10px;
   overflow: hidden;

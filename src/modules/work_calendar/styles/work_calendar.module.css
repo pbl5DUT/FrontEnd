@@ -1,0 +1,185 @@
+/* Estilos específicos para los componentes del calendario */
+
+/* Layout de la página del calendario */
+.calendarPage {
+  min-height: calc(100vh - 160px);
+  overflow: auto;
+}
+
+.calendarLayout {
+  display: flex;
+  gap: 20px;
+}
+
+.mainCalendar {
+  flex: 1;
+}
+
+.calendarSidebar {
+  width: 300px;
+}
+
+/* Contenedor del calendario */
+.calendarContainer {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Estilos de tarjetas */
+.sidebarCard {
+  margin-bottom: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.upcomingEventsCard {
+  margin-bottom: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos de filtros */
+.filterSection {
+  margin-bottom: 15px;
+}
+
+.filterSection h4 {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.optionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.syncSection {
+  margin-top: 10px;
+}
+
+/* Etiquetas para tipos de eventos */
+.eventTypeTag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.eventTypeMeeting {
+  background-color: rgba(24, 144, 255, 0.2);
+  color: #1890ff;
+}
+
+.eventTypeDeadline {
+  background-color: rgba(255, 77, 79, 0.2);
+  color: #ff4d4f;
+}
+
+.eventTypeTask {
+  background-color: rgba(82, 196, 26, 0.2);
+  color: #52c41a;
+}
+
+.eventTypeOther {
+  background-color: rgba(114, 46, 209, 0.2);
+  color: #722ed1;
+}
+
+/* Próximos eventos */
+.upcomingEventItem {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.eventMeta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.eventTime {
+  display: flex;
+  align-items: center;
+  color: #595959;
+  font-size: 12px;
+}
+
+.eventTime span {
+  margin-left: 5px;
+}
+
+.eventTypeWrapper {
+  display: flex;
+  gap: 5px;
+}
+
+.eventTitle {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.eventLocation {
+  display: flex;
+  align-items: center;
+  color: #595959;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.eventLocation span {
+  margin-left: 5px;
+}
+
+.projectInfo {
+  margin-top: 5px;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .calendarLayout {
+    flex-direction: column;
+  }
+
+  .calendarSidebar {
+    width: 100%;
+  }
+
+  .calendarContainer {
+    padding: 10px;
+  }
+
+  .calendarHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .calendarHeader button {
+    margin-top: 10px;
+  }
+}

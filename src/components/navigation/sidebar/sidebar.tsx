@@ -68,18 +68,6 @@ const sections: MenuSection[] = [
         icon: '/assets/icons/admin-dashboard.png',
         roles: [UserRole.ADMIN],
       },
-      {
-        href: '/admin/users',
-        label: 'Quản lý người dùng',
-        icon: '/assets/icons/users-manage.png',
-        roles: [UserRole.ADMIN],
-      },
-      {
-        href: '/admin/settings',
-        label: 'Cài đặt hệ thống',
-        icon: '/assets/icons/settings.png',
-        roles: [UserRole.ADMIN],
-      },
     ],
   },
   {
@@ -92,7 +80,7 @@ const sections: MenuSection[] = [
         roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
       },
       {
-        href: '/calendar',
+        href: '/work-calendar',
         label: 'Lịch làm việc',
         icon: '/assets/icons/calendar.png',
         roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
