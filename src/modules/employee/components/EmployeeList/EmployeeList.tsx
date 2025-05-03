@@ -3,19 +3,19 @@ import styles from './EmployeeList.module.css';
 import { useEmployees } from '../../hooks/useEmployees';
 
 export const EmployeeList = () => {
-  const { 
+  const {
     employees = [],
-    loading, 
+    loading,
     error,
-    searchTerm, 
-    setSearchTerm, 
-    department, 
+    searchTerm,
+    setSearchTerm,
+    department,
     setDepartment,
     deleteEmployee,
     currentPage,
     setCurrentPage,
     totalPages,
-    getPageNumbers
+    getPageNumbers,
   } = useEmployees();
 
   if (loading) return <div>Đang tải...</div>;
@@ -28,14 +28,14 @@ export const EmployeeList = () => {
         <button className={styles.addButton}>Thêm nhân viên</button>
       </div>
       <div className={styles.filters}>
-        <input 
-          type="text" 
-          placeholder="Tìm kiếm nhân viên..." 
+        <input
+          type="text"
+          placeholder="Tìm kiếm nhân viên..."
           className={styles.searchInput}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <select 
+        <select
           className={styles.filterSelect}
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
@@ -68,10 +68,16 @@ export const EmployeeList = () => {
               <td>{employee.position}</td>
               <td>{employee.role}</td>
               <td className={styles.actions}>
-                <button className={styles.viewButton} title="Xem chi tiết">👁️</button>
-                <button className={styles.editButton} title="Chỉnh sửa">✏️</button>
-                <button 
-                  className={styles.deleteButton} 
+                <button className={styles.viewButton} title="Xem chi tiết">
+                  <img
+                    src="/assets/icons/list.png"
+                    alt="Xem chi tiết"
+                    className={styles.icon}
+                  />
+                </button>
+
+                <button
+                  className={styles.deleteButton}
                   title="Xóa"
                   onClick={() => {
                     if (window.confirm('Bạn có chắc muốn xóa nhân viên này?')) {
@@ -79,29 +85,37 @@ export const EmployeeList = () => {
                     }
                   }}
                 >
-                  🗑️
+                  <img
+                    src="/assets/icons/delete.png"
+                    alt="Xem chi tiết"
+                    className={styles.icon}
+                  />
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      
+
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <button
             className={styles.pageButton}
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
           >
             ‹
           </button>
-          
+
           {getPageNumbers().map((pageNum, index) => (
             <button
               key={index}
-              className={`${styles.pageButton} ${pageNum === currentPage ? styles.active : ''} ${pageNum === '...' ? styles.dots : ''}`}
-              onClick={() => typeof pageNum === 'number' && setCurrentPage(pageNum)}
+              className={`${styles.pageButton} ${
+                pageNum === currentPage ? styles.active : ''
+              } ${pageNum === '...' ? styles.dots : ''}`}
+              onClick={() =>
+                typeof pageNum === 'number' && setCurrentPage(pageNum)
+              }
               disabled={pageNum === '...'}
             >
               {pageNum}
@@ -110,7 +124,9 @@ export const EmployeeList = () => {
 
           <button
             className={styles.pageButton}
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
           >
             ›
@@ -119,4 +135,4 @@ export const EmployeeList = () => {
       )}
     </div>
   );
-}; 
+};

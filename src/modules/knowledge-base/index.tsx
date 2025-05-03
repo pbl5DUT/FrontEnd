@@ -65,14 +65,14 @@ const KnowledgeBasePage: React.FC = () => {
         </Col>
 
         <Col xs={24} lg={selectedArticle ? 8 : 18}>
-          {/* <div className={styles.mainContentContainer}>
+          <div className={styles.mainContentContainer}>
             <ArticleList
               categoryId={selectedCategory}
               searchQuery={searchQuery}
               onArticleSelect={handleArticleSelect}
               filter={activeTab}
             />
-          </div> */}
+          </div>
         </Col>
 
         {selectedArticle && (

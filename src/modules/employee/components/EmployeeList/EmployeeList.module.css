@@ -165,3 +165,9 @@
   color: #ff4d4f;
   margin-bottom: 16px;
 }
+
+.icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
