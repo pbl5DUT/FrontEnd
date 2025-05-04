@@ -15,7 +15,9 @@ const KnowledgeBasePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<
+    'all' | 'popular' | 'recent' | 'favorites'
+  >('all');
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -30,7 +32,7 @@ const KnowledgeBasePage: React.FC = () => {
     setSearchQuery(value);
   };
 
-  const handleTabChange = (key: string) => {
+  const handleTabChange = (key: 'all' | 'popular' | 'recent' | 'favorites') => {
     setActiveTab(key);
     setSelectedCategory(null);
     setSelectedArticle(null);

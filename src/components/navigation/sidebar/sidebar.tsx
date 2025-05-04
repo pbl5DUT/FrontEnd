@@ -40,7 +40,7 @@ const sections: MenuSection[] = [
         roles: [UserRole.ADMIN, UserRole.MANAGE],
       },
       {
-        href: '/manage/tasks',
+        href: '/team-stasks',
         label: 'Quản lý tasks nhóm',
         icon: '/assets/icons/team-tasks.png',
         roles: [UserRole.MANAGE],

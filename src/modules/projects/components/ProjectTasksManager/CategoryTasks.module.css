@@ -1,0 +1,400 @@
+.categoryTasksContainer {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 20px;
+  padding: 8px 0;
+}
+
+.backButton:hover {
+  color: #333;
+}
+
+.backIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.description {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.description p {
+  margin: 0;
+  line-height: 1.6;
+  color: #555;
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-width: 100px;
+  flex: 1;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 600;
+  color: #4f46e5;
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #666;
+}
+
+.filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.searchContainer {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #4f46e5;
+}
+
+.clearSearch {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+}
+
+.statusFilters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+}
+
+.filterButton.active {
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+  color: white;
+}
+
+.addTaskButton {
+  display: flex;
+  align-items: center;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.addTaskButton:hover {
+  background-color: #4338ca;
+}
+
+.addIcon {
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+}
+
+.tasksList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.taskCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e6e6e6;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.taskCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.taskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.taskName {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.taskBadges {
+  display: flex;
+  gap: 8px;
+}
+
+.priorityBadge,
+.statusBadge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+/* Priority badges */
+.priorityUrgent {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.priorityHigh {
+  background-color: #fff8e1;
+  color: #f57c00;
+}
+
+.priorityMedium {
+  background-color: #e1f5fe;
+  color: #0288d1;
+}
+
+.priorityLow {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+/* Status badges */
+.statusTodo {
+  background-color: #f5f5f5;
+  color: #757575;
+}
+
+.statusInProgress {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.statusReview {
+  background-color: #fff8e1;
+  color: #f57c00;
+}
+
+.statusDone {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.taskDescription {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.taskFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.taskDates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dateItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dateLabel {
+  font-size: 12px;
+  color: #888;
+}
+
+.dateValue {
+  font-size: 13px;
+  color: #333;
+}
+
+.taskAssignees {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.assigneeAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+.assigneeAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background-color: #4f46e5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.moreAssignees {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f1f1f1;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.emptyState {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 48px;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyState p {
+  margin: 0 0 20px 0;
+  color: #666;
+}
+
+.createButton {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.createButton:hover {
+  background-color: #4338ca;
+}
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .searchContainer {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .statusFilters {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .tasksList {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

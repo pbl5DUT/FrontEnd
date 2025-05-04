@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/router'; // Thay đổi từ next/navigation sang next/router
 import styles from './ProjectList.module.css';
-import { Project, ProjectStatus } from '../../types/project';
-import { useProjects } from '../../hooks/user_projects';
+import { Project } from '../../types/project';
+import { useProjects } from '../../hooks/useProjects';
 
-const ProjectList = () => {
+const ProjectList: React.FC = () => {
+  const router = useRouter();
   const {
     projects,
     loading,
@@ -22,24 +24,31 @@ const ProjectList = () => {
     getProjectStatusOptions,
   } = useProjects();
 
-  const [popoverType, setPopoverType] = useState<
-    'create' | 'edit' | 'view' | 'delete' | null
-  >(null);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
   if (loading) return <div className={styles.loading}>Đang tải dữ liệu...</div>;
   if (error) return <div className={styles.error}>{error}</div>;
 
   const statusOptions = getProjectStatusOptions();
 
+  // Hàm chuyển đến trang chi tiết dự án
+  const handleViewProject = (projectId: string): void => {
+    router.push(`/projects/${projectId}`);
+  };
+
+  const handleCreateProject = (): void => {
+    router.push('/projects/create');
+  };
+
+  const handleDeleteProject = (projectId: string): void => {
+    if (window.confirm('Bạn có chắc muốn xóa dự án này?')) {
+      deleteProject(projectId);
+    }
+  };
+
   return (
     <div className={styles.projectList}>
       <div className={styles.header}>
         <h2>Danh sách dự án</h2>
-        <button
-          className={styles.addButton}
-          onClick={() => setPopoverType('create')}
-        >
+        <button className={styles.addButton} onClick={handleCreateProject}>
           Tạo dự án mới
         </button>
       </div>
@@ -116,7 +125,7 @@ const ProjectList = () => {
               <td>{project.manager}</td>
               <td>
                 <div className={styles.memberAvatars}>
-                  {project.members.length > 0 ? (
+                  {project.members && project.members.length > 0 ? (
                     <div className={styles.avatarGroup}>
                       {project.members.slice(0, 3).map((member, idx) => (
                         <div
@@ -152,10 +161,7 @@ const ProjectList = () => {
                 <button
                   className={styles.viewButton}
                   title="Xem chi tiết"
-                  onClick={() => {
-                    setPopoverType('view');
-                    setSelectedProject(project);
-                  }}
+                  onClick={() => handleViewProject(project.project_id)}
                 >
                   <img
                     src="/assets/icons/list.png"
@@ -167,15 +173,11 @@ const ProjectList = () => {
                 <button
                   className={styles.deleteButton}
                   title="Xóa"
-                  onClick={() => {
-                    if (window.confirm('Bạn có chắc muốn xóa dự án này?')) {
-                      deleteProject(project.project_id);
-                    }
-                  }}
+                  onClick={() => handleDeleteProject(project.project_id)}
                 >
                   <img
                     src="/assets/icons/delete.png"
-                    alt="Xem chi tiết"
+                    alt="Xóa"
                     className={styles.icon}
                   />
                 </button>
@@ -185,11 +187,17 @@ const ProjectList = () => {
         </tbody>
       </table>
 
+      {projects.length === 0 && !loading && (
+        <div className={styles.emptyState}>
+          <p>Không có dự án nào. Hãy tạo dự án mới để bắt đầu.</p>
+        </div>
+      )}
+
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <button
             className={styles.pageButton}
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
           >
             ‹
@@ -213,7 +221,7 @@ const ProjectList = () => {
           <button
             className={styles.pageButton}
             onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              setCurrentPage(Math.min(currentPage + 1, totalPages))
             }
             disabled={currentPage === totalPages}
           >
@@ -221,43 +229,6 @@ const ProjectList = () => {
           </button>
         </div>
       )}
-
-      {/* Phần code cho popover có thể được bổ sung sau */}
-      {/* 
-            {popoverType === 'create' && (
-                <Popover onClose={() => setPopoverType(null)}>
-                    <CreateProject 
-                        onClose={() => setPopoverType(null)} 
-                        onSave={(newProject) => {
-                            addProject(newProject);
-                            setPopoverType(null);
-                        }} 
-                    />
-                </Popover>
-            )}
-            
-            {popoverType === 'view' && selectedProject && (
-                <Popover onClose={() => setPopoverType(null)}>
-                    <ViewProject 
-                        project={selectedProject} 
-                        onClose={() => setPopoverType(null)} 
-                    />
-                </Popover>
-            )}
-            
-            {popoverType === 'edit' && selectedProject && (
-                <Popover onClose={() => setPopoverType(null)}>
-                    <EditProject 
-                        project={selectedProject} 
-                        onClose={() => setPopoverType(null)}
-                        onSave={(updatedProject) => {
-                            updateProject(updatedProject);
-                            setPopoverType(null);
-                        }} 
-                    />
-                </Popover>
-            )}
-            */}
     </div>
   );
 };
