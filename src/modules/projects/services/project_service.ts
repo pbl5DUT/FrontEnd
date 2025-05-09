@@ -42,7 +42,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
 // Lấy thông tin chi tiết của một dự án
 export const fetchProjectById = async (projectId: number): Promise<Project> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}/${projectId}`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

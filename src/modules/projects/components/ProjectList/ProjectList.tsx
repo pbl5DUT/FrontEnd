@@ -31,6 +31,7 @@ const ProjectList: React.FC = () => {
 
   // Hàm chuyển đến trang chi tiết dự án
   const handleViewProject = (projectId: string): void => {
+    console.log('Navigating to project ID:', projectId);
     router.push(`/projects/${projectId}`);
   };
 

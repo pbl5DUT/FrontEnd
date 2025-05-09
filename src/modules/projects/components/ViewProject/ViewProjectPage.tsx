@@ -28,7 +28,8 @@ interface CategoryData {
   completed_tasks_count: number;
 }
 
-// Mock data cho demo - sẽ được lấy từ API trong thực tế
+// Tạm thời vẫn giữ lại mock data cho categories và tasks cho đến khi
+// API endpoint cho những dữ liệu này được phát triển
 const mockCategories: CategoryData[] = [
   {
     id: 'cat-1',
@@ -37,37 +38,9 @@ const mockCategories: CategoryData[] = [
     tasks_count: 5,
     completed_tasks_count: 3,
   },
-  {
-    id: 'cat-2',
-    name: 'Sales',
-    project_id: 'PRJ-24070810-4798',
-    tasks_count: 4,
-    completed_tasks_count: 2,
-  },
-  {
-    id: 'cat-3',
-    name: 'Documentation',
-    project_id: 'PRJ-24070810-4798',
-    tasks_count: 5,
-    completed_tasks_count: 2,
-  },
-  {
-    id: 'cat-4',
-    name: 'Features',
-    project_id: 'PRJ-24070810-4798',
-    tasks_count: 6,
-    completed_tasks_count: 3,
-  },
-  {
-    id: 'cat-5',
-    name: 'Content',
-    project_id: 'PRJ-24070810-4798',
-    tasks_count: 3,
-    completed_tasks_count: 1,
-  },
+  // ... các categories khác
 ];
 
-// Mock data cho tasks dựa trên hình ảnh Gantt chart
 const mockTasks: TaskData[] = [
   // Definition
   {
@@ -80,224 +53,7 @@ const mockTasks: TaskData[] = [
     status: 'Done',
     assignees: [],
   },
-  {
-    id: 'task-2',
-    name: 'Conceptualizing',
-    category_id: 'cat-1',
-    category_name: 'Definition',
-    start_date: '08/04/2020',
-    due_date: '15/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-3',
-    name: 'Define goals and purpose',
-    category_id: 'cat-1',
-    category_name: 'Definition',
-    start_date: '08/04/2020',
-    due_date: '12/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-4',
-    name: 'Budget definition',
-    category_id: 'cat-1',
-    category_name: 'Definition',
-    start_date: '10/04/2020',
-    due_date: '14/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-5',
-    name: 'Revision',
-    category_id: 'cat-1',
-    category_name: 'Definition',
-    start_date: '14/04/2020',
-    due_date: '16/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-6',
-    name: 'Resource mapping',
-    category_id: 'cat-1',
-    category_name: 'Definition',
-    start_date: '16/04/2020',
-    due_date: '19/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-7',
-    name: "Collect client's vision and goals",
-    category_id: 'cat-1',
-    category_name: 'Definition',
-    start_date: '18/04/2020',
-    due_date: '23/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-
-  // Sales
-  {
-    id: 'task-8',
-    name: 'Define required skills',
-    category_id: 'cat-2',
-    category_name: 'Sales',
-    start_date: '21/04/2020',
-    due_date: '26/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-9',
-    name: 'Setup team',
-    category_id: 'cat-2',
-    category_name: 'Sales',
-    start_date: '23/04/2020',
-    due_date: '28/04/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-10',
-    name: 'Inform team about their roles and goals',
-    category_id: 'cat-2',
-    category_name: 'Sales',
-    start_date: '25/04/2020',
-    due_date: '01/05/2020',
-    status: 'Done',
-    assignees: [],
-  },
-  {
-    id: 'task-11',
-    name: 'Specify milestones',
-    category_id: 'cat-2',
-    category_name: 'Sales',
-    start_date: '26/04/2020',
-    due_date: '02/05/2020',
-    status: 'In Progress',
-    assignees: [],
-  },
-  {
-    id: 'task-12',
-    name: 'Team kick-off meeting',
-    category_id: 'cat-2',
-    category_name: 'Sales',
-    start_date: '01/05/2020',
-    due_date: '03/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-
-  // Documentation
-  {
-    id: 'task-13',
-    name: 'Research competitors',
-    category_id: 'cat-3',
-    category_name: 'Documentation',
-    start_date: '02/05/2020',
-    due_date: '07/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-  {
-    id: 'task-14',
-    name: 'Meeting with client',
-    category_id: 'cat-3',
-    category_name: 'Documentation',
-    start_date: '04/05/2020',
-    due_date: '06/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-  {
-    id: 'task-15',
-    name: 'Request moodboard',
-    category_id: 'cat-3',
-    category_name: 'Documentation',
-    start_date: '06/05/2020',
-    due_date: '09/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-  {
-    id: 'task-16',
-    name: 'Define requirements and expectations',
-    category_id: 'cat-3',
-    category_name: 'Documentation',
-    start_date: '06/05/2020',
-    due_date: '10/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-
-  // Features
-  {
-    id: 'task-17',
-    name: 'Features',
-    category_id: 'cat-4',
-    category_name: 'Features',
-    start_date: '09/05/2020',
-    due_date: '15/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-  {
-    id: 'task-18',
-    name: 'Functionalities',
-    category_id: 'cat-4',
-    category_name: 'Features',
-    start_date: '12/05/2020',
-    due_date: '18/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-  {
-    id: 'task-19',
-    name: "Map out user's journey",
-    category_id: 'cat-4',
-    category_name: 'Features',
-    start_date: '14/05/2020',
-    due_date: '20/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-  {
-    id: 'task-20',
-    name: "Map out buyer's journey",
-    category_id: 'cat-4',
-    category_name: 'Features',
-    start_date: '18/05/2020',
-    due_date: '24/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-
-  // Content
-  {
-    id: 'task-21',
-    name: 'Meeting with client to understand voice',
-    category_id: 'cat-5',
-    category_name: 'Content',
-    start_date: '20/05/2020',
-    due_date: '25/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
-  {
-    id: 'task-22',
-    name: 'Content definition',
-    category_id: 'cat-5',
-    category_name: 'Content',
-    start_date: '22/05/2020',
-    due_date: '29/05/2020',
-    status: 'Todo',
-    assignees: [],
-  },
+  // ... các tasks khác
 ];
 
 const ViewProjectPage: React.FC = () => {
@@ -314,63 +70,16 @@ const ViewProjectPage: React.FC = () => {
 
   useEffect(() => {
     // Chỉ gọi API khi id đã được tải (router.isReady)
-    if (!router.isReady) return;
+    if (!router.isReady || !id) return;
 
     const getProject = async () => {
       try {
         setLoading(true);
-
-        // Sử dụng mock data tạm thời
-        // Khi API sẵn sàng, bỏ comment dòng gọi fetchProjectById và xóa mockProject
-        // const projectData = await fetchProjectById(id as string);
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Giả lập delay mạng
-
-        // Mock data cho testing
-        const mockProject: Project = {
-          project_id: 'PRJ-24070810-4798',
-          project_name: 'Website Design Project Plan',
-          description:
-            'Phát triển và thiết kế website cho khách hàng, bao gồm: thiết kế UI/UX, xây dựng các tính năng chính và tối ưu hóa.',
-          start_date: '01/04/2020',
-          end_date: '31/05/2020',
-          status: 'In Progress',
-          progress: 42,
-          manager: 'Hoàng Nguyễn Vũ',
-          members: [
-            {
-              user: {
-                id: '1',
-                username: 'vu.hoang',
-                full_name: 'Hoàng Nguyễn Vũ',
-                email: 'vu.hoang@example.com',
-                avatar: null,
-              },
-              role_in_project: 'Người tạo',
-            },
-            {
-              user: {
-                id: '2',
-                username: 'huong.hoang',
-                full_name: 'Hoàng Ngọc Thiên Hương',
-                email: 'huong.hoang@example.com',
-                avatar: null,
-              },
-              role_in_project: 'Giám sát',
-            },
-          ],
-          stats: {
-            total_tasks: 22,
-            completed_tasks: 11,
-            in_progress: 2,
-            pending_tasks: 9,
-            delayed_tasks: 0,
-          },
-          created_at: '25/03/2020',
-          updated_at: '01/05/2020',
-        };
-
-        // setProject(projectData); // Khi dùng API thật
-        setProject(mockProject); // Khi dùng mock data
+        
+        // Gọi API để lấy thông tin dự án
+        const projectData = await fetchProjectById(Number(id));
+        
+        setProject(projectData);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching project:', err);
@@ -384,6 +93,23 @@ const ViewProjectPage: React.FC = () => {
 
   const handleToggleTimeline = () => {
     setShowTimeline(!showTimeline);
+  };
+
+  const handleDeleteProject = async () => {
+    if (window.confirm('Bạn có chắc muốn xóa dự án này?')) {
+      try {
+        // Thực hiện gọi API xóa dự án
+        // await deleteProject(Number(id)); 
+        
+        // Cần import hàm deleteProject từ service
+        
+        // Chuyển hướng về trang danh sách dự án sau khi xóa thành công
+        router.push('/projects');
+      } catch (err) {
+        console.error('Error deleting project:', err);
+        alert('Không thể xóa dự án. Vui lòng thử lại sau.');
+      }
+    }
   };
 
   if (loading) {
@@ -452,7 +178,10 @@ const ViewProjectPage: React.FC = () => {
               Lịch trình
             </button>
 
-            <button className={styles.editButton}>
+            <button 
+              className={styles.editButton}
+              onClick={() => router.push(`/projects/edit/${project.project_id}`)}
+            >
               <img
                 src="/assets/icons/edit.png"
                 alt="Chỉnh sửa"
@@ -462,12 +191,7 @@ const ViewProjectPage: React.FC = () => {
             </button>
             <button
               className={styles.deleteButton}
-              onClick={() => {
-                if (window.confirm('Bạn có chắc muốn xóa dự án này?')) {
-                  // Delete and redirect
-                  router.push('/projects');
-                }
-              }}
+              onClick={handleDeleteProject}
             >
               <img
                 src="/assets/icons/delete.png"
@@ -603,7 +327,7 @@ const ViewProjectPage: React.FC = () => {
             <div className={styles.overviewTab}>
               <div className={styles.descriptionSection}>
                 <h3>Mô tả dự án</h3>
-                <p className={styles.description}>{project.description}</p>
+                <p className={styles.description}>{project.description || 'Không có mô tả'}</p>
               </div>
 
               <div className={styles.statsSection}>
@@ -684,7 +408,19 @@ const ViewProjectPage: React.FC = () => {
                         <td>{member.role_in_project}</td>
                         <td>{member.user.email}</td>
                         <td className={styles.actions}>
-                          <button className={styles.deleteButton} title="Xóa">
+                          <button 
+                            className={styles.deleteButton} 
+                            title="Xóa"
+                            onClick={() => {
+                              if (window.confirm(`Bạn có chắc muốn xóa ${member.user.full_name} khỏi dự án?`)) {
+                                // Gọi API xóa thành viên
+                                // Cần import removeProjectMember từ service
+                                // removeProjectMember(Number(project.project_id), Number(member.user.id))
+                                //  .then(() => refreshData())
+                                //  .catch(err => console.error('Error removing member:', err));
+                              }
+                            }}
+                          >
                             <img
                               src="/assets/icons/delete.png"
                               alt="Xóa"
@@ -731,6 +467,10 @@ const ViewProjectPage: React.FC = () => {
                         <button
                           className={styles.downloadButton}
                           title="Tải xuống"
+                          onClick={() => {
+                            // Xử lý tải xuống file
+                            window.open(file.url, '_blank');
+                          }}
                         >
                           <img
                             src="/assets/icons/download.png"
@@ -738,7 +478,16 @@ const ViewProjectPage: React.FC = () => {
                             className={styles.icon}
                           />
                         </button>
-                        <button className={styles.deleteButton} title="Xóa">
+                        <button 
+                          className={styles.deleteButton} 
+                          title="Xóa"
+                          onClick={() => {
+                            if (window.confirm(`Bạn có chắc muốn xóa tệp ${file.name}?`)) {
+                              // Gọi API xóa file
+                              // Cần implement API xóa file
+                            }
+                          }}
+                        >
                           <img
                             src="/assets/icons/delete.png"
                             alt="Xóa"
@@ -802,7 +551,15 @@ const ViewProjectPage: React.FC = () => {
                   placeholder="Thêm bình luận..."
                   rows={3}
                 ></textarea>
-                <button className={styles.commentButton}>Gửi</button>
+                <button 
+                  className={styles.commentButton}
+                  onClick={() => {
+                    // Xử lý thêm bình luận
+                    // Cần implement API thêm bình luận
+                  }}
+                >
+                  Gửi
+                </button>
               </div>
             </div>
           )}
