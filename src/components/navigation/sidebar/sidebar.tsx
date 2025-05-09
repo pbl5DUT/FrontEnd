@@ -19,13 +19,30 @@ interface MenuSection {
 }
 const sections: MenuSection[] = [
   {
+    title: 'QUẢN TRỊ',
+    items: [
+      {
+        href: '/admin/dashboard',
+        label: 'Dashboard Admin',
+        icon: '/assets/icons/admin-dashboard.png',
+        roles: [UserRole.ADMIN],
+      },
+      {
+        href: '/admin-reports',
+        label: 'Báo cáo nhân viên',
+        icon: '/assets/icons/admin-reports.png',
+        roles: [UserRole.ADMIN],
+      },
+    ],
+  },
+  {
     title: 'ỨNG DỤNG',
     items: [
       {
         href: '/home',
         label: 'Bảng tổng kết',
         icon: '/assets/icons/house-solid.svg',
-        roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
+        roles: [UserRole.MANAGE, UserRole.USER],
       },
       {
         href: '/projects',
@@ -59,17 +76,7 @@ const sections: MenuSection[] = [
       },
     ],
   },
-  {
-    title: 'QUẢN TRỊ',
-    items: [
-      {
-        href: '/admin/dashboard',
-        label: 'Dashboard Admin',
-        icon: '/assets/icons/admin-dashboard.png',
-        roles: [UserRole.ADMIN],
-      },
-    ],
-  },
+
   {
     title: 'TIỆN ÍCH',
     items: [

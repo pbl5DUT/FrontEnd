@@ -40,7 +40,7 @@ const ProjectList: React.FC = () => {
 
   const handleDeleteProject = (projectId: string): void => {
     if (window.confirm('Bạn có chắc muốn xóa dự án này?')) {
-      deleteProject(projectId);
+      deleteProject(Number(projectId));
     }
   };
 

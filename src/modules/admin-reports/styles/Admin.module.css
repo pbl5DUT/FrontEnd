@@ -1,0 +1,434 @@
+/* modules/admin/styles/Admin.module.css */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    color: #666;
+    font-size: 16px;
+  }
+  .adminReportsContainer {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px);
+    padding: 20px;
+    background-color: #f5f7fa;
+  }
+  
+  .reportsHeader {
+    margin-bottom: 20px;
+  }
+  
+  .pageTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+  }
+  
+  .filterControls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .searchBox {
+    flex: 1;
+    min-width: 250px;
+  }
+  
+  .searchInput {
+    width: 100%;
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .filterGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .filterGroup label {
+    font-size: 14px;
+    color: #555;
+    white-space: nowrap;
+  }
+  
+  .filterSelect {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 120px;
+  }
+  
+  .reportsContent {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .reportsList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    transition: flex 0.3s ease;
+  }
+  
+  .reportsList.withSelectedReport {
+    flex: 0.5;
+    border-right: 1px solid #eee;
+  }
+  
+  .reportsTable {
+    width: 100%;
+  }
+  
+  .reportsTable table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .reportsTable th {
+    background-color: #f7f9fc;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #666;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .reportsTable td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 14px;
+  }
+  
+  .reportRow {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .reportRow:hover {
+    background-color: #f7f9fc;
+  }
+  
+  .reportRow.selected {
+    background-color: #f0f7ff;
+  }
+  
+  .reportTitle {
+    font-weight: 500;
+  }
+  
+  .userInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .userAvatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #e1e5f2;
+    color: #4a6fdc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  
+  .roleBadge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .roleMANAGE {
+    background-color: #e1f5fe;
+    color: #0277bd;
+  }
+  
+  .roleUSER {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .roleADMIN {
+    background-color: #fce4ec;
+    color: #c2185b;
+  }
+  
+  .statusBadge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .statusPENDING {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+  
+  .statusREVIEWED {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .statusREJECTED {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  .emptyList {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #777;
+    font-style: italic;
+  }
+  
+  .reportDetail {
+    flex: 0.5;
+    padding: 0;
+    overflow-y: auto;
+    background-color: #fff;
+    border-left: 1px solid #eee;
+  }
+  
+  .detailHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    background-color: #f7f9fc;
+  }
+  
+  .detailTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+  }
+  
+  .closeButton:hover {
+    background-color: #f0f0f0;
+    color: #555;
+  }
+  
+  .detailContent {
+    padding: 20px;
+  }
+  
+  .section {
+    margin-bottom: 24px;
+  }
+  
+  .sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  
+  .reporterInfo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background-color: #f7f9fc;
+    border-radius: 6px;
+  }
+  
+  .reporterAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #e1e5f2;
+    color: #4a6fdc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 18px;
+  }
+  
+  .reporterDetails {
+    flex: 1;
+  }
+  
+  .reporterName {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  
+  .reportDate {
+    color: #777;
+    font-size: 14px;
+  }
+  
+  .reportContent {
+    padding: 16px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    line-height: 1.6;
+  }
+  
+  .taskInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background-color: #f7f9fc;
+    border-radius: 6px;
+  }
+  
+  .infoRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .infoLabel {
+    font-weight: 500;
+    color: #555;
+    min-width: 150px;
+  }
+  
+  .taskStatusBadge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .taskStatusTODO {
+    background-color: #f1f1f1;
+    color: #777;
+  }
+  
+  .taskStatusIN_PROGRESS {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  .taskStatusDONE {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .priorityBadge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .priorityLOW {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .priorityMEDIUM {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+  
+  .priorityHIGH {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  .actionButtons {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  
+  .actionButton {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .actionButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .reviewButton {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .reviewButton:hover:not(:disabled) {
+    background-color: #c8e6c9;
+  }
+  
+  .rejectButton {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  .rejectButton:hover:not(:disabled) {
+    background-color: #ffcdd2;
+  }
+  
+  .resetButton {
+    background-color: #f5f5f5;
+    color: #555;
+  }
+  
+  .resetButton:hover:not(:disabled) {
+    background-color: #e0e0e0;
+  }
+  
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    color: #666;
+    font-size: 16px;
+  }

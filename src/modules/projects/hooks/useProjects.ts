@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectFormData } from '../types/project';
+import {
+  fetchProjects,
+  createProject,
+  updateProject as apiUpdateProject,
+  deleteProject as apiDeleteProject,
+  addProjectMembers,
+  removeProjectMember,
+  updateMemberRole,
+  updateProjectStatus
+} from '../services/project_service'; // Đường dẫn tới file service của bạn
 
 // Type definition for the status option
 interface StatusOption {
@@ -22,160 +32,12 @@ interface UseProjectsReturn {
   setCurrentPage: (page: number) => void;
   totalPages: number;
   getPageNumbers: () => (number | string)[];
-  deleteProject: (projectId: string) => void;
-  addProject: (project: ProjectFormData) => void;
-  updateProject: (project: Project) => void;
+  deleteProject: (projectId: number) => Promise<void>;
+  addProject: (project: ProjectFormData) => Promise<void>;
+  updateProject: (project: Project) => Promise<void>;
   getProjectStatusOptions: () => StatusOption[];
+  refreshProjects: () => Promise<void>; // Thêm hàm refresh
 }
-
-// This would typically be fetched from an API - mock data structure matching your API
-const mockProjects: Project[] = [
-  {
-    project_id: 'PRJ-24070810-4798',
-    project_name: 'Dự án TeleMedical',
-    description: 'Phát triển dự án Telemedicine.',
-    start_date: '31/07/2024',
-    end_date: '28/02/2025',
-    status: 'Phát triển',
-    progress: 46,
-    manager: 'Hoàng Nguyễn Vũ',
-    members: [
-      {
-        user: {
-          id: '1',
-          username: 'vu.hoang',
-          full_name: 'Hoàng Nguyễn Vũ',
-          email: 'vu.hoang@example.com',
-          avatar: null,
-        },
-        role_in_project: 'Người tạo',
-      },
-      {
-        user: {
-          id: '2',
-          username: 'huong.hoang',
-          full_name: 'Hoàng Ngọc Thiên Hương',
-          email: 'huong.hoang@example.com',
-          avatar: null,
-        },
-        role_in_project: 'Giám sát',
-      },
-      {
-        user: {
-          id: '3',
-          username: 'nhi.dang',
-          full_name: 'Đặng Minh Nhi',
-          email: 'nhi.dang@example.com',
-          avatar: null,
-        },
-        role_in_project: 'Giám sát',
-      },
-      {
-        user: {
-          id: '4',
-          username: 'lian',
-          full_name: 'Trần Lian',
-          email: 'lian@example.com',
-          avatar: null,
-        },
-        role_in_project: 'Người tạo',
-      },
-    ],
-    tasks: [
-      {
-        task_id: 'TASK-001',
-        task_name: 'Kiểm tra lưỡng dữ liệu của các đơn xuất nhập kho',
-        description:
-          'Kiểm tra và xác minh tính chính xác của dữ liệu trong các đơn xuất nhập kho',
-        status: 'Phát triển',
-        priority: 'Cao',
-        assignee: 'Trần Lian',
-        start_date: '01/04/2025',
-        due_date: '06/04/2025',
-        progress: 65,
-      },
-      {
-        task_id: 'TASK-002',
-        task_name: 'Thiết kế giao diện người dùng cho ứng dụng di động',
-        description: 'Thiết kế UI/UX cho ứng dụng di động của bệnh nhân',
-        status: 'Đóng',
-        priority: 'Cao',
-        assignee: 'Đặng Minh Nhi',
-        start_date: '01/03/2025',
-        due_date: '15/03/2025',
-        actual_end_date: '14/03/2025',
-        progress: 100,
-      },
-    ],
-    files: [
-      {
-        id: 'file-1',
-        name: 'API - HIS.zip',
-        type: 'zip',
-        size: '582 KB',
-        uploaded_by: 'Hoàng Nguyễn Vũ',
-        upload_date: '15/08/2024',
-        url: '#',
-      },
-      {
-        id: 'file-2',
-        name: 'Text và link gh...docx',
-        type: 'docx',
-        size: '17 KB',
-        uploaded_by: 'Hoàng Ngọc Thiên Hương',
-        upload_date: '20/08/2024',
-        url: '#',
-      },
-    ],
-    comments: [
-      {
-        id: 'comment-1',
-        user: {
-          id: '1',
-          username: 'hoang.tran',
-          full_name: 'Hoàng Trần',
-          email: 'hoang.tran@example.com',
-          avatar: null,
-        },
-        content: 'Làm việc ở Đại học PCT',
-        date: '22/09/2024 16:15:43',
-      },
-      {
-        id: 'comment-2',
-        user: {
-          id: '1',
-          username: 'hoang.tran',
-          full_name: 'Hoàng Trần',
-          email: 'hoang.tran@example.com',
-          avatar: null,
-        },
-        content: 'Họp ngày 12/09',
-        date: '13/09/2024 08:31:13',
-      },
-      {
-        id: 'comment-3',
-        user: {
-          id: '1',
-          username: 'hoang.tran',
-          full_name: 'Hoàng Trần',
-          email: 'hoang.tran@example.com',
-          avatar: null,
-        },
-        content: 'Link drive ghi âm cuộc họp với bên bệnh viện',
-        date: '09/09/2024 00:19:05',
-      },
-    ],
-    stats: {
-      total_tasks: 69,
-      completed_tasks: 46,
-      in_progress: 10,
-      pending_tasks: 8,
-      delayed_tasks: 5,
-    },
-    created_at: '31/07/2024',
-    updated_at: '01/05/2025',
-  },
-];
 
 export const useProjects = (): UseProjectsReturn => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -186,37 +48,43 @@ export const useProjects = (): UseProjectsReturn => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  useEffect(() => {
-    // Simulating API fetch that will be replaced by real API call
-    const fetchProjects = async (): Promise<void> => {
-      try {
-        // In a real app, this would be replaced with:
-        // const data = await projectService.fetchProjects();
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
-        setProjects(mockProjects);
-        setTotalPages(Math.ceil(mockProjects.length / 10));
-        setLoading(false);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(
-            err.message || 'Không thể tải dữ liệu. Vui lòng thử lại sau.'
-          );
-        } else {
-          setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
-        }
-        setLoading(false);
+  // Hàm để lấy dữ liệu từ API
+  const getProjects = async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchProjects();
+      setProjects(data);
+      setTotalPages(Math.ceil(data.length / 10)); // Giả sử 10 items mỗi trang
+      setLoading(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(
+          err.message || 'Không thể tải dữ liệu. Vui lòng thử lại sau.'
+        );
+      } else {
+        setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
       }
-    };
+      setLoading(false);
+    }
+  };
 
-    fetchProjects();
+  // Gọi hàm lấy dữ liệu khi component được mount
+  useEffect(() => {
+    getProjects();
   }, []);
+
+  // Hàm để refresh dữ liệu
+  const refreshProjects = async (): Promise<void> => {
+    await getProjects();
+  };
 
   // Filtered projects based on search term and status filter
   const filteredProjects = projects.filter((project: Project) => {
     const matchesSearch =
       searchTerm === '' ||
       project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesStatus =
       statusFilter === '' || project.status === statusFilter;
@@ -225,68 +93,96 @@ export const useProjects = (): UseProjectsReturn => {
   });
 
   // Add new project function
-  const addProject = (newProject: ProjectFormData): void => {
-    // In a real app, this would be replaced with an API call
-    // const response = await projectService.createProject(newProject);
-
-    // Generate a unique ID for the new project
-    const today = new Date();
-    const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(
-      today.getMonth() + 1
-    )
-      .toString()
-      .padStart(2, '0')}/${today.getFullYear()}`;
-
-    const projectId = `PRJ-${Math.floor(Math.random() * 10000000)
-      .toString()
-      .padStart(8, '0')}`;
-
-    const project: Project = {
-      ...newProject,
-      project_id: projectId,
-      created_at: formattedDate,
-      updated_at: formattedDate,
-      members: [],
-      tasks: [],
-      files: [],
-      comments: [],
-      stats: {
-        total_tasks: 0,
-        completed_tasks: 0,
-        in_progress: 0,
-        pending_tasks: 0,
-        delayed_tasks: 0,
-      },
-    };
-
-    setProjects((prevProjects) => [project, ...prevProjects]);
+  const addProject = async (projectData: ProjectFormData): Promise<void> => {
+    try {
+      setLoading(true);
+      const newProject = await createProject(projectData);
+      
+      // Refresh lại danh sách dự án sau khi thêm
+      await refreshProjects();
+      
+      // Hoặc thêm trực tiếp vào state để tránh gọi API lại
+      // setProjects((prevProjects) => [newProject, ...prevProjects]);
+      
+      setLoading(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(
+          err.message || 'Không thể tạo dự án. Vui lòng thử lại sau.'
+        );
+      } else {
+        setError('Không thể tạo dự án. Vui lòng thử lại sau.');
+      }
+      setLoading(false);
+      throw err; // Re-throw để component có thể xử lý lỗi
+    }
   };
 
   // Update project function
-  const updateProject = (updatedProject: Project): void => {
-    // In a real app, this would be replaced with an API call
-    // await projectService.updateProject(updatedProject.project_id, updatedProject);
-
-    setProjects((prevProjects) =>
-      prevProjects.map((project) =>
-        project.project_id === updatedProject.project_id
-          ? {
-              ...updatedProject,
-              updated_at: new Date().toLocaleDateString('en-GB'),
-            }
-          : project
-      )
-    );
+  const updateProject = async (project: Project): Promise<void> => {
+    try {
+      setLoading(true);
+      
+      // Chuyển đổi project sang ProjectFormData
+      const projectData: Partial<ProjectFormData> = {
+        project_name: project.project_name,
+        description: project.description,
+        status: project.status,
+        start_date: project.start_date,
+        end_date: project.end_date,
+        manager: project.manager,
+        progress: project.progress
+      };
+      
+      await apiUpdateProject(Number(project.project_id), projectData);
+      
+      // Refresh lại danh sách dự án sau khi cập nhật
+      await refreshProjects();
+      
+      // Hoặc cập nhật trực tiếp state để tránh gọi API lại
+      // setProjects((prevProjects) =>
+      //   prevProjects.map((p) =>
+      //     p.project_id === project.project_id ? project : p
+      //   )
+      // );
+      
+      setLoading(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(
+          err.message || 'Không thể cập nhật dự án. Vui lòng thử lại sau.'
+        );
+      } else {
+        setError('Không thể cập nhật dự án. Vui lòng thử lại sau.');
+      }
+      setLoading(false);
+      throw err;
+    }
   };
 
   // Delete project function
-  const deleteProject = (projectId: string): void => {
-    // In a real app, this would be replaced with an API call
-    // await projectService.deleteProject(projectId);
-
-    setProjects((prevProjects) =>
-      prevProjects.filter((project) => project.project_id !== projectId)
-    );
+  const deleteProject = async (projectId: number): Promise<void> => {
+    try {
+      setLoading(true);
+      await apiDeleteProject(projectId);
+      
+      // Cập nhật state trực tiếp để không phải gọi API lại
+      setProjects((prevProjects) =>
+        prevProjects.filter((project) => Number(project.project_id) !== projectId)
+      );
+      
+      setLoading(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(
+          err.message || 'Không thể xóa dự án. Vui lòng thử lại sau.'
+        );
+      } else {
+        setError('Không thể xóa dự án. Vui lòng thử lại sau.');
+      }
+      setLoading(false);
+      throw err;
+    }
   };
 
   // Get page numbers for pagination
@@ -356,5 +252,6 @@ export const useProjects = (): UseProjectsReturn => {
     addProject,
     updateProject,
     getProjectStatusOptions,
+    refreshProjects, // Export hàm refresh
   };
 };
