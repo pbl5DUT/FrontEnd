@@ -123,7 +123,7 @@ const ProjectList: React.FC = () => {
                   <span>{project.progress || 0}%</span>
                 </div>
               </td>
-              <td>{project.manager}</td>
+              <td>{project.manager.full_name}</td>
               <td>
                 <div className={styles.memberAvatars}>
                   {project.members && project.members.length > 0 ? (

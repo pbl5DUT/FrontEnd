@@ -10,6 +10,9 @@ export interface AdminStats {
   totalTasks: number;
   pendingTasks: number;
   overdueTasks: number;
+  totalRevenue: number;
+  totalExpenses: number;
+
 }
 
 // Kiểu dữ liệu cho người dùng hoạt động
@@ -95,6 +98,7 @@ export interface RecentReport {
 
 // Kiểu dữ liệu cho dữ liệu biểu đồ tròn
 export interface PieChartData {
+  datasets: never[];
   labels: string[];
   values: number[];
   colors: string[];
@@ -123,18 +127,31 @@ export interface SystemStatus {
   status: 'healthy' | 'warning' | 'critical';
 }
 
-// Kiểu dữ liệu cho Dashboard Admin Props
+
 export interface DashboardAdminProps {
+
   stats: AdminStats;
+
   activeUsers: ActiveUser[];
+
   timeStats: TimeStats[];
+
   systemAlerts: SystemAlert[];
-  recentActivities: SystemActivity[];
+
   resourceAllocation: ResourceAllocation[];
+
   departmentStats: DepartmentStats[];
+
   recentReports: RecentReport[];
-  projectStatusChart: PieChartData;
-  taskStatusChart: PieChartData;
+
+  recentActivities: SystemActivity[];
+
+  projectStatusChart?: PieChartData; // Made optional
+
+  taskStatusChart: ChartData;
+
   userActivityChart: ChartData;
+
   systemStatus: SystemStatus;
+
 }

@@ -1,14 +1,23 @@
-// components/project-detail/ProjectMembers.tsx
 import React from 'react';
 import { Project } from '@/modules/projects/types/project';
-import styles from './ProjectMembers.module.css';
+import styles from '../../ViewProjectPage.module.css';
 
-interface ProjectMembersProps {
+interface MembersTabProps {
   project: Project;
-  onRemoveMember: (userId: string) => void;
+  refreshData: () => void;
 }
 
-const ProjectMembers: React.FC<ProjectMembersProps> = ({ project, onRemoveMember }) => {
+export const MembersTab: React.FC<MembersTabProps> = ({ project, refreshData }) => {
+  const handleRemoveMember = (memberId: number, memberName: string) => {
+    if (window.confirm(`Bạn có chắc muốn xóa ${memberName} khỏi dự án?`)) {
+      // TODO: Import và gọi API xóa thành viên
+      // removeProjectMember(Number(project.project_id), memberId)
+      //   .then(() => refreshData())
+      //   .catch(err => console.error('Error removing member:', err));
+      console.log(`Removing member ${memberId} from project ${project.project_id}`);
+    }
+  };
+
   return (
     <div className={styles.membersTab}>
       <div className={styles.membersHeader}>
@@ -51,11 +60,10 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ project, onRemoveMember
                   <button 
                     className={styles.deleteButton} 
                     title="Xóa"
-                    onClick={() => {
-                      if (window.confirm(`Bạn có chắc muốn xóa ${member.user.full_name} khỏi dự án?`)) {
-                        onRemoveMember(String(member.user.id));
-                      }
-                    }}
+                    onClick={() => handleRemoveMember(
+                      Number(member.user.id), 
+                      member.user.full_name
+                    )}
                   >
                     <img
                       src="/assets/icons/delete.png"
@@ -76,5 +84,3 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ project, onRemoveMember
     </div>
   );
 };
-
-export default ProjectMembers;

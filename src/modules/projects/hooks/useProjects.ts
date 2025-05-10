@@ -130,7 +130,7 @@ export const useProjects = (): UseProjectsReturn => {
         status: project.status,
         start_date: project.start_date,
         end_date: project.end_date,
-        manager: project.manager,
+        manager: project.manager.user_id, // Assuming 'user_id' is the string field in UserInfo
         progress: project.progress
       };
       

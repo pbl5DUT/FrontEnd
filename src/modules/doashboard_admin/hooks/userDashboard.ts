@@ -27,7 +27,17 @@ export const useDashboard = () => {
       setLoading(true);
       setError(null);
       const data = await dashboardService.getAllDashboardData();
-      setDashboardData(data);
+
+      // Ensure taskStatusChart conforms to ChartData
+      const updatedData = {
+        ...data,
+        taskStatusChart: {
+          ...data.taskStatusChart,
+          datasets: data.taskStatusChart?.datasets || [],
+        },
+      };
+
+      setDashboardData(updatedData);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Không thể tải dữ liệu dashboard. Vui lòng thử lại sau.');
@@ -73,7 +83,46 @@ export const useDashboard = () => {
         // const data = await dashboardService.getAllDashboardData(startDate, endDate);
 
         // Giả lập dữ liệu đã lọc
-        const mockFilteredData = { ...dashboardData };
+        const mockFilteredData: DashboardAdminProps = {
+          stats: dashboardData?.stats || {
+            totalUsers: 0,
+            totalProjects: 0,
+            activeProjects: 0,
+            completedProjects: 0,
+            pendingTasks: 0,
+            overdueTasks: 0,
+            totalRevenue: 0,
+            totalExpenses: 0,
+            delayedProjects: 0,
+            totalTasks: 0
+          },
+          activeUsers: dashboardData?.activeUsers || [],
+          timeStats: dashboardData?.timeStats || [],
+          systemAlerts: dashboardData?.systemAlerts || [],
+          resourceAllocation: dashboardData?.resourceAllocation || [],
+          departmentStats: dashboardData?.departmentStats || [],
+          recentReports: dashboardData?.recentReports || [],
+          recentActivities: [],
+          projectStatusChart: undefined,
+          taskStatusChart: {
+            labels: [],
+            datasets: [],
+          },
+          userActivityChart: {
+            labels: [],
+            datasets: [],
+          },
+          systemStatus: {
+            cpuUsage: 0,
+            memoryUsage: 0,
+            diskUsage: 0,
+            databaseSize: 0,
+            lastBackup: new Date(),
+            activeSessions: 0,
+            uptime: 0,
+            status: 'healthy',
+          }
+        };
 
         // Trong ứng dụng thực tế, dữ liệu sẽ được lấy từ API với tham số ngày
         setTimeout(() => {
