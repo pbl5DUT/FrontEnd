@@ -128,8 +128,9 @@ export const Sidebar = () => {
       </Link>
 
       <div className={styles.userRole}>
-        <span className={styles.roleTag}>{user.role}</span>
+      <span className={styles.roleTag}>{user.role}</span>
       </div>
+
 
       <nav>
         {filteredSections.map((section) => (
