@@ -32,7 +32,7 @@ interface UseProjectsReturn {
   setCurrentPage: (page: number) => void;
   totalPages: number;
   getPageNumbers: () => (number | string)[];
-  deleteProject: (projectId: number) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
   addProject: (project: ProjectFormData) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
   getProjectStatusOptions: () => StatusOption[];
@@ -134,7 +134,7 @@ export const useProjects = (): UseProjectsReturn => {
         progress: project.progress
       };
       
-      await apiUpdateProject(Number(project.project_id), projectData);
+      await apiUpdateProject(project.project_id, projectData);
       
       // Refresh lại danh sách dự án sau khi cập nhật
       await refreshProjects();
@@ -161,14 +161,14 @@ export const useProjects = (): UseProjectsReturn => {
   };
 
   // Delete project function
-  const deleteProject = async (projectId: number): Promise<void> => {
+  const deleteProject = async (projectId: string): Promise<void> => {
     try {
       setLoading(true);
       await apiDeleteProject(projectId);
       
       // Cập nhật state trực tiếp để không phải gọi API lại
       setProjects((prevProjects) =>
-        prevProjects.filter((project) => Number(project.project_id) !== projectId)
+        prevProjects.filter((project) => project.project_id !== projectId)
       );
       
       setLoading(false);

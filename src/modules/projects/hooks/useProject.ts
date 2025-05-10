@@ -1,4 +1,3 @@
-// hooks/useProject.ts
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Project } from '@/modules/projects/types/project';
@@ -27,17 +26,14 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Hàm để fetch dữ liệu dự án
   const fetchData = useCallback(async () => {
-    if (!projectId) return;
-    
+    if (!projectId || Array.isArray(projectId)) return;
+
     try {
       setLoading(true);
       setError(null);
-      
       console.log('Fetching project with ID:', projectId);
-      const projectData = await fetchProjectById(Number(projectId));
-      
+      const projectData = await fetchProjectById(projectId);
       setProject(projectData);
     } catch (err) {
       console.error('Error fetching project:', err);
@@ -51,26 +47,19 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
     }
   }, [projectId]);
 
-  // Fetch dự án khi projectId thay đổi
   useEffect(() => {
-    if (projectId) {
+    if (projectId && !Array.isArray(projectId)) {
       fetchData();
     }
   }, [projectId, fetchData]);
 
-  // Hàm xóa dự án
   const handleDeleteProject = async (): Promise<void> => {
-    if (!projectId || !project) return;
-    
+    if (!projectId || Array.isArray(projectId) || !project) return;
+
     try {
-      if (!window.confirm('Bạn có chắc muốn xóa dự án này?')) {
-        return;
-      }
-      
+      if (!window.confirm('Bạn có chắc muốn xóa dự án này?')) return;
       setLoading(true);
-      await apiDeleteProject(Number(projectId));
-      
-      // Chuyển hướng về trang danh sách dự án sau khi xóa thành công
+      await apiDeleteProject(projectId);
       router.push('/projects');
     } catch (err) {
       console.error('Error deleting project:', err);
@@ -83,15 +72,12 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
     }
   };
 
-  // Hàm xóa thành viên khỏi dự án
   const handleRemoveMember = async (userId: string): Promise<void> => {
-    if (!projectId || !project) return;
-    
+    if (!projectId || Array.isArray(projectId) || !project) return;
+
     try {
       setLoading(true);
-      await apiRemoveProjectMember(Number(projectId), Number(userId));
-      
-      // Refresh dữ liệu sau khi xóa thành viên
+      await apiRemoveProjectMember(projectId, Number(userId));
       await fetchData();
     } catch (err) {
       console.error('Error removing member:', err);
@@ -104,15 +90,12 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
     }
   };
 
-  // Hàm thêm thành viên vào dự án
   const handleAddMembers = async (userIds: number[], role: string = 'Member'): Promise<void> => {
-    if (!projectId || !project) return;
-    
+    if (!projectId || Array.isArray(projectId) || !project) return;
+
     try {
       setLoading(true);
-      await apiAddProjectMembers(Number(projectId), userIds, role);
-      
-      // Refresh dữ liệu sau khi thêm thành viên
+      await apiAddProjectMembers(projectId, userIds, role);
       await fetchData();
     } catch (err) {
       console.error('Error adding members:', err);
@@ -125,20 +108,17 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
     }
   };
 
-  // Hàm cập nhật thông tin dự án
   const handleUpdateProject = async (updatedData: Partial<Project>): Promise<void> => {
-    if (!projectId || !project) return;
-    
+    if (!projectId || Array.isArray(projectId) || !project) return;
+
     try {
       setLoading(true);
       const formattedData = {
         ...updatedData,
         manager: updatedData.manager ? String(updatedData.manager) : undefined,
-        members: updatedData.members?.map(member => String(member.id)) // Map members to string IDs
+        members: updatedData.members?.map(member => String(member.id))
       };
-      await apiUpdateProject(Number(projectId), formattedData);
-      
-      // Refresh dữ liệu sau khi cập nhật
+      await apiUpdateProject(projectId, formattedData);
       await fetchData();
     } catch (err) {
       console.error('Error updating project:', err);

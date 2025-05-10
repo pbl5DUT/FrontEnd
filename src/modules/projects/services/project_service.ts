@@ -6,32 +6,27 @@ const PROJECT_ENDPOINT = `${API_URL}/projects/`;
 // Xử lý lỗi HTTP chung
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    // Cố gắng để lấy thông báo lỗi từ API nếu có
     try {
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
     } catch (error) {
-      // Nếu không parse được JSON, ném lỗi với status code
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
   }
-  
+
   return response.json();
 };
 
-
-//
 // Lấy tất cả dự án
 export const fetchProjects = async (): Promise<Project[]> => {
   try {
-    console.log('Fetching projects from 00:', PROJECT_ENDPOINT);
-    const response = await fetch( PROJECT_ENDPOINT, {
+    const response = await fetch(PROJECT_ENDPOINT, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('Error fetching projects:', error);
@@ -40,7 +35,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
 };
 
 // Lấy thông tin chi tiết của một dự án
-export const fetchProjectById = async (projectId: number): Promise<Project> => {
+export const fetchProjectById = async (projectId: string): Promise<Project> => {
   try {
     const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/`, {
       method: 'GET',
@@ -48,7 +43,7 @@ export const fetchProjectById = async (projectId: number): Promise<Project> => {
         'Content-Type': 'application/json',
       },
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error(`Error fetching project with ID ${projectId}:`, error);
@@ -66,7 +61,7 @@ export const createProject = async (projectData: ProjectFormData): Promise<Proje
       },
       body: JSON.stringify(projectData),
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error('Error creating project:', error);
@@ -75,16 +70,16 @@ export const createProject = async (projectData: ProjectFormData): Promise<Proje
 };
 
 // Cập nhật dự án
-export const updateProject = async (projectId: number, projectData: Partial<ProjectFormData>): Promise<Project> => {
+export const updateProject = async (projectId: string, projectData: Partial<ProjectFormData>): Promise<Project> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}/${projectId}`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(projectData),
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error(`Error updating project with ID ${projectId}:`, error);
@@ -93,20 +88,17 @@ export const updateProject = async (projectId: number, projectData: Partial<Proj
 };
 
 // Xóa dự án
-export const deleteProject = async (projectId: number): Promise<void> => {
+export const deleteProject = async (projectId: string): Promise<void> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}/${projectId}`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
-    // Nếu API trả về 204 No Content, không cần parse JSON
-    if (response.status === 204) {
-      return;
-    }
-    
+
+    if (response.status === 204) return;
+
     return handleResponse(response);
   } catch (error) {
     console.error(`Error deleting project with ID ${projectId}:`, error);
@@ -115,19 +107,16 @@ export const deleteProject = async (projectId: number): Promise<void> => {
 };
 
 // Thêm thành viên vào dự án
-export const addProjectMembers = async (projectId: number, userIds: number[], role: string = 'Member'): Promise<Project> => {
+export const addProjectMembers = async (projectId: string, userIds: number[], role: string = 'Member'): Promise<Project> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}/${projectId}/members`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/members`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        user_ids: userIds,
-        role: role
-      }),
+      body: JSON.stringify({ user_ids: userIds, role }),
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error(`Error adding members to project with ID ${projectId}:`, error);
@@ -136,19 +125,17 @@ export const addProjectMembers = async (projectId: number, userIds: number[], ro
 };
 
 // Xóa thành viên khỏi dự án
-export const removeProjectMember = async (projectId: number, userId: number): Promise<void> => {
+export const removeProjectMember = async (projectId: string, userId: number): Promise<void> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}/${projectId}/members/${userId}`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/members/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
-    if (response.status === 204) {
-      return;
-    }
-    
+
+    if (response.status === 204) return;
+
     return handleResponse(response);
   } catch (error) {
     console.error(`Error removing member from project with ID ${projectId}:`, error);
@@ -157,16 +144,16 @@ export const removeProjectMember = async (projectId: number, userId: number): Pr
 };
 
 // Cập nhật vai trò của thành viên trong dự án
-export const updateMemberRole = async (projectId: number, userId: number, role: string): Promise<Project> => {
+export const updateMemberRole = async (projectId: string, userId: number, role: string): Promise<Project> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}/${projectId}/members/${userId}`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/members/${userId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ role }),
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error(`Error updating member role in project with ID ${projectId}:`, error);
@@ -175,16 +162,16 @@ export const updateMemberRole = async (projectId: number, userId: number, role: 
 };
 
 // Cập nhật trạng thái dự án
-export const updateProjectStatus = async (projectId: number, status: string): Promise<Project> => {
+export const updateProjectStatus = async (projectId: string, status: string): Promise<Project> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}/${projectId}/status`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ status }),
     });
-    
+
     return handleResponse(response);
   } catch (error) {
     console.error(`Error updating status for project with ID ${projectId}:`, error);

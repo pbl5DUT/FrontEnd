@@ -81,7 +81,7 @@ const ViewProjectPage: React.FC = () => {
         setLoading(true);
         
         // Gọi API để lấy thông tin dự án
-        const projectData = await fetchProjectById(Number(id));
+        const projectData = await fetchProjectById(id as string);
         
         setProject(projectData);
         setLoading(false);
@@ -118,7 +118,7 @@ const ViewProjectPage: React.FC = () => {
 
   const refreshData = () => {
     if (id) {
-      fetchProjectById(Number(id))
+      fetchProjectById(id as string)
         .then(data => setProject(data))
         .catch(err => console.error('Error refreshing project data:', err));
     }

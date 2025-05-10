@@ -32,6 +32,8 @@ const ProjectList: React.FC = () => {
   // Hàm chuyển đến trang chi tiết dự án
   const handleViewProject = (projectId: string): void => {
     console.log('Navigating to project ID:', projectId);
+
+    //projectId là prj-1
     router.push(`/projects/${projectId}`);
   };
 
@@ -41,7 +43,7 @@ const ProjectList: React.FC = () => {
 
   const handleDeleteProject = (projectId: string): void => {
     if (window.confirm('Bạn có chắc muốn xóa dự án này?')) {
-      deleteProject(Number(projectId));
+      deleteProject(projectId);
     }
   };
 
@@ -162,7 +164,7 @@ const ProjectList: React.FC = () => {
                 <button
                   className={styles.viewButton}
                   title="Xem chi tiết"
-                  onClick={() => handleViewProject(project.project_id)}
+                  onClick={() => handleViewProject(project.project_id as string)}
                 >
                   <img
                     src="/assets/icons/list.png"
