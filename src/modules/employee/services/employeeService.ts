@@ -26,6 +26,9 @@ export interface Employee {
   created_at: string;
   enterprise: Enterprise;
 }
+export type CreateEmployeeDto = Omit<Employee, 'user_id' | 'created_at' | 'enterprise'> & {
+  enterprise_id: string;
+};
 
 export const employeeService = {
   getEmployees: async (): Promise<Employee[]> => {
@@ -38,7 +41,7 @@ export const employeeService = {
     return response.data;
   },
 
-  createEmployee: async (employee: Omit<Employee, 'user_id' | 'created_at'>): Promise<Employee> => {
+  createEmployee: async (employee: CreateEmployeeDto): Promise<Employee> => {
     const response = await axiosInstance.post('http://127.0.0.1:8000/api/users/', employee);
     return response.data;
   },
@@ -49,6 +52,6 @@ export const employeeService = {
   },
 
   deleteEmployee: async (id: number): Promise<void> => {
-    await axiosInstance.delete(`http://127.0.0.1:8000/api/users/${id}`);
+  await axiosInstance.delete(`http://127.0.0.1:8000/api/users/${id}/`);
   },
 };
