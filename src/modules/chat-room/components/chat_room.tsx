@@ -10,114 +10,74 @@ import {
   FiSmile,
   FiImage,
   FiFile,
+  FiPlus,
+  FiUsers,
 } from 'react-icons/fi';
-
-// Mock data cho cuộc trò chuyện
-const mockContacts = [
-  {
-    id: 1,
-    name: 'adm',
-    avatar: null,
-    isOnline: false,
-    lastSeen: '10 phút trước',
-    unread: 0,
-    isActive: true,
-  },
-  {
-    id: 2,
-    name: 'anh.ha.due.2505',
-    avatar: '/assets/avatar1.jpg',
-    isOnline: true,
-    lastSeen: 'Trực tuyến',
-    unread: 2,
-    isActive: false,
-  },
-  {
-    id: 3,
-    name: 'chau.vo.due.2505',
-    avatar: '/assets/avatar2.jpg',
-    isOnline: true,
-    lastSeen: 'Trực tuyến',
-    unread: 0,
-    isActive: false,
-  },
-  {
-    id: 4,
-    name: 'cuong.do.due.2501',
-    avatar: '/assets/avatar3.jpg',
-    isOnline: false,
-    lastSeen: '30 phút trước',
-    unread: 0,
-    isActive: false,
-  },
-  {
-    id: 5,
-    name: 'cuong.ngo.due.2505',
-    avatar: '/assets/avatar4.jpg',
-    isOnline: false,
-    lastSeen: '1 giờ trước',
-    unread: 5,
-    isActive: false,
-  },
-];
-
-// Mock data tin nhắn
-const mockMessages = [
-  {
-    id: 1,
-    senderId: 1,
-    text: 'Xin chào, bạn có thể giúp tôi về dự án không?',
-    timestamp: '09:15',
-    status: 'read',
-  },
-  {
-    id: 2,
-    senderId: 2,
-    text: 'Chào bạn, tôi có thể giúp gì cho bạn?',
-    timestamp: '09:16',
-    status: 'read',
-  },
-  {
-    id: 3,
-    senderId: 1,
-    text: 'Tôi cần thông tin về tiến độ dự án CRM hiện tại',
-    timestamp: '09:17',
-    status: 'read',
-  },
-  {
-    id: 4,
-    senderId: 2,
-    text: 'Hiện tại dự án đã hoàn thành khoảng 60%. Chúng tôi đang gặp một số vấn đề về API nhưng sẽ giải quyết trong tuần này.',
-    timestamp: '09:20',
-    status: 'read',
-  },
-  {
-    id: 5,
-    senderId: 2,
-    text: 'Bạn có cần thêm thông tin gì không?',
-    timestamp: '09:21',
-    status: 'read',
-  },
-  {
-    id: 6,
-    senderId: 1,
-    text: 'Không, cảm ơn bạn. Tôi sẽ chờ báo cáo tiếp theo.',
-    timestamp: '09:25',
-    status: 'sent',
-  },
-];
+import { useChatService } from '../services/chat_service';
+import { useAuth } from '@/modules/auth/contexts/auth_context';
 
 const ChatRoom: React.FC = () => {
-  const [activeContact, setActiveContact] = useState(mockContacts[0]);
-  const [contacts, setContacts] = useState(mockContacts);
-  const [messages, setMessages] = useState(mockMessages);
+  const { user } = useAuth();
+  const userId = user?.user_id || 0;
+  
+  const {
+    contacts: apiContacts,
+    chatRooms,
+    messages: apiMessages,
+    loading,
+    error,
+    activeRoom,
+    sendMessage,
+    createChatRoom,
+    uploadAttachment,
+    setActiveChatRoom,
+    setTypingStatus
+  } = useChatService(userId);
+
+  // Map API data to component state
+  const [activeContact, setActiveContact] = useState<any>(null);
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('recent');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [newChatName, setNewChatName] = useState('');
+  const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Update local state when API data changes
+  useEffect(() => {
+    if (apiContacts && apiContacts.length > 0) {
+      setContacts(apiContacts);
+    }
+  }, [apiContacts]);
+
+  useEffect(() => {
+    if (apiMessages && apiMessages.length > 0) {
+      setMessages(apiMessages);
+    }
+  }, [apiMessages]);
+
+  useEffect(() => {
+    if (activeRoom) {
+      const contact = {
+        id: activeRoom.id,
+        name: activeRoom.name,
+        avatar: activeRoom.isGroup ? null : activeRoom.participants[0]?.avatar,
+        isOnline: activeRoom.isGroup ? false : activeRoom.participants[0]?.isOnline,
+        lastSeen: activeRoom.isGroup 
+          ? `${activeRoom.participants.length} participants` 
+          : activeRoom.participants[0]?.lastSeen,
+        unread: activeRoom.unreadCount,
+        isActive: true,
+      };
+      setActiveContact(contact);
+    }
+  }, [activeRoom]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -128,10 +88,15 @@ const ChatRoom: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleContactClick = (contact: (typeof mockContacts)[0]) => {
-    setActiveContact(contact);
+  const handleContactClick = (contact: any) => {
+    // Find the corresponding chat room
+    const room = chatRooms.find(r => r.id === contact.id);
+    if (room) {
+      setActiveChatRoom(room);
+    }
 
-    // Update contacts to mark selected contact as active and reset unread
+    // Keep this for compatibility with existing code
+    setActiveContact(contact);
     setContacts(
       contacts.map((c) =>
         c.id === contact.id
@@ -144,23 +109,56 @@ const ChatRoom: React.FC = () => {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (newMessage.trim() === '') return;
+    if (newMessage.trim() === '' || !activeRoom) return;
 
-    const newMsg = {
-      id: messages.length + 1,
-      senderId: 1, // Assuming current user has ID 1
-      text: newMessage,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      status: 'sent',
-    };
-
-    setMessages([...messages, newMsg]);
+    // Get the receiver id for direct messages
+    const receiverId = activeRoom.isGroup 
+      ? undefined 
+      : activeRoom.participants.find(p => p.id !== userId)?.id;
+      
+    sendMessage(activeRoom.id, newMessage, receiverId);
     setNewMessage('');
     setShowEmojiPicker(false);
     setShowAttachMenu(false);
+  };
+
+  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => {
+    if (!e.target.files || !e.target.files[0] || !activeRoom) return;
+    
+    const file = e.target.files[0];
+    const receiverId = activeRoom.isGroup 
+      ? undefined 
+      : activeRoom.participants.find(p => p.id !== userId)?.id;
+      
+    uploadAttachment(activeRoom.id, file, receiverId);
+    setShowAttachMenu(false);
+  };
+  
+  const handleCreateChatRoom = async () => {
+    if (newChatName.trim() === '') return;
+    
+    try {
+      const newRoom = await createChatRoom(newChatName, selectedParticipants);
+      setActiveChatRoom(newRoom);
+      setShowNewChatModal(false);
+      setNewChatName('');
+      setSelectedParticipants([]);
+    } catch (error) {
+      console.error('Failed to create chat room:', error);
+    }
+  };
+  
+  const handleParticipantToggle = (userId: number) => {
+    if (selectedParticipants.includes(userId)) {
+      setSelectedParticipants(selectedParticipants.filter(id => id !== userId));
+    } else {
+      setSelectedParticipants([...selectedParticipants, userId]);
+    }
+  };
+
+  const handleNewMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    setTypingStatus(e.target.value.length > 0);
   };
 
   const filteredContacts = contacts.filter((contact) =>
@@ -219,36 +217,124 @@ const ChatRoom: React.FC = () => {
           </button>
         </div>
 
+        <div className={styles.sidebarActions}>
+          <button
+            className={styles.newChatButton}
+            onClick={() => setShowNewChatModal(true)}
+          >
+            <FiPlus /> Trò chuyện mới
+          </button>
+        </div>
+
         <div className={styles.contactsList}>
-          {filteredContacts.map((contact) => (
-            <div
-              key={contact.id}
-              className={`${styles.contactItem} ${
-                contact.isActive ? styles.activeContact : ''
-              }`}
-              onClick={() => handleContactClick(contact)}
-            >
-              <div className={styles.contactAvatar}>
-                {contact.avatar ? (
-                  <img src={contact.avatar} alt={contact.name} />
-                ) : (
-                  <div className={styles.defaultAvatar}>
-                    {contact.name.charAt(0).toUpperCase()}
+          {loading ? (
+            <div className={styles.loading}>Đang tải...</div>
+          ) : error ? (
+            <div className={styles.error}>{error}</div>
+          ) : activeTab === 'recent' ? (
+            chatRooms
+              .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((room) => (
+                <div
+                  key={room.id}
+                  className={`${styles.contactItem} ${
+                    room.id === activeRoom?.id ? styles.activeContact : ''
+                  }`}
+                  onClick={() => handleContactClick(room)}
+                >
+                  <div className={styles.contactAvatar}>
+                    {room.isGroup ? (
+                      <div className={styles.groupAvatar}>
+                        <FiUsers />
+                      </div>
+                    ) : (
+                      <>
+                        {room.participants[0]?.avatar ? (
+                          <img src={room.participants[0].avatar} alt={room.name} />
+                        ) : (
+                          <div className={styles.defaultAvatar}>
+                            {room.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        {room.participants[0]?.isOnline && (
+                          <span className={styles.onlineIndicator}></span>
+                        )}
+                      </>
+                    )}
                   </div>
-                )}
-                {contact.isOnline && (
-                  <span className={styles.onlineIndicator}></span>
-                )}
-              </div>
-              <div className={styles.contactInfo}>
-                <div className={styles.contactName}>{contact.name}</div>
-                <div className={styles.lastSeen}>{contact.lastSeen}</div>
-              </div>
-              {contact.unread > 0 && (
-                <div className={styles.unreadBadge}>{contact.unread}</div>
-              )}
-            </div>
-          ))}
+                  <div className={styles.contactInfo}>
+                    <div className={styles.contactName}>{room.name}</div>
+                    <div className={styles.lastSeen}>
+                      {room.lastMessage ? room.lastMessage.text.substring(0, 30) : 'No messages yet'}
+                    </div>
+                  </div>
+                  {room.unreadCount > 0 && (
+                    <div className={styles.unreadBadge}>{room.unreadCount}</div>
+                  )}
+                </div>
+              ))
+          ) : activeTab === 'users' ? (
+            contacts
+              .filter(contact => !contact.isGroup)
+              .filter(contact => contact.name.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((contact) => (
+                <div
+                  key={contact.id}
+                  className={`${styles.contactItem} ${
+                    contact.isActive ? styles.activeContact : ''
+                  }`}
+                  onClick={() => handleContactClick(contact)}
+                >
+                  <div className={styles.contactAvatar}>
+                    {contact.avatar ? (
+                      <img src={contact.avatar} alt={contact.name} />
+                    ) : (
+                      <div className={styles.defaultAvatar}>
+                        {contact.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    {contact.isOnline && (
+                      <span className={styles.onlineIndicator}></span>
+                    )}
+                  </div>
+                  <div className={styles.contactInfo}>
+                    <div className={styles.contactName}>{contact.name}</div>
+                    <div className={styles.lastSeen}>{contact.lastSeen}</div>
+                  </div>
+                  {contact.unread > 0 && (
+                    <div className={styles.unreadBadge}>{contact.unread}</div>
+                  )}
+                </div>
+              ))
+          ) : (
+            chatRooms
+              .filter(room => room.isGroup)
+              .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((room) => (
+                <div
+                  key={room.id}
+                  className={`${styles.contactItem} ${
+                    room.id === activeRoom?.id ? styles.activeContact : ''
+                  }`}
+                  onClick={() => handleContactClick(room)}
+                >
+                  <div className={styles.contactAvatar}>
+                    <div className={styles.groupAvatar}>
+                      <FiUsers />
+                    </div>
+                  </div>
+                  <div className={styles.contactInfo}>
+                    <div className={styles.contactName}>{room.name}</div>
+                    <div className={styles.lastSeen}>
+                      {`${room.participants.length} participants`}
+                    </div>
+                  </div>
+                  {room.unreadCount > 0 && (
+                    <div className={styles.unreadBadge}>{room.unreadCount}</div>
+                  )}
+                </div>
+              ))
+          )}
         </div>
       </div>
 
@@ -258,20 +344,20 @@ const ChatRoom: React.FC = () => {
         <div className={styles.chatHeader}>
           <div className={styles.chatContact}>
             <div className={styles.contactAvatar}>
-              {activeContact.avatar ? (
+              {activeContact?.avatar ? (
                 <img src={activeContact.avatar} alt={activeContact.name} />
               ) : (
                 <div className={styles.defaultAvatar}>
-                  {activeContact.name.charAt(0).toUpperCase()}
+                  {activeContact?.name.charAt(0).toUpperCase()}
                 </div>
               )}
-              {activeContact.isOnline && (
+              {activeContact?.isOnline && (
                 <span className={styles.onlineIndicator}></span>
               )}
             </div>
             <div className={styles.contactInfo}>
-              <div className={styles.contactName}>{activeContact.name}</div>
-              <div className={styles.lastSeen}>{activeContact.lastSeen}</div>
+              <div className={styles.contactName}>{activeContact?.name}</div>
+              <div className={styles.lastSeen}>{activeContact?.lastSeen}</div>
             </div>
           </div>
           <div className={styles.chatActions}>
@@ -297,14 +383,14 @@ const ChatRoom: React.FC = () => {
               <div
                 key={message.id}
                 className={`${styles.messageItem} ${
-                  message.senderId === 1 ? styles.outgoing : styles.incoming
+                  message.senderId === userId ? styles.outgoing : styles.incoming
                 }`}
               >
                 <div className={styles.messageContent}>
                   <div className={styles.messageText}>{message.text}</div>
                   <div className={styles.messageTime}>
                     {message.timestamp}
-                    {message.senderId === 1 && (
+                    {message.senderId === userId && (
                       <span className={styles.messageStatus}>
                         {message.status === 'sent' ? '✓' : '✓✓'}
                       </span>
@@ -335,14 +421,25 @@ const ChatRoom: React.FC = () => {
               </button>
               {showAttachMenu && (
                 <div className={styles.attachMenu}>
-                  <button className={styles.attachOption}>
+                  <label className={styles.attachOption}>
                     <FiImage />
                     <span>Hình ảnh</span>
-                  </button>
-                  <button className={styles.attachOption}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleAttachmentUpload(e, 'image')}
+                    />
+                  </label>
+                  <label className={styles.attachOption}>
                     <FiFile />
                     <span>Tài liệu</span>
-                  </button>
+                    <input
+                      type="file"
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleAttachmentUpload(e, 'document')}
+                    />
+                  </label>
                 </div>
               )}
             </div>
@@ -353,7 +450,7 @@ const ChatRoom: React.FC = () => {
               type="text"
               placeholder="Nhập tin nhắn..."
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={handleNewMessageChange}
               className={styles.messageInput}
             />
             <button type="submit" className={styles.sendButton}>
@@ -362,6 +459,77 @@ const ChatRoom: React.FC = () => {
           </form>
         </div>
       </div>
+
+      {/* New Chat Modal */}
+      {showNewChatModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h2>Tạo trò chuyện mới</h2>
+              <button 
+                className={styles.closeButton} 
+                onClick={() => setShowNewChatModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalContent}>
+              <div className={styles.formGroup}>
+                <label>Tên nhóm</label>
+                <input
+                  type="text"
+                  value={newChatName}
+                  onChange={(e) => setNewChatName(e.target.value)}
+                  placeholder="Nhập tên nhóm trò chuyện"
+                  className={styles.modalInput}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Người tham gia</label>
+                <div className={styles.participantsList}>
+                  {contacts.map((contact) => (
+                    <div 
+                      key={contact.id}
+                      className={styles.participantItem}
+                    >
+                      <input
+                        type="checkbox"
+                        id={`contact-${contact.id}`}
+                        checked={selectedParticipants.includes(contact.id)}
+                        onChange={() => handleParticipantToggle(contact.id)}
+                      />
+                      <label htmlFor={`contact-${contact.id}`}>
+                        <div className={styles.smallAvatar}>
+                          {contact.avatar ? (
+                            <img src={contact.avatar} alt={contact.name} />
+                          ) : (
+                            contact.name.charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        {contact.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelButton}
+                onClick={() => setShowNewChatModal(false)}
+              >
+                Hủy
+              </button>
+              <button
+                className={styles.createButton}
+                onClick={handleCreateChatRoom}
+              >
+                Tạo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
