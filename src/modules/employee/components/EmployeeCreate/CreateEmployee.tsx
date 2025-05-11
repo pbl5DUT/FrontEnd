@@ -99,11 +99,16 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
       await employeeService.createEmployee(payload);
       alert('Tạo nhân viên thành công!');
 
+      // Sử dụng onCreateSuccess nếu có
       if (onCreateSuccess) {
-        onCreateSuccess();
+        onCreateSuccess(); // gọi hàm xử lý sau khi tạo nhân viên thành công
       } else {
-        if (onClose) onClose();
-        else router.push('/employee');
+        // Nếu không có onCreateSuccess, thì đóng modal hoặc chuyển trang
+        if (onClose) {
+          onClose(); // nếu có modal thì đóng lại
+        } else {
+          router.push('/employee'); // chuyển trang nếu không ở modal
+        }
       }
     } catch (error) {
       console.error('Lỗi tạo nhân viên:', error);
@@ -111,100 +116,180 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
     }
   };
 
+  const handleCancel = () => {
+    if (onClose) {
+      onClose(); // modal
+    } else {
+      router.push('/employee'); // hoặc redirect
+    }
+  };
+
   return (
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
-        {/* Dòng 1: Họ tên + Ngày sinh */}
-        <div className={styles.row}>
-          <div>
-            <label className={styles.label}>Họ và tên:</label>
-            <input type="text" name="full_name" className={styles.input} value={formData.full_name} onChange={handleChange} />
-            {errors.full_name && <p className={styles.error}>{errors.full_name}</p>}
-          </div>
-          <div>
-            <label className={styles.label}>Ngày sinh:</label>
-            <input type="date" name="birth_date" className={styles.input} value={formData.birth_date} onChange={handleChange} />
-            {errors.birth_date && <p className={styles.error}>{errors.birth_date}</p>}
-          </div>
-          <div>
-            <label className={styles.label}>Giới tính:</label>
-          <select name="gender" className={styles.input} value={formData.gender} onChange={handleChange}>
-          <option value="Male">Nam</option>
-          <option value="Female">Nữ</option>
-        </select>  
-          </div>
+        <div>
+          <label className={styles.label}>Họ và tên:</label>
+          <input
+            type="text"
+            name="full_name"
+            className={styles.input}
+            value={formData.full_name}
+            onChange={handleChange}
+          />
+          {errors.full_name && <p className={styles.error}>{errors.full_name}</p>}
         </div>
-         {/* Dòng 3: Tỉnh + Huyện + Địa chỉ */}
-        <div className={styles.row}>
-          <div>
-            <label className={styles.label}>Tỉnh/TP:</label>
-            <select name="province" className={styles.input} value={formData.province} onChange={handleChange}>
-              {provinces.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
-            </select>
-            {errors.province && <p className={styles.error}>{errors.province}</p>}
-          </div>
-          <div>
-            <label className={styles.label}>Quận/Huyện:</label>
-            <select name="district" className={styles.input} value={formData.district} onChange={handleChange}>
-              {districts.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
-            </select>
-            {errors.district && <p className={styles.error}>{errors.district}</p>}
-          </div>
-          <div>
-            <label className={styles.label}>Địa chỉ:</label>
-            <input type="text" name="address" className={styles.input} value={formData.address} onChange={handleChange} />
-            {errors.address && <p className={styles.error}>{errors.address}</p>}
+
+        <div>
+          <label className={styles.label}>Email:</label>
+          <input
+            type="email"
+            name="email"
+            className={styles.input}
+            value={formData.email}
+            onChange={handleChange}
+          />
+          {errors.email && <p className={styles.error}>{errors.email}</p>}
+        </div>
+
+        <div>
+          <label className={styles.label}>Mật khẩu:</label>
+          <input
+            type="password"
+            name="password"
+            className={styles.input}
+            value={formData.password}
+            onChange={handleChange}
+          />
+          {errors.password && <p className={styles.error}>{errors.password}</p>}
+        </div>
+
+        <div>
+          <label className={styles.label}>Vai trò:</label>
+          <select name="role" className={styles.input} value={formData.role} onChange={handleChange}>
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+          </select>
+        </div>
+
+        <div>
+          <label className={styles.label}>Bộ phận:</label>
+          <input
+            type="text"
+            name="department"
+            className={styles.input}
+            value={formData.department}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div>
+          <label className={styles.label}>Giới tính:</label>
+          <div className={styles.row}>
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="Male"
+                checked={formData.gender === 'Male'}
+                onChange={handleChange}
+              />{' '}
+              Nam
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="Female"
+                checked={formData.gender === 'Female'}
+                onChange={handleChange}
+              />{' '}
+              Nữ
+            </label>
           </div>
         </div>
 
-        <div className={styles.row}>
-          
-          <div>
-            <label className={styles.label}>Số điện thoại:</label>
-            <input type="text" name="phone" className={styles.input} value={formData.phone} onChange={handleChange} />
-            {errors.phone && <p className={styles.error}>{errors.phone}</p>}
-          </div>
-          <div>
-            <label className={styles.label}>Vai trò:</label>
-            <select name="role" className={styles.input} value={formData.role} onChange={handleChange}>
-              <option value="User">User</option>
-              <option value="Admin">Admin</option>
-              <option value="Manager">Manager</option>
-            </select>
-          </div>
+        <div>
+          <label className={styles.label}>Ngày sinh:</label>
+          <input
+            type="date"
+            name="birth_date"
+            className={styles.input}
+            value={formData.birth_date}
+            onChange={handleChange}
+          />
+          {errors.birth_date && <p className={styles.error}>{errors.birth_date}</p>}
         </div>
 
-       
-        {/* Dòng 4: Email + Mật khẩu */}
-        <div className={styles.row}>
-          <div>
-            <label className={styles.label}>Email:</label>
-            <input type="email" name="email" className={styles.input} value={formData.email} onChange={handleChange} />
-            {errors.email && <p className={styles.error}>{errors.email}</p>}
-          </div>
-          <div>
-            <label className={styles.label}>Mật khẩu:</label>
-            <input type="password" name="password" className={styles.input} value={formData.password} onChange={handleChange} />
-            {errors.password && <p className={styles.error}>{errors.password}</p>}
-          </div>
+        <div>
+          <label className={styles.label}>Số điện thoại:</label>
+          <input
+            type="text"
+            name="phone"
+            className={styles.input}
+            value={formData.phone}
+            onChange={handleChange}
+          />
+          {errors.phone && <p className={styles.error}>{errors.phone}</p>}
         </div>
 
-        {/* Dòng 5: Bộ phận + Vị trí */}
-        <div className={styles.row}>
-          <div>
-            <label className={styles.label}>Bộ phận:</label>
-            <input type="text" name="department" className={styles.input} value={formData.department} onChange={handleChange} />
-          </div>
-          <div>
-            <label className={styles.label}>Vị trí:</label>
-            <input type="text" name="position" className={styles.input} value={formData.position} onChange={handleChange} />
-            {errors.position && <p className={styles.error}>{errors.position}</p>}
-          </div>
+        <div>
+          <label className={styles.label}>Tỉnh/Thành phố:</label>
+          <select name="province" className={styles.input} value={formData.province} onChange={handleChange}>
+            {provinces.map((province) => (
+              <option key={province.id} value={province.name}>
+                {province.name}
+              </option>
+            ))}
+          </select>
+          {errors.province && <p className={styles.error}>{errors.province}</p>}
         </div>
-        {/* Nút hành động */}
+
+        <div>
+          <label className={styles.label}>Quận/Huyện:</label>
+          <select name="district" className={styles.input} value={formData.district} onChange={handleChange}>
+            {districts.map((district: any) => (
+              <option key={district.id} value={district.name}>
+                {district.name}
+              </option>
+            ))}
+          </select>
+          {errors.district && <p className={styles.error}>{errors.district}</p>}
+        </div>
+
+        <div>
+          <label className={styles.label}>Địa chỉ:</label>
+          <input
+            type="text"
+            name="address"
+            className={styles.input}
+            value={formData.address}
+            onChange={handleChange}
+          />
+          {errors.address && <p className={styles.error}>{errors.address}</p>}
+        </div>
+
+        <div>
+          <label className={styles.label}>Vị trí:</label>
+          <input
+            type="text"
+            name="position"
+            className={styles.input}
+            value={formData.position}
+            onChange={handleChange}
+          />
+          {errors.position && <p className={styles.error}>{errors.position}</p>}
+        </div>
+
         <div className={styles.buttonGroup}>
-          <button type="submit" className={styles.button}>Tạo nhân viên</button>
-          {onClose && <button type="button" className={styles.cancelButton} onClick={onClose}>Huỷ</button>}
+          <button type="submit" className={styles.button}>
+            Tạo nhân viên
+          </button>
+          {onClose && (
+          <button type="button" className={styles.cancelButton} onClick={onClose}>
+            Huỷ
+          </button>
+        )}
         </div>
       </form>
     </div>
