@@ -74,7 +74,8 @@
 .icon {
   width: 24px;
   height: 24px;
-  background-color: #ffffff;
+  background-color: transparent;
+  filter: invert(100%) brightness(100%);
 }
 
 .userRole {
