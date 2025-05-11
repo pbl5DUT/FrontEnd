@@ -1,8 +1,11 @@
 
-import { ReactNode } from "react";
+import { Key, ReactNode } from "react";
 
 // Định nghĩa các kiểu dữ liệu
 export interface TaskAssignee {
+    name: string | undefined;
+    avatar: any;
+    id: Key | null | undefined;
     user_id: string;
     user: {
       id: string;
@@ -14,6 +17,7 @@ export interface TaskAssignee {
   }
   
   export interface TaskComment {
+    user_name: ReactNode;
     id: string;
     user: {
       id: string;
@@ -25,6 +29,7 @@ export interface TaskAssignee {
   }
   
   export  interface TaskAttachment {
+    size: number;
     id: string;
     name: string;
     file_type: string;

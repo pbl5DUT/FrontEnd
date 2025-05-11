@@ -1,40 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
 import styles from './CategoryTasks.module.css';
-
-// Định nghĩa các kiểu dữ liệu
-interface TaskAssignee {
-  user_id: string;
-  user: {
-    id: string;
-    full_name: string;
-    avatar: string | null;
-  };
-  role: string;
-  assigned_date: string;
-}
-
-interface Task {
-  id: string;
-  name: string;
-  description: string;
-  category_id: string;
-  status: 'Todo' | 'In Progress' | 'Review' | 'Done';
-  priority: 'Low' | 'Medium' | 'High' | 'Urgent';
-  start_date: string;
-  due_date: string;
-  assignees: TaskAssignee[];
-}
-
-interface TaskCategory {
-  id: string;
-  name: string;
-  description?: string;
-  project_id: string;
-  tasks_count: number;
-  completed_tasks_count: number;
-}
+import { Task } from '../../types/Task';
+import { TaskCategory } from '../../types/TaskCategory';
 
 interface CategoryTasksProps {
   projectId: string;
@@ -42,6 +9,7 @@ interface CategoryTasksProps {
   tasks: Task[];
   onAddTask: () => void;
   onBack: () => void;
+  onViewTask: (task: Task) => void; // Sử dụng callback thay vì router
 }
 
 const CategoryTasks: React.FC<CategoryTasksProps> = ({
@@ -50,8 +18,8 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
   tasks,
   onAddTask,
   onBack,
+  onViewTask, // Nhận prop callback
 }) => {
-  const router = useRouter();
   const [filteredTasks, setFilteredTasks] = useState<Task[]>(tasks);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -70,23 +38,21 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
       filtered = filtered.filter(
         (task) =>
           task.name.toLowerCase().includes(term) ||
-          task.description.toLowerCase().includes(term)
+          (task.description && task.description.toLowerCase().includes(term))
       );
     }
 
     setFilteredTasks(filtered);
   }, [tasks, statusFilter, searchTerm]);
 
-  const handleViewTask = (taskId: string) => {
-    router.push(
-      `/projects/${projectId}/categories/${category.id}/tasks/${taskId}`
-    );
+  const handleViewTask = (task: Task) => {
+    onViewTask(task); // Gọi callback thay vì router.push
   };
 
   // Lấy màu cho priority badge
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'Urgent':
+      case 'Critical':
         return styles.priorityUrgent;
       case 'High':
         return styles.priorityHigh;
@@ -106,10 +72,10 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
         return styles.statusTodo;
       case 'In Progress':
         return styles.statusInProgress;
-      case 'Review':
-        return styles.statusReview;
       case 'Done':
         return styles.statusDone;
+      case 'Cancelled':
+        return styles.statusCancelled;
       default:
         return '';
     }
@@ -205,19 +171,19 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
           </button>
           <button
             className={`${styles.filterButton} ${
-              statusFilter === 'Review' ? styles.active : ''
-            }`}
-            onClick={() => setStatusFilter('Review')}
-          >
-            Đang xét duyệt
-          </button>
-          <button
-            className={`${styles.filterButton} ${
               statusFilter === 'Done' ? styles.active : ''
             }`}
             onClick={() => setStatusFilter('Done')}
           >
             Hoàn thành
+          </button>
+          <button
+            className={`${styles.filterButton} ${
+              statusFilter === 'Cancelled' ? styles.active : ''
+            }`}
+            onClick={() => setStatusFilter('Cancelled')}
+          >
+            Hủy bỏ
           </button>
         </div>
 
@@ -237,18 +203,20 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
             <div
               key={task.id}
               className={styles.taskCard}
-              onClick={() => handleViewTask(task.id)}
+              onClick={() => handleViewTask(task)}
             >
               <div className={styles.taskHeader}>
                 <h3 className={styles.taskName}>{task.name}</h3>
                 <div className={styles.taskBadges}>
-                  <span
-                    className={`${styles.priorityBadge} ${getPriorityColor(
-                      task.priority
-                    )}`}
-                  >
-                    {task.priority}
-                  </span>
+                  {task.priority && (
+                    <span
+                      className={`${styles.priorityBadge} ${getPriorityColor(
+                        task.priority
+                      )}`}
+                    >
+                      {task.priority}
+                    </span>
+                  )}
                   <span
                     className={`${styles.statusBadge} ${getStatusColor(
                       task.status
@@ -259,7 +227,9 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
                 </div>
               </div>
 
-              <p className={styles.taskDescription}>{task.description}</p>
+              {task.description && (
+                <p className={styles.taskDescription}>{task.description}</p>
+              )}
 
               <div className={styles.taskFooter}>
                 <div className={styles.taskDates}>
@@ -276,18 +246,18 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
                 <div className={styles.taskAssignees}>
                   {task.assignees.slice(0, 3).map((assignee, index) => (
                     <div
-                      key={index}
+                      key={assignee.id}
                       className={styles.assigneeAvatar}
-                      title={`${assignee.user.full_name} (${assignee.role})`}
+                      title={assignee.name}
                     >
-                      {assignee.user.avatar ? (
+                      {assignee.avatar ? (
                         <img
-                          src={assignee.user.avatar}
-                          alt={assignee.user.full_name}
+                          src={assignee.avatar}
+                          alt={assignee.name}
                         />
                       ) : (
                         <div className={styles.avatarPlaceholder}>
-                          {assignee.user.full_name.charAt(0)}
+                          {(assignee.name ?? '').charAt(0)}
                         </div>
                       )}
                     </div>

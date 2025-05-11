@@ -1,32 +1,24 @@
 import React, { useState } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
 import styles from './TaskCategories.module.css';
+import { TaskCategory } from '../../types/TaskCategory'; // Import TaskCategory từ file types
 
-interface TaskCategory {
-  id: string;
-  name: string;
-  description?: string;
-  project_id: string;
-  tasks_count: number;
-  completed_tasks_count: number;
-}
+// Xóa interface TaskCategory local vì đã import từ file khác
 
 interface TaskCategoriesProps {
   projectId: string;
   categories: TaskCategory[];
   onAddCategory: () => void;
+  onViewCategory: (category: TaskCategory) => void;
 }
 
 const TaskCategories: React.FC<TaskCategoriesProps> = ({
   projectId,
   categories,
   onAddCategory,
+  onViewCategory,
 }) => {
-  const router = useRouter();
-
-  const handleViewCategory = (categoryId: string) => {
-    router.push(`/projects/${projectId}/categories/${categoryId}`);
+  const handleViewCategory = (category: TaskCategory) => {
+    onViewCategory(category);
   };
 
   return (
@@ -49,7 +41,7 @@ const TaskCategories: React.FC<TaskCategoriesProps> = ({
             <div
               key={category.id}
               className={styles.categoryCard}
-              onClick={() => handleViewCategory(category.id)}
+              onClick={() => handleViewCategory(category)}
             >
               <div className={styles.categoryHeader}>
                 <h4 className={styles.categoryName}>{category.name}</h4>
@@ -110,7 +102,13 @@ const TaskCategories: React.FC<TaskCategoriesProps> = ({
                 ></div>
               </div>
 
-              <button className={styles.viewButton}>
+              <button 
+                className={styles.viewButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewCategory(category);
+                }}
+              >
                 Xem chi tiết
                 <img
                   src="/assets/icons/arrow-right.png"
