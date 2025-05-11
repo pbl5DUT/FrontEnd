@@ -24,13 +24,13 @@ const sections: MenuSection[] = [
       {
         href: '/admin/dashboard',
         label: 'Dashboard Admin',
-        icon: '/assets/icons/admin-dashboard.png',
+        icon: '/assets/icons/admin-dashboard.svg',
         roles: [UserRole.ADMIN],
       },
       {
         href: '/admin-reports',
         label: 'Báo cáo nhân viên',
-        icon: '/assets/icons/admin-reports.png',
+        icon: '/assets/icons/admin-reports.svg',
         roles: [UserRole.ADMIN],
       },
     ],
