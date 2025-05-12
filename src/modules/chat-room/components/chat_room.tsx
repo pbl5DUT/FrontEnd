@@ -13,7 +13,7 @@ import {
   FiPlus,
   FiUsers,
 } from 'react-icons/fi';
-import { useChatService } from '../services/chat_service';
+import { useChatService } from '../services';
 import { useAuth } from '@/modules/auth/contexts/auth_context';
 
 const ChatRoom: React.FC = () => {
@@ -31,7 +31,8 @@ const ChatRoom: React.FC = () => {
     createChatRoom,
     uploadAttachment,
     setActiveChatRoom,
-    setTypingStatus
+    setTypingStatus,
+    loadMessages
   } = useChatService(userId);
 
   // Map API data to component state
@@ -48,19 +49,44 @@ const ChatRoom: React.FC = () => {
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   // Update local state when API data changes
   useEffect(() => {
     if (apiContacts && apiContacts.length > 0) {
       setContacts(apiContacts);
     }
   }, [apiContacts]);
-
+    // Xóa tin nhắn cũ khi thay đổi phòng - sử dụng activeRoom?.id thay vì toàn bộ activeRoom
+  // để tránh re-render không cần thiết khi các thuộc tính khác của phòng thay đổi
   useEffect(() => {
-    if (apiMessages && apiMessages.length > 0) {
-      setMessages(apiMessages);
+    if (activeRoom?.id) {
+      // Đặt messages thành mảng rỗng ngay khi id phòng thay đổi 
+      // trước khi loadMessages được gọi để tránh hiển thị tin nhắn từ phòng cũ
+      setMessages([]);
     }
-  }, [apiMessages]);
+  }, [activeRoom?.id]);useEffect(() => {
+    // Xử lý cập nhật tin nhắn từ API chỉ khi có phòng hiện tại
+    if (apiMessages && apiMessages.length > 0 && activeRoom) {
+      setMessages(prevMessages => {
+        // Luôn sử dụng danh sách tin nhắn từ API khi phòng mới được chọn (prevMessages rỗng)
+        if (prevMessages.length === 0) {
+          console.log('Hiển thị tin nhắn từ API cho phòng mới:', apiMessages.length);
+          return apiMessages;
+        }
+        
+        // Kiểm tra các tin nhắn mới từ API mà chưa có trong danh sách hiện tại
+        const currentMessageIds = new Set(prevMessages.map(msg => msg.id));
+        const newApiMessages = apiMessages.filter(msg => !currentMessageIds.has(msg.id));
+        
+        if (newApiMessages.length > 0) {
+          console.log(`Thêm ${newApiMessages.length} tin nhắn mới từ API`);
+          return [...prevMessages, ...newApiMessages];
+        }
+        
+        // Giữ nguyên danh sách hiện tại (có thể bao gồm các cập nhật optimistic)
+        return prevMessages;
+      });
+    }
+  }, [apiMessages, activeRoom]);
 
   useEffect(() => {
     if (activeRoom) {
@@ -79,6 +105,7 @@ const ChatRoom: React.FC = () => {
     }
   }, [activeRoom]);
 
+  
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
@@ -87,7 +114,6 @@ const ChatRoom: React.FC = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
   const handleContactClick = (contact: any) => {
     // Find the corresponding chat room
     const room = chatRooms.find(r => r.id === contact.id);
@@ -95,33 +121,51 @@ const ChatRoom: React.FC = () => {
       setActiveChatRoom(room);
     }
 
-    // Keep this for compatibility with existing code
+    // Chỉ cập nhật activeContact mà không làm thay đổi danh sách contacts
     setActiveContact(contact);
-    setContacts(
-      contacts.map((c) =>
-        c.id === contact.id
-          ? { ...c, isActive: true, unread: 0 }
-          : { ...c, isActive: false }
-      )
-    );
   };
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (newMessage.trim() === '' || !activeRoom) return;
-
-    // Get the receiver id for direct messages
-    const receiverId = activeRoom.isGroup 
-      ? undefined 
-      : activeRoom.participants.find(p => p.id !== userId)?.id;
-      
-    sendMessage(activeRoom.id, newMessage, receiverId);
-    setNewMessage('');
-    setShowEmojiPicker(false);
-    setShowAttachMenu(false);
+    const handleSendMessage = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!newMessage.trim() || !activeRoom) return;
+  
+  const message = newMessage;
+  setNewMessage('');
+  
+  const tempId = Date.now().toString();
+  // Thêm tin nhắn optimistic vào danh sách tin nhắn hiện tại
+  const optimisticMessage = {
+    id: `temp-${tempId}`,
+    senderId: userId.toString(),
+    text: message,
+    timestamp: new Date().toLocaleTimeString(),
+    status: 'sent',
+    tempId
   };
+  
+  // Thêm tin nhắn tạm thời vào UI ngay lập tức
+  setMessages(prevMessages => [...prevMessages, optimisticMessage]);
+  
+  // Cuộn xuống dưới sau khi gửi tin nhắn
+  setTimeout(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, 10);
 
+  try {
+    // Gửi tin nhắn qua API (không cần chờ đợi kết quả)
+    sendMessage({
+      roomId: activeRoom.id,
+      text: message,
+      receiverId: activeRoom.participants.find(p => p.id !== userId)?.id,
+      tempId
+    }).catch(err => console.error('Error in background message sending:', err));
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+};
+  
   const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => {
     if (!e.target.files || !e.target.files[0] || !activeRoom) return;
     
@@ -129,20 +173,38 @@ const ChatRoom: React.FC = () => {
     const receiverId = activeRoom.isGroup 
       ? undefined 
       : activeRoom.participants.find(p => p.id !== userId)?.id;
+    
+    // Ensure roomId is a number
+    const roomIdNumber = typeof activeRoom.id === 'string' 
+      ? parseInt(activeRoom.id.replace(/\D/g, ''), 10)
+      : activeRoom.id;
       
-    uploadAttachment(activeRoom.id, file, receiverId);
+    uploadAttachment({
+      roomId: roomIdNumber,
+      file: file,
+      receiverId: receiverId ? Number(receiverId) : undefined
+    });
     setShowAttachMenu(false);
   };
-  
   const handleCreateChatRoom = async () => {
     if (newChatName.trim() === '') return;
     
     try {
-      const newRoom = await createChatRoom(newChatName, selectedParticipants);
-      setActiveChatRoom(newRoom);
+      // Tạo phòng chat mới
+      const newRoom = await createChatRoom({
+        name: newChatName,
+        participantIds: selectedParticipants
+      });
+      
+      // Đóng modal trước khi cập nhật phòng active để tránh render lại không cần thiết
       setShowNewChatModal(false);
       setNewChatName('');
       setSelectedParticipants([]);
+      
+      // Sau khi đóng modal, đặt phòng mới là phòng active
+      setTimeout(() => {
+        setActiveChatRoom(newRoom);
+      }, 10);
     } catch (error) {
       console.error('Failed to create chat room:', error);
     }
@@ -217,15 +279,6 @@ const ChatRoom: React.FC = () => {
           </button>
         </div>
 
-        <div className={styles.sidebarActions}>
-          <button
-            className={styles.newChatButton}
-            onClick={() => setShowNewChatModal(true)}
-          >
-            <FiPlus /> Trò chuyện mới
-          </button>
-        </div>
-
         <div className={styles.contactsList}>
           {loading ? (
             <div className={styles.loading}>Đang tải...</div>
@@ -277,11 +330,10 @@ const ChatRoom: React.FC = () => {
             contacts
               .filter(contact => !contact.isGroup)
               .filter(contact => contact.name.toLowerCase().includes(searchTerm.toLowerCase()))
-              .map((contact) => (
-                <div
+              .map((contact) => (                <div
                   key={contact.id}
                   className={`${styles.contactItem} ${
-                    contact.isActive ? styles.activeContact : ''
+                    contact.id === activeRoom?.id ? styles.activeContact : ''
                   }`}
                   onClick={() => handleContactClick(contact)}
                 >
@@ -336,6 +388,17 @@ const ChatRoom: React.FC = () => {
               ))
           )}
         </div>
+        
+        {/* Floating Add Chat Button */}
+        <div className={styles.sidebarFooter}>
+          <button
+            className={styles.addChatButton}
+            onClick={() => setShowNewChatModal(true)}
+            title="Tạo cuộc trò chuyện mới"
+          >
+            <FiPlus size={24} />
+          </button>
+        </div>
       </div>
 
       {/* Chat Area */}
@@ -374,31 +437,33 @@ const ChatRoom: React.FC = () => {
               <FiMoreVertical />
             </button>
           </div>
-        </div>
-
-        {/* Chat Messages */}
+        </div>        {/* Chat Messages */}
         <div className={styles.messagesContainer}>
           <div className={styles.messagesList}>
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`${styles.messageItem} ${
-                  message.senderId === userId ? styles.outgoing : styles.incoming
-                }`}
-              >
-                <div className={styles.messageContent}>
-                  <div className={styles.messageText}>{message.text}</div>
-                  <div className={styles.messageTime}>
-                    {message.timestamp}
-                    {message.senderId === userId && (
-                      <span className={styles.messageStatus}>
-                        {message.status === 'sent' ? '✓' : '✓✓'}
-                      </span>
-                    )}
+            {messages.length === 0 && (
+              <div className={styles.emptyMessages}>No messages yet. Start the conversation!</div>
+            )}            {messages.map((message) => {
+              return (
+                <div
+                  key={message.id}
+                  className={`${styles.messageItem} ${
+                    message.senderId === userId.toString() ? styles.outgoing : styles.incoming
+                  }`}
+                >
+                  <div className={styles.messageContent}>
+                    <div className={styles.messageText}>{message.text}</div>
+                    <div className={styles.messageTime}>
+                      {message.timestamp}
+                      {message.senderId === userId.toString() && (
+                        <span className={styles.messageStatus}>
+                          {message.status === 'sent' ? '✓' : '✓✓'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
         </div>
@@ -486,6 +551,25 @@ const ChatRoom: React.FC = () => {
               </div>
               <div className={styles.formGroup}>
                 <label>Người tham gia</label>
+                {selectedParticipants.length > 0 && (
+                  <div className={styles.selectedParticipants}>
+                    {selectedParticipants.map((participantId) => {
+                      const participant = contacts.find(c => c.id === participantId);
+                      return (
+                        <div className={styles.participantTag} key={participantId}>
+                          <span className={styles.participantName}>{participant?.name}</span>
+                          <button 
+                            className={styles.removeParticipant}
+                            onClick={() => handleParticipantToggle(participantId)}
+                            type="button"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 <div className={styles.participantsList}>
                   {contacts.map((contact) => (
                     <div 

@@ -414,3 +414,253 @@
     height: 36px;
   }
 }
+
+/* New Chat Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  width: 500px;
+  max-width: 90%;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: modalFadeIn 0.3s ease-in-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.modalHeader h2 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 500;
+  color: #333;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+}
+
+.modalContent {
+  padding: 20px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.modalInput:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.participantsList {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.participantItem {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.participantItem:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.participantItem input[type="checkbox"] {
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.participantItem label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+  width: 100%;
+}
+
+.smallAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #1a73e8;
+  color: #fff;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.smallAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modalActions {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #eaeaea;
+}
+
+.cancelButton {
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: none;
+  color: #555;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: #f5f5f5;
+}
+
+.createButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: #1a73e8;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.createButton:hover {
+  background-color: #0d62c9;
+}
+
+/* Add New Chat Button in Sidebar */
+.addChatButton {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #1a73e8;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+}
+
+.addChatButton:hover {
+  background-color: #0d62c9;
+  transform: scale(1.05);
+}
+
+.sidebarFooter {
+  position: relative;
+  padding: 12px;
+  border-top: 1px solid #eaeaea;
+}
+
+/* Selected Participants Tags */
+.selectedParticipants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.participantTag {
+  display: flex;
+  align-items: center;
+  background-color: #e3f2fd;
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 13px;
+  max-width: 150px;
+}
+
+.participantName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.removeParticipant {
+  margin-left: 6px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
