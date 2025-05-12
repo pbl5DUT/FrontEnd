@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/router'; // Thay đổi từ next/navigation sang next/router
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import styles from './ProjectList.module.css';
-import { Project } from '../../types/project';
+import { Project, ProjectFormData } from '../../types/project';
 import { useProjects } from '../../hooks/useProjects';
+import CreateProjectModal from '../modal/CreateProjectModal/CreateProjectModal';
 
 const ProjectList: React.FC = () => {
   const router = useRouter();
@@ -22,7 +23,48 @@ const ProjectList: React.FC = () => {
     getPageNumbers,
     deleteProject,
     getProjectStatusOptions,
+    addProject
   } = useProjects();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
+  const [users, setUsers] = useState<{ user_id: string; full_name: string }[]>([]);
+  
+  useEffect(() => {
+    // Fetch managers và users khi component được mount
+    fetchManagers();
+    fetchUsers();
+  }, []);
+
+  const fetchManagers = async () => {
+    try {
+      // Tạm thời mock data, thực tế sẽ gọi API
+      const mockManagers = [
+        { id: 'user-1', full_name: 'Nguyễn Văn A' },
+        { id: 'user-2', full_name: 'Trần Thị B' },
+        { id: 'user-3', full_name: 'Lê Văn C' },
+      ];
+      setManagers(mockManagers);
+    } catch (error) {
+      console.error('Failed to fetch managers:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      // Tạm thời mock data, thực tế sẽ gọi API
+      const mockUsers = [
+        { user_id: 'user-1', full_name: 'Nguyễn Văn A' },
+        { user_id: 'user-2', full_name: 'Trần Thị B' },
+        { user_id: 'user-3', full_name: 'Lê Văn C' },
+        { user_id: 'user-4', full_name: 'Phạm Thị D' },
+        { user_id: 'user-5', full_name: 'Hoàng Văn E' },
+      ];
+      setUsers(mockUsers);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  };
 
   if (loading) return <div className={styles.loading}>Đang tải dữ liệu...</div>;
   if (error) return <div className={styles.error}>{error}</div>;
@@ -32,13 +74,26 @@ const ProjectList: React.FC = () => {
   // Hàm chuyển đến trang chi tiết dự án
   const handleViewProject = (projectId: string): void => {
     console.log('Navigating to project ID:', projectId);
-
-    //projectId là prj-1
     router.push(`/projects/${projectId}`);
   };
 
   const handleCreateProject = (): void => {
-    router.push('/projects/create');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = (): void => {
+    setIsModalOpen(false);
+  };
+
+  // Cập nhật hàm này để sử dụng addProject từ useProjects hook
+  const handleSubmitCreateProject = async (projectData: ProjectFormData): Promise<void> => {
+    try {
+      await addProject(projectData);
+      // Có thể hiển thị thông báo thành công nếu cần
+    } catch (error) {
+      console.error('Error creating project:', error);
+      // Hiển thị thông báo lỗi nếu cần
+    }
   };
 
   const handleDeleteProject = (projectId: string): void => {
@@ -232,6 +287,15 @@ const ProjectList: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Cập nhật component CreateProjectModal với props để hỗ trợ thêm thành viên */}
+      <CreateProjectModal 
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onCreateProject={handleSubmitCreateProject}
+        managers={managers}
+        users={users} // Truyền danh sách users cho việc chọn thành viên
+      />
     </div>
   );
 };
