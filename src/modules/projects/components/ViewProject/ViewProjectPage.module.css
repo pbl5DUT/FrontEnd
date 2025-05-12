@@ -1,7 +1,11 @@
+
 .viewProjectPage {
   padding: 24px;
   max-width: 1200px;
   margin-left: 250px;
+  height: 100vh; /* Chiếm toàn bộ chiều cao màn hình */
+  overflow-y: auto; /* Kích hoạt cuộn dọc khi nội dung vượt quá */
+  box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
 }
 
 .header {

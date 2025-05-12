@@ -1,43 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import styles from './CategoryTasks.module.css';
-import { Task } from '../../types/Task';
-import { TaskCategory } from '../../types/TaskCategory';
+import { Task, getTasksByCategory } from '../../services/taskService';
+import { TaskCategory } from '../../services/taskService';
 
 interface CategoryTasksProps {
   projectId: string;
   category: TaskCategory;
-  tasks: Task[];
   onAddTask: () => void;
   onBack: () => void;
-  onViewTask: (task: Task) => void; // Sử dụng callback thay vì router
+  onViewTask: (task: Task) => void;
 }
 
 const CategoryTasks: React.FC<CategoryTasksProps> = ({
   projectId,
   category,
-  tasks,
   onAddTask,
   onBack,
-  onViewTask, // Nhận prop callback
+  onViewTask,
 }) => {
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>(tasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [category.id]);
+
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const tasksData = await getTasksByCategory(category.id);
+      setTasks(tasksData);
+      setFilteredTasks(tasksData);
+    } catch (err) {
+      setError('Không thể tải danh sách công việc. Vui lòng thử lại.');
+      console.error('Error fetching tasks:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let filtered = [...tasks];
 
-    // Lọc theo trạng thái
     if (statusFilter !== 'all') {
       filtered = filtered.filter((task) => task.status === statusFilter);
     }
 
-    // Lọc theo từ khóa tìm kiếm
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (task) =>
-          task.name.toLowerCase().includes(term) ||
+          task.task_name.toLowerCase().includes(term) ||
           (task.description && task.description.toLowerCase().includes(term))
       );
     }
@@ -46,12 +64,13 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
   }, [tasks, statusFilter, searchTerm]);
 
   const handleViewTask = (task: Task) => {
-    onViewTask(task); // Gọi callback thay vì router.push
+    console.log('CategoryTasks - Task:', task);
+    onViewTask(task);
   };
 
-  // Lấy màu cho priority badge
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority?: string) => {
     switch (priority) {
+      case 'Urgent':
       case 'Critical':
         return styles.priorityUrgent;
       case 'High':
@@ -65,13 +84,14 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
     }
   };
 
-  // Lấy màu cho status badge
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case 'Todo':
         return styles.statusTodo;
       case 'In Progress':
         return styles.statusInProgress;
+      case 'Review':
+        return styles.statusReview;
       case 'Done':
         return styles.statusDone;
       case 'Cancelled':
@@ -81,15 +101,46 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
     }
   };
 
+  if (loading) {
+    return (
+      <div className={styles.categoryTasksContainer}>
+        <div className={styles.header}>
+          <button className={styles.backButton} onClick={onBack}>
+            <img src="/assets/icons/back-arrow.png" alt="Quay lại" className={styles.backIcon} />
+            Quay lại danh mục
+          </button>
+          <h2>{category.name}</h2>
+        </div>
+        <div className={styles.loading}>
+          <div>Đang tải dữ liệu...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.categoryTasksContainer}>
+        <div className={styles.header}>
+          <button className={styles.backButton} onClick={onBack}>
+            <img src="/assets/icons/back-arrow.png" alt="Quay lại" className={styles.backIcon} />
+            Quay lại danh mục
+          </button>
+          <h2>{category.name}</h2>
+        </div>
+        <div className={styles.error}>
+          <p>{error}</p>
+          <button onClick={fetchTasks}>Thử lại</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.categoryTasksContainer}>
       <div className={styles.header}>
         <button className={styles.backButton} onClick={onBack}>
-          <img
-            src="/assets/icons/back-arrow.png"
-            alt="Quay lại"
-            className={styles.backIcon}
-          />
+          <img src="/assets/icons/back-arrow.png" alt="Quay lại" className={styles.backIcon} />
           Quay lại danh mục
         </button>
         <h2>{category.name}</h2>
@@ -103,22 +154,20 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
 
       <div className={styles.stats}>
         <div className={styles.statItem}>
-          <span className={styles.statValue}>{category.tasks_count}</span>
+          <span className={styles.statValue}>{tasks.length}</span>
           <span className={styles.statLabel}>Tổng công việc</span>
         </div>
         <div className={styles.statItem}>
           <span className={styles.statValue}>
-            {category.completed_tasks_count}
+            {tasks.filter(task => task.status === 'Done').length}
           </span>
           <span className={styles.statLabel}>Đã hoàn thành</span>
         </div>
         <div className={styles.statItem}>
           <span className={styles.statValue}>
-            {Math.round(
-              (category.completed_tasks_count /
-                Math.max(category.tasks_count, 1)) *
-                100
-            )}
+            {tasks.length > 0 
+              ? Math.round((tasks.filter(task => task.status === 'Done').length / tasks.length) * 100)
+              : 0}
             %
           </span>
           <span className={styles.statLabel}>Tiến độ</span>
@@ -146,53 +195,39 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
 
         <div className={styles.statusFilters}>
           <button
-            className={`${styles.filterButton} ${
-              statusFilter === 'all' ? styles.active : ''
-            }`}
+            className={`${styles.filterButton} ${statusFilter === 'all' ? styles.active : ''}`}
             onClick={() => setStatusFilter('all')}
           >
             Tất cả
           </button>
           <button
-            className={`${styles.filterButton} ${
-              statusFilter === 'Todo' ? styles.active : ''
-            }`}
+            className={`${styles.filterButton} ${statusFilter === 'Todo' ? styles.active : ''}`}
             onClick={() => setStatusFilter('Todo')}
           >
             Chưa làm
           </button>
           <button
-            className={`${styles.filterButton} ${
-              statusFilter === 'In Progress' ? styles.active : ''
-            }`}
+            className={`${styles.filterButton} ${statusFilter === 'In Progress' ? styles.active : ''}`}
             onClick={() => setStatusFilter('In Progress')}
           >
             Đang làm
           </button>
           <button
-            className={`${styles.filterButton} ${
-              statusFilter === 'Done' ? styles.active : ''
-            }`}
+            className={`${styles.filterButton} ${statusFilter === 'Review' ? styles.active : ''}`}
+            onClick={() => setStatusFilter('Review')}
+          >
+            Đang xét duyệt
+          </button>
+          <button
+            className={`${styles.filterButton} ${statusFilter === 'Done' ? styles.active : ''}`}
             onClick={() => setStatusFilter('Done')}
           >
             Hoàn thành
           </button>
-          <button
-            className={`${styles.filterButton} ${
-              statusFilter === 'Cancelled' ? styles.active : ''
-            }`}
-            onClick={() => setStatusFilter('Cancelled')}
-          >
-            Hủy bỏ
-          </button>
         </div>
 
         <button className={styles.addTaskButton} onClick={onAddTask}>
-          <img
-            src="/assets/icons/plus.png"
-            alt="Thêm"
-            className={styles.addIcon}
-          />
+          <img src="/assets/icons/plus.png" alt="Thêm" className={styles.addIcon} />
           Thêm công việc
         </button>
       </div>
@@ -201,29 +236,25 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
         <div className={styles.tasksList}>
           {filteredTasks.map((task) => (
             <div
-              key={task.id}
+              key={task.task_id}
               className={styles.taskCard}
               onClick={() => handleViewTask(task)}
             >
               <div className={styles.taskHeader}>
-                <h3 className={styles.taskName}>{task.name}</h3>
+                <h3 className={styles.taskName}>{task.task_name}</h3>
                 <div className={styles.taskBadges}>
-                  {task.priority && (
-                    <span
-                      className={`${styles.priorityBadge} ${getPriorityColor(
-                        task.priority
-                      )}`}
-                    >
+                  {task.priority ? (
+                    <span className={`${styles.priorityBadge} ${getPriorityColor(task.priority)}`}>
                       {task.priority}
                     </span>
+                  ) : (
+                    <span className={styles.priorityBadge}>No Priority</span>
                   )}
-                  <span
-                    className={`${styles.statusBadge} ${getStatusColor(
-                      task.status
-                    )}`}
-                  >
-                    {task.status}
-                  </span>
+                  {task.status && (
+                    <span className={`${styles.statusBadge} ${getStatusColor(task.status)}`}>
+                      {task.status}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -235,37 +266,24 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
                 <div className={styles.taskDates}>
                   <div className={styles.dateItem}>
                     <span className={styles.dateLabel}>Bắt đầu:</span>
-                    <span className={styles.dateValue}>{task.start_date}</span>
+                    <span className={styles.dateValue}>{task.start_date || 'N/A'}</span>
                   </div>
                   <div className={styles.dateItem}>
                     <span className={styles.dateLabel}>Kết thúc:</span>
-                    <span className={styles.dateValue}>{task.due_date}</span>
+                    <span className={styles.dateValue}>{task.due_date || 'N/A'}</span>
                   </div>
                 </div>
 
                 <div className={styles.taskAssignees}>
-                  {task.assignees.slice(0, 3).map((assignee, index) => (
-                    <div
-                      key={assignee.id}
-                      className={styles.assigneeAvatar}
-                      title={assignee.name}
-                    >
-                      {assignee.avatar ? (
-                        <img
-                          src={assignee.avatar}
-                          alt={assignee.name}
-                        />
+                  {task.assignee && (
+                    <div className={styles.assigneeAvatar} title={task.assignee.full_name}>
+                      {task.assignee.avatar ? (
+                        <img src={task.assignee.avatar} alt={task.assignee.full_name} />
                       ) : (
                         <div className={styles.avatarPlaceholder}>
-                          {(assignee.name ?? '').charAt(0)}
+                          {task.assignee.full_name.charAt(0)}
                         </div>
                       )}
-                    </div>
-                  ))}
-
-                  {task.assignees.length > 3 && (
-                    <div className={styles.moreAssignees}>
-                      +{task.assignees.length - 3}
                     </div>
                   )}
                 </div>
@@ -275,11 +293,7 @@ const CategoryTasks: React.FC<CategoryTasksProps> = ({
         </div>
       ) : (
         <div className={styles.emptyState}>
-          <img
-            src="/assets/icons/task.png"
-            alt="Task"
-            className={styles.emptyIcon}
-          />
+          <img src="/assets/icons/task.png" alt="Task" className={styles.emptyIcon} />
           <p>
             {searchTerm
               ? 'Không tìm thấy công việc phù hợp. Vui lòng thử từ khóa khác.'

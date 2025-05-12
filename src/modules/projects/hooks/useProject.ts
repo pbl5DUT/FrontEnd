@@ -116,7 +116,10 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
       const formattedData = {
         ...updatedData,
         manager: updatedData.manager ? String(updatedData.manager) : undefined,
-        members: updatedData.members?.map(member => String(member.id))
+        members: updatedData.members?.map(member => ({
+          user_id: String(member.id),
+          role_in_project: member.role || 'Member',
+        }))
       };
       await apiUpdateProject(projectId, formattedData);
       await fetchData();

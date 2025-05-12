@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import styles from './ProjectTasksManager.module.css';
 import TaskCategories from './TaskCategories';
 import CategoryTasks from './CategoryTasks';
-// import TaskDetail from './TaskDetail';
-import { getTaskCategories } from '../../services/taskService';
+import TaskDetail from './TaskDetail';
+import CreateCategoryModal from './CreateCategoryModal';
+import CreateTaskModal from './CreateTaskModal';
 import { Task } from '../../types/Task';
-import { TaskCategory } from '../../types/TaskCategory';
+import { 
+  getTaskCategories, 
+  deleteTaskCategory,
+  TaskWithDetails,
+  TaskCategory 
+} from '../../services/taskService';
 
 interface ProjectTasksManagerProps {
   projectId: string;
@@ -13,39 +19,41 @@ interface ProjectTasksManagerProps {
 
 const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) => {
   const [categories, setCategories] = useState<TaskCategory[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<TaskCategory | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [view, setView] = useState<'categories' | 'tasks' | 'task-detail'>('categories');
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load dữ liệu từ API
+  const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+  const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<TaskCategory | null>(null);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const categoryData = await getTaskCategories(projectId);
-        setCategories(categoryData);
-
-        // TODO: Gọi API task ở đây nếu đã có
-        setTasks([]); // Hiện tại vẫn chưa có API getTasksByProject
-      } catch (error) {
-        console.error('Lỗi khi tải dữ liệu từ API:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchCategories();
   }, [projectId]);
 
-  // Các hàm xử lý navigation
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const categoryData = await getTaskCategories(projectId);
+      setCategories(categoryData);
+    } catch (err) {
+      setError('Không thể tải danh mục. Vui lòng thử lại.');
+      console.error('Lỗi khi tải danh mục:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleViewCategory = (category: TaskCategory) => {
     setSelectedCategory(category);
     setView('tasks');
   };
 
   const handleViewTask = (task: Task) => {
+    console.log('ProjectTasksManager - Selected Task:', task);
     setSelectedTask(task);
     setView('task-detail');
   };
@@ -62,67 +70,82 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
   };
 
   const handleAddCategory = () => {
-    // Implement add category logic
-    // Hiển thị modal/form thêm danh mục
-    console.log('Show add category modal');
+    setEditingCategory(null);
+    setShowCreateCategoryModal(true);
   };
 
-  const handleAddTask = () => {
-    // Implement add task logic
-    // Hiển thị modal/form thêm công việc
-    console.log('Show add task modal');
+  const handleEditCategory = (category: TaskCategory) => {
+    setEditingCategory(category);
+    setShowCreateCategoryModal(true);
   };
 
-  const handleUpdateTask = (updatedTask: Task) => {
-    // Logic cập nhật task
-    console.log('Update task:', updatedTask);
-    setTasks(tasks.map(task => 
-      task.id === updatedTask.id ? updatedTask : task
-    ));
-    setSelectedTask(updatedTask);
-  };
-
-  const handleDeleteTask = () => {
-    // Logic xóa task
-    console.log('Delete task:', selectedTask);
-    if (selectedTask) {
-      setTasks(tasks.filter(task => task.id !== selectedTask.id));
-      handleBackToTasks();
+  const handleDeleteCategory = async (category: TaskCategory) => {
+    try {
+      await deleteTaskCategory(projectId, category.id);
+      setCategories(categories.filter(cat => cat.id !== category.id));
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Không thể xóa danh mục. Vui lòng thử lại.');
     }
   };
 
-  const handleAddComment = (content: string) => {
-    // Logic thêm comment
-    console.log('Add comment:', content);
+  const handleCategorySuccess = (category: TaskCategory) => {
+    if (editingCategory) {
+      setCategories(categories.map(cat => 
+        cat.id === category.id ? category : cat
+      ));
+    } else {
+      setCategories([...categories, category]);
+    }
+    setShowCreateCategoryModal(false);
+    setEditingCategory(null);
   };
 
-  const handleAddAssignee = (userId: string) => {
-    // Logic thêm assignee
-    console.log('Add assignee:', userId);
+  const handleAddTask = () => {
+    setShowCreateTaskModal(true);
   };
 
-  const handleRemoveAssignee = (userId: string) => {
-    // Logic xóa assignee
-    console.log('Remove assignee:', userId);
+  const handleTaskSuccess = (task: Task) => {
+    setShowCreateTaskModal(false);
   };
 
-  const handleUploadAttachment = (file: File) => {
-    // Logic upload file đính kèm
-    console.log('Upload attachment:', file);
+  const handleTaskUpdate = (updatedTask: TaskWithDetails) => {
+    setSelectedTask({
+      task_id: updatedTask.task_id,
+      task_name: updatedTask.task_name,
+      description: updatedTask.description,
+      status: updatedTask.status,
+      priority: updatedTask.priority,
+      start_date: updatedTask.start_date,
+      due_date: updatedTask.due_date,
+      actual_end_date: updatedTask.actual_end_date,
+      assignee: updatedTask.assignee,
+      category_name: updatedTask.category_name,
+      progress: updatedTask.progress,
+      created_at: updatedTask.created_at,
+      updated_at: updatedTask.updated_at,
+      // assignees: updatedTask.assignees || [],
+      // comments: updatedTask.comments || [],
+      // attachments: updatedTask.attachments || [],
+    });
   };
 
-  const handleDeleteAttachment = (attachmentId: string) => {
-    // Logic xóa file đính kèm
-    console.log('Delete attachment:', attachmentId);
+  const handleTaskDelete = () => {
+    handleBackToTasks();
   };
 
   if (loading) {
     return <div className={styles.loading}>Đang tải dữ liệu...</div>;
   }
 
-  const categoryTasks = tasks.filter(
-    (task) => selectedCategory && task.category_id === selectedCategory.id
-  );
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <p>{error}</p>
+        <button onClick={fetchCategories}>Thử lại</button>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.tasksManager}>
@@ -132,6 +155,8 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
           categories={categories}
           onAddCategory={handleAddCategory}
           onViewCategory={handleViewCategory}
+          onEditCategory={handleEditCategory}
+          onDeleteCategory={handleDeleteCategory}
         />
       )}
       
@@ -139,27 +164,59 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
         <CategoryTasks
           projectId={projectId}
           category={selectedCategory}
-          tasks={categoryTasks}
           onAddTask={handleAddTask}
           onBack={handleBackToCategories}
           onViewTask={handleViewTask}
         />
       )}
       
-      {/* {view === 'task-detail' && selectedTask && selectedCategory && (
+      {view === 'task-detail' && selectedTask && selectedCategory && (
         <TaskDetail
           projectId={projectId}
           categoryId={selectedCategory.id}
           task={selectedTask}
           onBack={handleBackToTasks}
-          // onUpdate={handleUpdateTask}
-          onDelete={handleDeleteTask}
-          onAddComment={handleAddComment}
-          onAddAssignee={handleAddAssignee}
-          onRemoveAssignee={handleRemoveAssignee}
-          // onUploadAttachment={handleUploadAttachment}
-         />
-      )} */}
+          // onUpdate={handleTaskUpdate}
+          onDelete={handleTaskDelete}
+          onAddComment={(content) => {
+            console.log('Add comment:', content);
+          } }
+          onAddAssignee={(userId) => {
+            console.log('Add assignee:', userId);
+          } }
+          onRemoveAssignee={(userId) => {
+            console.log('Remove assignee:', userId);
+          } }
+          onUploadAttachment={(file) => {
+            console.log('Upload attachment:', file);
+          } }
+          onDeleteAttachment={(attachmentId) => {
+            console.log('Delete attachment:', attachmentId);
+          } } onUpdate={function (updatedTask: Task): void {
+            throw new Error('Function not implemented.');
+          } }        />
+      )}
+
+      <CreateCategoryModal
+        projectId={projectId}
+        isOpen={showCreateCategoryModal}
+        onClose={() => {
+          setShowCreateCategoryModal(false);
+          setEditingCategory(null);
+        }}
+        onSuccess={handleCategorySuccess}
+        editCategory={editingCategory}
+      />
+
+      {selectedCategory && (
+        <CreateTaskModal
+          projectId={projectId}
+          categoryId={selectedCategory.id}
+          isOpen={showCreateTaskModal}
+          onClose={() => setShowCreateTaskModal(false)}
+          onSuccess={handleTaskSuccess}
+        />
+      )}
     </div>
   );
 };

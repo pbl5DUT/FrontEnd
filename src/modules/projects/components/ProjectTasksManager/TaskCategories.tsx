@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import styles from './TaskCategories.module.css';
-import { TaskCategory } from '../../types/TaskCategory'; // Import TaskCategory từ file types
-
-// Xóa interface TaskCategory local vì đã import từ file khác
+import { TaskCategory } from '../../services/taskService';
 
 interface TaskCategoriesProps {
   projectId: string;
   categories: TaskCategory[];
   onAddCategory: () => void;
   onViewCategory: (category: TaskCategory) => void;
+  onEditCategory?: (category: TaskCategory) => void;
+  onDeleteCategory?: (category: TaskCategory) => void;
 }
 
 const TaskCategories: React.FC<TaskCategoriesProps> = ({
@@ -16,9 +16,23 @@ const TaskCategories: React.FC<TaskCategoriesProps> = ({
   categories,
   onAddCategory,
   onViewCategory,
+  onEditCategory,
+  onDeleteCategory,
 }) => {
   const handleViewCategory = (category: TaskCategory) => {
     onViewCategory(category);
+  };
+
+  const handleEditCategory = (e: React.MouseEvent, category: TaskCategory) => {
+    e.stopPropagation();
+    onEditCategory?.(category);
+  };
+
+  const handleDeleteCategory = (e: React.MouseEvent, category: TaskCategory) => {
+    e.stopPropagation();
+    if (window.confirm(`Bạn có chắc muốn xóa danh mục "${category.name}"?`)) {
+      onDeleteCategory?.(category);
+    }
   };
 
   return (
@@ -46,14 +60,20 @@ const TaskCategories: React.FC<TaskCategoriesProps> = ({
               <div className={styles.categoryHeader}>
                 <h4 className={styles.categoryName}>{category.name}</h4>
                 <div className={styles.categoryActions}>
-                  <button className={styles.actionButton}>
+                  <button 
+                    className={styles.actionButton}
+                    onClick={(e) => handleEditCategory(e, category)}
+                  >
                     <img
                       src="/assets/icons/edit.png"
                       alt="Sửa"
                       className={styles.actionIcon}
                     />
                   </button>
-                  <button className={styles.actionButton}>
+                  <button 
+                    className={styles.actionButton}
+                    onClick={(e) => handleDeleteCategory(e, category)}
+                  >
                     <img
                       src="/assets/icons/delete.png"
                       alt="Xóa"

@@ -11,7 +11,7 @@ import {
   removeProjectMember,
   updateMemberRole,
   updateProjectStatus
-} from '../services/project_service'; // Đường dẫn tới file service của bạn
+} from '../services/project_service';
 
 // Type definition for the status option
 interface StatusOption {
@@ -36,7 +36,7 @@ interface UseProjectsReturn {
   addProject: (project: ProjectFormData) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
   getProjectStatusOptions: () => StatusOption[];
-  refreshProjects: () => Promise<void>; // Thêm hàm refresh
+  refreshProjects: () => Promise<void>;
 }
 
 export const useProjects = (): UseProjectsReturn => {
@@ -92,17 +92,17 @@ export const useProjects = (): UseProjectsReturn => {
     return matchesSearch && matchesStatus;
   });
 
-  // Add new project function
+  // Add new project function - cập nhật để phù hợp với body mới
   const addProject = async (projectData: ProjectFormData): Promise<void> => {
     try {
       setLoading(true);
+      
+      // Không cần chuyển đổi gì cả, trực tiếp gửi projectData đến API
+      // ProjectFormData đã được cập nhật để phù hợp với yêu cầu của API
       const newProject = await createProject(projectData);
       
       // Refresh lại danh sách dự án sau khi thêm
       await refreshProjects();
-      
-      // Hoặc thêm trực tiếp vào state để tránh gọi API lại
-      // setProjects((prevProjects) => [newProject, ...prevProjects]);
       
       setLoading(false);
     } catch (err) {
@@ -114,11 +114,11 @@ export const useProjects = (): UseProjectsReturn => {
         setError('Không thể tạo dự án. Vui lòng thử lại sau.');
       }
       setLoading(false);
-      throw err; // Re-throw để component có thể xử lý lỗi
+      throw err;
     }
   };
 
-  // Update project function
+  // Update project function - cập nhật để phù hợp với body mới
   const updateProject = async (project: Project): Promise<void> => {
     try {
       setLoading(true);
@@ -130,21 +130,15 @@ export const useProjects = (): UseProjectsReturn => {
         status: project.status,
         start_date: project.start_date,
         end_date: project.end_date,
-        manager: project.manager.user_id, // Assuming 'user_id' is the string field in UserInfo
+        manager_id: project.manager.user_id, // Đổi từ manager thành manager_id
         progress: project.progress
+        // Không gửi members trong phần cập nhật - xử lý riêng nếu cần
       };
       
       await apiUpdateProject(project.project_id, projectData);
       
       // Refresh lại danh sách dự án sau khi cập nhật
       await refreshProjects();
-      
-      // Hoặc cập nhật trực tiếp state để tránh gọi API lại
-      // setProjects((prevProjects) =>
-      //   prevProjects.map((p) =>
-      //     p.project_id === project.project_id ? project : p
-      //   )
-      // );
       
       setLoading(false);
     } catch (err) {
@@ -252,6 +246,6 @@ export const useProjects = (): UseProjectsReturn => {
     addProject,
     updateProject,
     getProjectStatusOptions,
-    refreshProjects, // Export hàm refresh
+    refreshProjects,
   };
 };

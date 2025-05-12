@@ -44,6 +44,7 @@ export interface UserInfo {
 }
 
 export interface ProjectMember {
+  role: string;
   id: string;
   user: UserInfo;
   role_in_project: string;
@@ -109,6 +110,7 @@ export interface Project {
 }
 
 // Form data type for creating/updating projects
+
 export interface ProjectFormData {
   project_name: string;
   description: string;
@@ -116,6 +118,9 @@ export interface ProjectFormData {
   end_date: string;
   status: string;
   progress: number;
-  manager: string; // manager user_id
-  members?: string[]; // array of user_ids
+  manager_id: string; // Đổi từ manager thành manager_id để khớp với API
+  members?: { // Thêm kiểu dữ liệu cho members
+    user_id: string;
+    role_in_project: string;
+  }[];
 }
