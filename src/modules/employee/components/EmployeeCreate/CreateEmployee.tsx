@@ -4,7 +4,13 @@ import { useRouter } from 'next/navigation';
 import { employeeService } from '@/modules/employee/services/employeeService';
 import styles from './CreateEmployee.module.css';
 
-export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClose?: () => void, onCreateSuccess?: () => void }) {
+export default function CreateEmployeeForm({
+  onClose,
+  onCreateSuccess,
+}: {
+  onClose?: () => void;
+  onCreateSuccess?: () => void;
+}) {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -97,7 +103,20 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
       };
 
       await employeeService.createEmployee(payload);
-      alert('Tạo nhân viên thành công!');
+
+      // Gửi email chứa mật khẩu
+      await fetch('http://127.0.0.1:8000/api/send-password-email/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      alert('Tạo nhân viên thành công và đã gửi mật khẩu qua email!');
 
       if (onCreateSuccess) {
         onCreateSuccess();
@@ -114,7 +133,6 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
   return (
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
-        {/* Dòng 1: Họ tên + Ngày sinh */}
         <div className={styles.row}>
           <div>
             <label className={styles.label}>Họ và tên:</label>
@@ -128,25 +146,29 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
           </div>
           <div>
             <label className={styles.label}>Giới tính:</label>
-          <select name="gender" className={styles.input} value={formData.gender} onChange={handleChange}>
-          <option value="Male">Nam</option>
-          <option value="Female">Nữ</option>
-        </select>  
+            <select name="gender" className={styles.input} value={formData.gender} onChange={handleChange}>
+              <option value="Male">Nam</option>
+              <option value="Female">Nữ</option>
+            </select>
           </div>
         </div>
-         {/* Dòng 3: Tỉnh + Huyện + Địa chỉ */}
+
         <div className={styles.row}>
           <div>
             <label className={styles.label}>Tỉnh/TP:</label>
             <select name="province" className={styles.input} value={formData.province} onChange={handleChange}>
-              {provinces.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
+              {provinces.map((p) => (
+                <option key={p.id} value={p.name}>{p.name}</option>
+              ))}
             </select>
             {errors.province && <p className={styles.error}>{errors.province}</p>}
           </div>
           <div>
             <label className={styles.label}>Quận/Huyện:</label>
             <select name="district" className={styles.input} value={formData.district} onChange={handleChange}>
-              {districts.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+              {districts.map((d: any) => (
+                <option key={d.id} value={d.name}>{d.name}</option>
+              ))}
             </select>
             {errors.district && <p className={styles.error}>{errors.district}</p>}
           </div>
@@ -158,7 +180,6 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
         </div>
 
         <div className={styles.row}>
-          
           <div>
             <label className={styles.label}>Số điện thoại:</label>
             <input type="text" name="phone" className={styles.input} value={formData.phone} onChange={handleChange} />
@@ -174,8 +195,6 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
           </div>
         </div>
 
-       
-        {/* Dòng 4: Email + Mật khẩu */}
         <div className={styles.row}>
           <div>
             <label className={styles.label}>Email:</label>
@@ -189,7 +208,6 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
           </div>
         </div>
 
-        {/* Dòng 5: Bộ phận + Vị trí */}
         <div className={styles.row}>
           <div>
             <label className={styles.label}>Bộ phận:</label>
@@ -201,7 +219,7 @@ export default function CreateEmployeeForm({ onClose, onCreateSuccess }: { onClo
             {errors.position && <p className={styles.error}>{errors.position}</p>}
           </div>
         </div>
-        {/* Nút hành động */}
+
         <div className={styles.buttonGroup}>
           <button type="submit" className={styles.button}>Tạo nhân viên</button>
           {onClose && <button type="button" className={styles.cancelButton} onClick={onClose}>Huỷ</button>}
