@@ -74,12 +74,28 @@ export const sendMessageViaApi = async ({ roomId, text, receiverId, tempId }: Se
  * Tạo phòng chat mới
  */
 export const createNewChatRoom = async ({ name, participantIds }: CreateRoomParams): Promise<ChatRoom> => {
-  const response = await axiosInstance.post(CHATROOMS_ENDPOINT, {
-    name,
-    participant_ids: participantIds
-  });
+  console.log('Creating chat room with API:', { name, participantIds });
   
-  return formatChatRoomFromResponse(response.data);
+  try {
+    const response = await axiosInstance.post(CHATROOMS_ENDPOINT, {
+      name,
+      participant_ids: participantIds
+    });
+    
+    console.log('Chat room creation API response:', response.data);
+    
+    // Validate that we got a valid response
+    if (!response.data || !response.data.chatroom_id) {
+      console.error('Invalid API response when creating chat room:', response.data);
+      throw new Error('Server returned invalid data when creating chat room');
+    }
+    
+    // Format and return the new chat room
+    return formatChatRoomFromResponse(response.data);
+  } catch (error: any) {
+    console.error('API Error creating chat room:', error.response?.data || error.message);
+    throw error;
+  }
 };
 
 /**

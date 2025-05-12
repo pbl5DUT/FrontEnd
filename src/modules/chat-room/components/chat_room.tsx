@@ -19,8 +19,7 @@ import { useAuth } from '@/modules/auth/contexts/auth_context';
 const ChatRoom: React.FC = () => {
   const { user } = useAuth();
   const userId = user?.user_id || 0;
-  
-  const {
+    const {
     contacts: apiContacts,
     chatRooms,
     messages: apiMessages,
@@ -49,6 +48,8 @@ const ChatRoom: React.FC = () => {
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const prevScrollHeightRef = useRef<number>(0);
   // Update local state when API data changes
   useEffect(() => {
     if (apiContacts && apiContacts.length > 0) {
@@ -187,26 +188,41 @@ const ChatRoom: React.FC = () => {
     setShowAttachMenu(false);
   };
   const handleCreateChatRoom = async () => {
-    if (newChatName.trim() === '') return;
+    if (newChatName.trim() === '') {
+      alert('Please enter a chat room name');
+      return;
+    }
+    
+    if (selectedParticipants.length === 0) {
+      alert('Please select at least one participant');
+      return;
+    }
     
     try {
-      // Tạo phòng chat mới
+      // Create new chat room
       const newRoom = await createChatRoom({
         name: newChatName,
         participantIds: selectedParticipants
       });
       
-      // Đóng modal trước khi cập nhật phòng active để tránh render lại không cần thiết
+      // Close modal before updating active room to avoid unnecessary rendering
       setShowNewChatModal(false);
       setNewChatName('');
       setSelectedParticipants([]);
       
-      // Sau khi đóng modal, đặt phòng mới là phòng active
+      // Set the new room as active after modal closes
       setTimeout(() => {
-        setActiveChatRoom(newRoom);
-      }, 10);
+        if (newRoom && newRoom.id) {
+          console.log('Setting new room as active:', newRoom);
+          setActiveChatRoom(newRoom);
+        } else {
+          console.error('Invalid new room object:', newRoom);
+          alert('Created chat room but received invalid data. Please refresh.');
+        }
+      }, 100); // Increased timeout to ensure modal fully closes
     } catch (error) {
       console.error('Failed to create chat room:', error);
+      alert('Failed to create chat room. Please try again.');
     }
   };
   

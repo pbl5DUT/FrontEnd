@@ -336,14 +336,33 @@ export const useChatService = (userId: number) => {
   // Create a new chat room
   const createChatRoom = useCallback(async ({ name, participantIds }: CreateRoomParams) => {
     try {
+      // Make sure we have valid input
+      if (!name || !participantIds || participantIds.length === 0) {
+        throw new Error('Invalid chat room parameters');
+      }
+      
+      // Add current user as participant if not already included
+      // This ensures the current user is always part of the created room
+      if (!participantIds.includes(userId)) {
+        console.log('Adding current user to participants list');
+        participantIds = [...participantIds, userId];
+      }
+
+      console.log('Creating new chat room:', { name, participantIds });
       const newRoom = await createNewChatRoom({ name, participantIds });
+      
+      if (!newRoom || !newRoom.id) {
+        throw new Error('Invalid response from server when creating chat room');
+      }
+      
+      console.log('New chat room created successfully:', newRoom);
       setChatRooms(prev => [...prev, newRoom]);
       return newRoom;
     } catch (err) {
       console.error('Error creating chat room:', err);
       throw err;
     }
-  }, []);
+  }, [userId]);
 
   // Upload a file attachment
   const uploadAttachment = useCallback(async ({ roomId, file, receiverId }: UploadAttachmentParams) => {
