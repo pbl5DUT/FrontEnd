@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Project } from '@/modules/projects/types/project';
 import styles from '../ViewProjectPage.module.css';
 
@@ -7,6 +7,22 @@ interface ProjectInfoProps {
 }
 
 export const ProjectInfo: React.FC<ProjectInfoProps> = ({ project }) => {
+  useEffect(() => {
+    console.log('Project Details:', {
+      id: project.project_id,
+      name: project.project_name,
+      status: project.status,
+      startDate: project.start_date,
+      endDate: project.end_date,
+      manager: project.manager,
+      progress: project.progress || 0,
+      members: project.members || []
+    });
+    
+    // Log cấu trúc manager để debug nếu có vấn đề với manager.name
+    console.log('Manager Details:', project.manager);
+    
+  }, [project]);
   return (
     <div className={styles.projectInfo}>
       <div className={styles.infoCard}>
@@ -47,7 +63,7 @@ export const ProjectInfo: React.FC<ProjectInfoProps> = ({ project }) => {
           <span className={styles.cardLabel}>Quản lý</span>
         </div>
         <div className={styles.cardContent}>
-          <span className={styles.managerName}>{project.manager.name}</span>
+          <span className={styles.managerName}>{project.manager.full_name}</span>
         </div>
       </div>
 

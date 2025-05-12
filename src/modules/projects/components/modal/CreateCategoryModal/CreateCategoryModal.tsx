@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import styles from './CreateCategoryModal.module.css';
-import { createTaskCategory, updateTaskCategory, TaskCategory } from '../../services/taskService';
+import { createTaskCategory, updateTaskCategory, TaskCategory } from '../../../services/taskService';
 
 interface CreateCategoryModalProps {
   projectId: string;
@@ -52,18 +51,27 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+  
     try {
       let category: TaskCategory;
       
+      // Thêm project_id vào formData
+      const submitData = {
+        ...formData,
+        project: projectId // Thêm project ID vào dữ liệu gửi đi
+      };
+      
+      console.log('Submitting data:', submitData);
+      
       if (editCategory) {
         // Update existing category
-        category = await updateTaskCategory(projectId, editCategory.id, formData);
+        category = await updateTaskCategory(projectId, editCategory.id, submitData);
       } else {
         // Create new category
-        category = await createTaskCategory(projectId, formData);
+        category = await createTaskCategory(projectId, submitData);
       }
-
+  
+      console.log('Response from API:', category);
       onSuccess(category);
       onClose();
       
@@ -73,8 +81,16 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
         description: '',
       });
     } catch (err) {
-      setError(editCategory ? 'Không thể cập nhật danh mục. Vui lòng thử lại.' : 'Không thể tạo danh mục. Vui lòng thử lại.');
       console.error('Error with category:', err);
+      if (err instanceof Error) {
+        setError(editCategory 
+          ? `Không thể cập nhật danh mục: ${err.message}` 
+          : `Không thể tạo danh mục: ${err.message}`);
+      } else {
+        setError(editCategory 
+          ? 'Không thể cập nhật danh mục. Vui lòng thử lại.' 
+          : 'Không thể tạo danh mục. Vui lòng thử lại.');
+      }
     } finally {
       setLoading(false);
     }
