@@ -5,10 +5,10 @@ import CategoryTasks from './CategoryTasks';
 import TaskDetail from './TaskDetail';
 import CreateCategoryModal from './CreateCategoryModal';
 import CreateTaskModal from './CreateTaskModal';
+import { Task } from '../../types/Task';
 import { 
   getTaskCategories, 
   deleteTaskCategory,
-  Task, 
   TaskWithDetails,
   TaskCategory 
 } from '../../services/taskService';
@@ -180,20 +180,21 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
           onDelete={handleTaskDelete}
           onAddComment={(content) => {
             console.log('Add comment:', content);
-          }}
+          } }
           onAddAssignee={(userId) => {
             console.log('Add assignee:', userId);
-          }}
+          } }
           onRemoveAssignee={(userId) => {
             console.log('Remove assignee:', userId);
-          }}
+          } }
           onUploadAttachment={(file) => {
             console.log('Upload attachment:', file);
-          }}
+          } }
           onDeleteAttachment={(attachmentId) => {
             console.log('Delete attachment:', attachmentId);
-          }}
-        />
+          } } onUpdate={function (updatedTask: Task): void {
+            throw new Error('Function not implemented.');
+          } }        />
       )}
 
       <CreateCategoryModal

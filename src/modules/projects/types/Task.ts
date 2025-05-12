@@ -58,64 +58,48 @@ export interface TaskAssignee {
 
 
 export interface Task {
-    task_id: string;
-    task_name: string;
-    status: 'Todo' | 'In Progress' | 'Done' | 'Cancelled' | 'Review';
-    priority?: 'Low' | 'Medium' | 'High' | 'Critical' | 'Urgent';
-    description?: string;
-    start_date?: string;
-    due_date?: string;
-    actual_end_date?: string;
-    progress?: number;
+  task_id: string;
+  task_name: string;
+  status: 'Todo' | 'In Progress' | 'Done' | 'Cancelled' | 'Review';
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical' | 'Urgent';
+  description?: string;
+  start_date?: string;
+  due_date?: string;
+  actual_end_date?: string;
+  progress?: number;
+  created_at?: string;
+  updated_at?: string;
+  category_name?: string;
+  assignee?: {
+    user_id: string;
+    full_name: string;
+    email?: string;
+    role?: string;
+    department?: string;
+    gender?: string;
+    birth_date?: string;
+    phone?: string;
+    province?: string;
+    district?: string;
+    address?: string;
+    position?: string;
+    avatar?: string | null;
     created_at?: string;
-    updated_at?: string;
-    category_name?: string;
-    assignee?: {
-      user_id: string;
-      full_name: string;
-      email?: string;
-      role?: string;
-      department?: string;
-      gender?: string;
-      birth_date?: string;
-      phone?: string;
-      province?: string;
-      district?: string;
-      address?: string;
-      position?: string;
-      avatar?: string | null;
-      created_at?: string;
-      enterprise?: {
-        enterprise_id: string;
-        name: string;
-        address: string;
-        phone_number: string;
-        email: string;
-        industry: string;
-        created_at: string;
-        updated_at: string;
-      };
-    };
-    assignees?: Array<{
-      id: string;
+    enterprise?: {
+      enterprise_id: string;
       name: string;
-      avatar?: string | null;
-    }>;
-    comments?: Array<{
-      id: string;
-      user_name: string;
-      content: string;
+      address: string;
+      phone_number: string;
+      email: string;
+      industry: string;
       created_at: string;
-    }>;
-    attachments?: Array<{
-      id: string;
-      name: string;
-      url: string;
-      size: number;
-      uploaded_by: string;
-    }>;
-  }
-  
+      updated_at: string;
+    };
+  };
+  assignees?: TaskAssignee[];
+  comments?: TaskComment[];
+  attachments?: TaskAttachment[];
+}
   export interface TaskCategory {
     id: string;
     name: string;
