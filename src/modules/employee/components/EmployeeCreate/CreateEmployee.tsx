@@ -147,11 +147,16 @@ export default function CreateEmployeeForm({
 
       alert('Tạo nhân viên thành công và đã gửi mật khẩu qua email!');
 
+      // Sử dụng onCreateSuccess nếu có
       if (onCreateSuccess) {
-        onCreateSuccess();
+        onCreateSuccess(); // gọi hàm xử lý sau khi tạo nhân viên thành công
       } else {
-        if (onClose) onClose();
-        else router.push('/employee');
+        // Nếu không có onCreateSuccess, thì đóng modal hoặc chuyển trang
+        if (onClose) {
+          onClose(); // nếu có modal thì đóng lại
+        } else {
+          router.push('/employee'); // chuyển trang nếu không ở modal
+        }
       }
     } catch (error) {
       console.error('Lỗi tạo nhân viên:', error);
@@ -159,9 +164,18 @@ export default function CreateEmployeeForm({
     }
   };
 
+  const handleCancel = () => {
+    if (onClose) {
+      onClose(); // modal
+    } else {
+      router.push('/employee'); // hoặc redirect
+    }
+  };
+
   return (
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
+
         <div className={styles.row}>
           <div>
             <label className={styles.label}>Họ và tên:</label>
@@ -251,8 +265,14 @@ export default function CreateEmployeeForm({
         </div>
 
         <div className={styles.buttonGroup}>
-          <button type="submit" className={styles.button}>Tạo nhân viên</button>
-          {onClose && <button type="button" className={styles.cancelButton} onClick={onClose}>Huỷ</button>}
+          <button type="submit" className={styles.button}>
+            Tạo nhân viên
+          </button>
+          {onClose && (
+          <button type="button" className={styles.cancelButton} onClick={onClose}>
+            Huỷ
+          </button>
+        )}
         </div>
       </form>
     </div>
