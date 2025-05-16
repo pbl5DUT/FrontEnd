@@ -2,12 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, Checkbox, Button, Divider, Select, Switch, message } from 'antd';
-import { SyncOutlined, SettingOutlined } from '@ant-design/icons';
+import { SyncOutlined } from '@ant-design/icons';
 import { EventType } from '../types/calendar';
-import {
-  syncWithGoogleCalendar,
-  mockProjects,
-} from '../services/canlendar_service_mock';
+import { syncWithGoogleCalendar } from '../services/calendar_service';
+import { fetchProjects } from '../services/calendar_service';
 import styles from '../styles/work_calendar.module.css';
 
 const { Option } = Select;
@@ -37,56 +35,51 @@ const CalendarSidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
   });
 
   const [syncing, setSyncing] = useState(false);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
 
-  // Khi filters thay đổi, thông báo cho component cha
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const data = await fetchProjects();
+        setProjects(data);
+      } catch (error) {
+        message.error('Không thể tải danh sách dự án');
+      }
+    };
+
+    loadProjects();
+  }, []);
+
   useEffect(() => {
     if (onFilterChange) {
       onFilterChange(filters);
     }
   }, [filters, onFilterChange]);
 
-  // Xử lý thay đổi loại sự kiện
   const handleEventTypeChange = (eventType: EventType, checked: boolean) => {
     let newEventTypes = [...filters.eventTypes];
-
     if (checked) {
       newEventTypes.push(eventType);
     } else {
       newEventTypes = newEventTypes.filter((type) => type !== eventType);
     }
-
-    setFilters({
-      ...filters,
-      eventTypes: newEventTypes,
-    });
+    setFilters({ ...filters, eventTypes: newEventTypes });
   };
 
-  // Xử lý thay đổi hiển thị sự kiện đã hoàn thành
   const handleShowCompletedChange = (checked: boolean) => {
-    setFilters({
-      ...filters,
-      showCompleted: checked,
-    });
+    setFilters({ ...filters, showCompleted: checked });
   };
 
-  // Xử lý thay đổi dự án
   const handleProjectChange = (selectedProjects: string[]) => {
-    setFilters({
-      ...filters,
-      projectIds: selectedProjects,
-    });
+    setFilters({ ...filters, projectIds: selectedProjects });
   };
 
-  // Xử lý đồng bộ với Google Calendar
   const handleSyncWithGoogle = async () => {
     try {
       setSyncing(true);
       const result = await syncWithGoogleCalendar();
-
       if (result.success) {
-        message.success(
-          result.message || 'Đồng bộ thành công với Google Calendar!'
-        );
+        message.success(result.message || 'Đồng bộ thành công với Google Calendar!');
       } else {
         message.warning(result.message || 'Đồng bộ không hoàn thành');
       }
@@ -102,54 +95,33 @@ const CalendarSidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
     <Card className={styles.sidebarCard} title="Bộ lọc" bordered={false}>
       <div className={styles.filterSection}>
         <h4>Loại sự kiện</h4>
-
         <div className={styles.checkboxGroup}>
           <Checkbox
             checked={filters.eventTypes.includes(EventType.MEETING)}
-            onChange={(e) =>
-              handleEventTypeChange(EventType.MEETING, e.target.checked)
-            }
+            onChange={(e) => handleEventTypeChange(EventType.MEETING, e.target.checked)}
           >
-            <span
-              className={`${styles.eventTypeTag} ${styles.eventTypeMeeting}`}
-            >
-              Cuộc họp
-            </span>
+            <span className={`${styles.eventTypeTag} ${styles.eventTypeMeeting}`}>Cuộc họp</span>
           </Checkbox>
 
           <Checkbox
             checked={filters.eventTypes.includes(EventType.DEADLINE)}
-            onChange={(e) =>
-              handleEventTypeChange(EventType.DEADLINE, e.target.checked)
-            }
+            onChange={(e) => handleEventTypeChange(EventType.DEADLINE, e.target.checked)}
           >
-            <span
-              className={`${styles.eventTypeTag} ${styles.eventTypeDeadline}`}
-            >
-              Deadline
-            </span>
+            <span className={`${styles.eventTypeTag} ${styles.eventTypeDeadline}`}>Deadline</span>
           </Checkbox>
 
           <Checkbox
             checked={filters.eventTypes.includes(EventType.TASK)}
-            onChange={(e) =>
-              handleEventTypeChange(EventType.TASK, e.target.checked)
-            }
+            onChange={(e) => handleEventTypeChange(EventType.TASK, e.target.checked)}
           >
-            <span className={`${styles.eventTypeTag} ${styles.eventTypeTask}`}>
-              Công việc
-            </span>
+            <span className={`${styles.eventTypeTag} ${styles.eventTypeTask}`}>Công việc</span>
           </Checkbox>
 
           <Checkbox
             checked={filters.eventTypes.includes(EventType.OTHER)}
-            onChange={(e) =>
-              handleEventTypeChange(EventType.OTHER, e.target.checked)
-            }
+            onChange={(e) => handleEventTypeChange(EventType.OTHER, e.target.checked)}
           >
-            <span className={`${styles.eventTypeTag} ${styles.eventTypeOther}`}>
-              Khác
-            </span>
+            <span className={`${styles.eventTypeTag} ${styles.eventTypeOther}`}>Khác</span>
           </Checkbox>
         </div>
       </div>
@@ -165,7 +137,7 @@ const CalendarSidebar: React.FC<FilterProps> = ({ onFilterChange }) => {
           value={filters.projectIds}
           onChange={handleProjectChange}
         >
-          {mockProjects.map((project) => (
+          {projects.map((project) => (
             <Option key={project.id} value={project.id}>
               {project.name}
             </Option>
