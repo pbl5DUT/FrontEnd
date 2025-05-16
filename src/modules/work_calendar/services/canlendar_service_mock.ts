@@ -22,7 +22,7 @@ const mockEvents: CalendarEvent[] = [
       30
     ), // Hôm nay lúc 10:30
     type: EventType.MEETING,
-    projectId: 'project-1',
+    projectId: 'project-2',
     userId: 'user-1',
     location: 'Phòng họp A',
     createdAt: new Date(),
@@ -72,7 +72,7 @@ const mockEvents: CalendarEvent[] = [
       0
     ), // 5 ngày sau lúc 16:00
     type: EventType.MEETING,
-    projectId: 'project-1',
+    projectId: 'project-7',
     userId: 'user-2',
     location: 'Phòng họp B',
     participantIds: ['user-1', 'user-2', 'user-3'],

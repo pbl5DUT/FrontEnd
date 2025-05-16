@@ -12,7 +12,7 @@ export enum EventType {
  * Interface cho sự kiện lịch làm việc
  */
 export interface CalendarEvent {
-  id: string; // ID sự kiện
+  event_id: string; // ID sự kiện
   title: string; // Tiêu đề sự kiện
   description?: string; // Mô tả chi tiết (không bắt buộc)
   start: Date; // Thời gian bắt đầu
