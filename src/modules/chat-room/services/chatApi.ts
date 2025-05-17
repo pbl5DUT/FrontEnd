@@ -73,13 +73,14 @@ export const sendMessageViaApi = async ({ roomId, text, receiverId, tempId }: Se
 /**
  * Tạo phòng chat mới
  */
-export const createNewChatRoom = async ({ name, participantIds }: CreateRoomParams): Promise<ChatRoom> => {
-  console.log('Creating chat room with API:', { name, participantIds });
+export const createNewChatRoom = async ({ name, participantIds, isDirectChat }: CreateRoomParams): Promise<ChatRoom> => {
+  console.log('Creating chat room with API:', { name, participantIds, isDirectChat });
   
   try {
     const response = await axiosInstance.post(CHATROOMS_ENDPOINT, {
       name,
-      participant_ids: participantIds
+      participant_ids: participantIds,
+      is_direct: isDirectChat || false
     });
     
     console.log('Chat room creation API response:', response.data);

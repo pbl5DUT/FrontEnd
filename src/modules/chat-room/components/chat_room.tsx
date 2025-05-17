@@ -12,14 +12,17 @@ import {
   FiFile,
   FiPlus,
   FiUsers,
+  FiX,
+  FiMessageCircle,
 } from 'react-icons/fi';
 import { useChatService } from '../services';
+import useProjectUsers from '../services/useProjectUsers';
 import { useAuth } from '@/modules/auth/contexts/auth_context';
 
 const ChatRoom: React.FC = () => {
   const { user } = useAuth();
   const userId = user?.user_id || 0;
-    const {
+  const {
     contacts: apiContacts,
     chatRooms,
     messages: apiMessages,
@@ -31,8 +34,16 @@ const ChatRoom: React.FC = () => {
     uploadAttachment,
     setActiveChatRoom,
     setTypingStatus,
-    loadMessages
+    loadMessages,
+    startDirectChat
   } = useChatService(userId);
+  
+  // Lấy danh sách người dùng trong các dự án
+  const { 
+    projectUsers,
+    loading: loadingProjectUsers,
+    error: projectUsersError
+  } = useProjectUsers(userId);
 
   // Map API data to component state
   const [activeContact, setActiveContact] = useState<any>(null);
@@ -44,8 +55,8 @@ const ChatRoom: React.FC = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [newChatName, setNewChatName] = useState('');
-  const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
+  const [newChatName, setNewChatName] = useState('');  const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
+  const [showParticipants, setShowParticipants] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -65,7 +76,7 @@ const ChatRoom: React.FC = () => {
       setMessages([]);
     }
   }, [activeRoom?.id]);useEffect(() => {
-    // Xử lý cập nhật tin nhắn từ API chỉ khi có phòng hiện tại
+    // Cải tiến xử lý cập nhật tin nhắn từ API chỉ khi có phòng hiện tại
     if (apiMessages && apiMessages.length > 0 && activeRoom) {
       setMessages(prevMessages => {
         // Luôn sử dụng danh sách tin nhắn từ API khi phòng mới được chọn (prevMessages rỗng)
@@ -73,17 +84,35 @@ const ChatRoom: React.FC = () => {
           console.log('Hiển thị tin nhắn từ API cho phòng mới:', apiMessages.length);
           return apiMessages;
         }
+
+        // Tạo một Map để tra cứu tin nhắn nhanh hơn theo nhiều tiêu chí
+        const messageMap = new Map();
+        prevMessages.forEach(msg => {
+          // Lưu theo ID chính
+          messageMap.set(msg.id, msg);
+          
+          // Lưu thêm theo tempId nếu có
+          if (msg.tempId) {
+            messageMap.set(`temp-${msg.tempId}`, msg);
+          }
+        });
         
-        // Kiểm tra các tin nhắn mới từ API mà chưa có trong danh sách hiện tại
-        const currentMessageIds = new Set(prevMessages.map(msg => msg.id));
-        const newApiMessages = apiMessages.filter(msg => !currentMessageIds.has(msg.id));
+        // Lọc tin nhắn API mới (chưa có trong danh sách hiện tại)
+        const newMessages = apiMessages.filter(apiMsg => !messageMap.has(apiMsg.id));
         
-        if (newApiMessages.length > 0) {
-          console.log(`Thêm ${newApiMessages.length} tin nhắn mới từ API`);
-          return [...prevMessages, ...newApiMessages];
+        if (newMessages.length > 0) {
+          console.log(`Cập nhật ${newMessages.length} tin nhắn mới từ API`);
+          
+          // Kết hợp tin nhắn hiện tại với tin nhắn mới và sắp xếp theo thời gian
+          const updatedMessages = [...prevMessages, ...newMessages].sort((a, b) => {
+            const timeA = new Date(a.timestamp).getTime();
+            const timeB = new Date(b.timestamp).getTime();
+            return timeA - timeB;
+          });
+          
+          return updatedMessages;
         }
         
-        // Giữ nguyên danh sách hiện tại (có thể bao gồm các cập nhật optimistic)
         return prevMessages;
       });
     }
@@ -112,6 +141,29 @@ const ChatRoom: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Add a periodic refresh mechanism to ensure messages are up to date
+  // This helps prevent message synchronization issues
+  useEffect(() => {
+    if (!activeRoom || !loadMessages) return;
+    
+    console.log('Setting up message sync for room:', activeRoom.id);
+    
+    // Initial load of messages
+    loadMessages(activeRoom.id);
+    
+    // Set up a periodic check for new messages
+    const syncInterval = setInterval(() => {
+      if (activeRoom) {
+        console.log('Performing periodic message sync for room:', activeRoom.id);
+        loadMessages(activeRoom.id);
+      }
+    }, 10000); // Check every 10 seconds
+    
+    return () => {
+      clearInterval(syncInterval);
+    };
+  }, [activeRoom, loadMessages]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -133,15 +185,15 @@ const ChatRoom: React.FC = () => {
   const message = newMessage;
   setNewMessage('');
   
-  const tempId = Date.now().toString();
-  // Thêm tin nhắn optimistic vào danh sách tin nhắn hiện tại
+  const tempId = Date.now().toString();  // Thêm tin nhắn optimistic vào danh sách tin nhắn hiện tại
   const optimisticMessage = {
-    id: `temp-${tempId}`,
+    id: `temp-${tempId}`, // Tạo ID duy nhất cho tin nhắn optimistic
     senderId: userId.toString(),
     text: message,
     timestamp: new Date().toLocaleTimeString(),
     status: 'sent',
-    tempId
+    tempId,
+    isOptimistic: true // Đánh dấu đây là tin nhắn optimistic
   };
   
   // Thêm tin nhắn tạm thời vào UI ngay lập tức
@@ -242,7 +294,6 @@ const ChatRoom: React.FC = () => {
   const filteredContacts = contacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   return (
     <div className={styles.chatContainer}>
       {/* Sidebar */}
@@ -341,39 +392,71 @@ const ChatRoom: React.FC = () => {
                     <div className={styles.unreadBadge}>{room.unreadCount}</div>
                   )}
                 </div>
-              ))
-          ) : activeTab === 'users' ? (
-            contacts
-              .filter(contact => !contact.isGroup)
-              .filter(contact => contact.name.toLowerCase().includes(searchTerm.toLowerCase()))
-              .map((contact) => (                <div
-                  key={contact.id}
-                  className={`${styles.contactItem} ${
-                    contact.id === activeRoom?.id ? styles.activeContact : ''
-                  }`}
-                  onClick={() => handleContactClick(contact)}
-                >
-                  <div className={styles.contactAvatar}>
-                    {contact.avatar ? (
-                      <img src={contact.avatar} alt={contact.name} />
-                    ) : (
-                      <div className={styles.defaultAvatar}>
-                        {contact.name.charAt(0).toUpperCase()}
+              ))          ) : activeTab === 'users' ? (
+            loadingProjectUsers ? (
+              <div className={styles.loading}>Đang tải danh sách người dùng dự án...</div>
+            ) : projectUsersError ? (
+              <div className={styles.error}>{projectUsersError}</div>
+            ) : projectUsers.length === 0 ? (
+              <div className={styles.noResults}>Không có người dùng nào trong dự án của bạn</div>
+            ) : (
+              projectUsers
+                .filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((projectUser) => {
+                  // Kiểm tra xem đã có phòng chat 1-1 với người dùng này chưa
+                  const existingChatRoom = chatRooms.find(room => {
+                    if (room.participants.length !== 2) return false;
+                    return room.participants.some(p => String(p.id) === String(projectUser.id));
+                  });
+                  
+                  const handleProjectUserClick = async () => {
+                    try {
+                      if (existingChatRoom) {
+                        // Nếu đã có phòng chat, mở phòng chat đó
+                        setActiveChatRoom(existingChatRoom);
+                      } else {
+                        // Nếu chưa có, tạo phòng chat mới
+                        const newRoom = await startDirectChat(projectUser.id);
+                        if (newRoom) {
+                          setActiveChatRoom(newRoom);
+                        }
+                      }
+                    } catch (err) {
+                      console.error("Lỗi khi tạo phòng chat:", err);
+                    }
+                  };
+                  
+                  return (
+                    <div
+                      key={`project-user-${projectUser.id}`}
+                      className={`${styles.contactItem} ${styles.projectUserItem}`}
+                      onClick={handleProjectUserClick}
+                    >
+                      <div className={styles.contactAvatar}>
+                        {projectUser.avatar ? (
+                          <img src={projectUser.avatar} alt={projectUser.name} />
+                        ) : (
+                          <div className={styles.defaultAvatar}>
+                            {projectUser.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        {projectUser.isOnline && (
+                          <span className={styles.onlineIndicator}></span>
+                        )}
                       </div>
-                    )}
-                    {contact.isOnline && (
-                      <span className={styles.onlineIndicator}></span>
-                    )}
-                  </div>
-                  <div className={styles.contactInfo}>
-                    <div className={styles.contactName}>{contact.name}</div>
-                    <div className={styles.lastSeen}>{contact.lastSeen}</div>
-                  </div>
-                  {contact.unread > 0 && (
-                    <div className={styles.unreadBadge}>{contact.unread}</div>
-                  )}
-                </div>
-              ))
+                      <div className={styles.contactInfo}>
+                        <div className={styles.contactName}>{projectUser.name}</div>
+                        <div className={styles.projectInfo}>
+                          {projectUser.projectName ? `Dự án: ${projectUser.projectName}` : 'Cùng dự án với bạn'}
+                        </div>
+                      </div>
+                      {existingChatRoom && existingChatRoom.unreadCount > 0 && (
+                        <div className={styles.unreadBadge}>{existingChatRoom.unreadCount}</div>
+                      )}
+                    </div>
+                  );
+                })
+            )
           ) : (
             chatRooms
               .filter(room => room.isGroup)
@@ -448,20 +531,27 @@ const ChatRoom: React.FC = () => {
             </button>
             <button className={styles.actionButton}>
               <FiVideo />
-            </button>
-            <button className={styles.actionButton}>
+            </button>            <button className={styles.actionButton}>
               <FiMoreVertical />
+            </button>
+            <button 
+              className={`${styles.actionButton} ${showParticipants ? styles.activeButton : ''}`}
+              onClick={() => setShowParticipants(!showParticipants)}
+              title="Xem thành viên"
+            >
+              <FiUsers />
             </button>
           </div>
         </div>        {/* Chat Messages */}
         <div className={styles.messagesContainer}>
           <div className={styles.messagesList}>
             {messages.length === 0 && (
-              <div className={styles.emptyMessages}>No messages yet. Start the conversation!</div>
-            )}            {messages.map((message) => {
+              <div className={styles.emptyMessages}>No messages yet. Start the conversation!</div>            )}            {messages.map((message, index) => {
+              // Tạo key duy nhất dựa trên id và index
+              const uniqueKey = message.isOptimistic ? `optimistic-${message.id}-${index}` : `message-${message.id}-${index}`;
               return (
                 <div
-                  key={message.id}
+                  key={uniqueKey}
                   className={`${styles.messageItem} ${
                     message.senderId === userId.toString() ? styles.outgoing : styles.incoming
                   }`}
@@ -540,6 +630,52 @@ const ChatRoom: React.FC = () => {
           </form>
         </div>
       </div>
+
+      {/* Participants Panel */}
+      {activeRoom && (
+        <div className={`${styles.participantsPanel} ${!showParticipants && styles.participantsPanelHidden}`}>
+          <div className={styles.participantsHeader}>
+            <div className={styles.participantsTitle}>
+              Thành viên phòng chat {activeRoom?.isGroup ? `(${activeRoom.participants.length})` : ''}
+            </div>
+            <button 
+              className={styles.closeButton} 
+              onClick={() => setShowParticipants(false)}
+            >
+              <FiX />
+            </button>
+          </div>        <div className={styles.participantsList}>
+            {activeRoom?.participants.map((user, index) => {
+              // Kiểm tra xem người dùng có phải là chủ phòng không
+              const isRoomOwner = activeRoom.senderId && String(user.id) === String(activeRoom.senderId);
+              const isCurrentUser = String(user.id) === String(userId);
+              
+              return (
+                <div key={`participant-${user.id || index}`} className={styles.participantItem}>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name || 'User'} className={styles.participantAvatar} />
+                  ) : (
+                    <div className={styles.participantAvatar}>
+                      {user.name ? user.name.substring(0, 2).toUpperCase() : 'U'}
+                    </div>
+                  )}
+                  <div className={styles.participantInfo}>
+                    <div className={styles.participantName}>
+                      {user.name || 'Người dùng'}{' '}
+                      {isCurrentUser && <span className={styles.currentUser}>(Bạn)</span>}
+                      {isRoomOwner && <span className={styles.ownerBadge}>👑 Chủ phòng</span>}
+                    </div>
+                    <div className={styles.participantStatus}>
+                      <span className={`${styles.onlineIndicator} ${user.isOnline ? styles.online : styles.offline}`}></span>
+                      {user.isOnline ? 'Đang hoạt động' : 'Không hoạt động'}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* New Chat Modal */}
       {showNewChatModal && (

@@ -1,0 +1,48 @@
+/* Participant Panel Enhancements */
+.ownerBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  background-color: #ffd700;
+  color: #333;
+  border-radius: 10px;
+  padding: 2px 6px;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.currentUser {
+  font-size: 11px;
+  color: #666;
+  margin-left: 4px;
+  font-style: italic;
+}
+
+.participantAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Project Users Styling */
+.projectUserItem {
+  border-left: 3px solid transparent;
+}
+
+.projectUserItem:hover {
+  border-left-color: #1a73e8;
+  background-color: rgba(26, 115, 232, 0.05);
+}
+
+.projectInfo {
+  font-size: 11px;
+  color: #555;
+  margin-top: 2px;
+}
+
+.noResults {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}

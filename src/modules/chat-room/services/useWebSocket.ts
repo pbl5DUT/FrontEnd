@@ -209,8 +209,7 @@ export const useWebSocket = ({
           onError('Lỗi kết nối WebSocket. Vui lòng kiểm tra kết nối server hoặc cấu hình phòng chat.');
         }
       };
-      
-      // Xử lý tin nhắn nhận được
+        // Xử lý tin nhắn nhận được - Cải thiện để xử lý tin nhắn ngay lập tức
       newSocket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
@@ -222,7 +221,15 @@ export const useWebSocket = ({
             return;
           }
           
-          // Chuyển dữ liệu đến callback onMessage
+          // Luôn xử lý tin nhắn chat ngay lập tức với độ ưu tiên cao nhất
+          if (data.type === 'chat_message') {
+            console.log('Nhận tin nhắn chat, xử lý ngay lập tức');
+            // Gọi callback handler ngay lập tức không thông qua event loop
+            onMessage(data);
+            return;
+          }
+          
+          // Xử lý các loại tin nhắn khác
           onMessage(data);
         } catch (err) {
           console.error('Lỗi khi xử lý tin nhắn WebSocket:', err, event.data);

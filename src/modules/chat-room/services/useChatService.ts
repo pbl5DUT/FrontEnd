@@ -10,6 +10,7 @@ import {
 } from './chatApi';
 import { useWebSocket } from './useWebSocket';
 import { formatMessageFromResponse } from './formatters';
+import axios from '@/services/axiosInstance';
 
 /**
  * Hook chính quản lý toàn bộ chức năng chat
@@ -27,25 +28,36 @@ export const useChatService = (userId: number) => {
   
   const isMountedRef = useRef(true);
   const isLoadingRef = useRef(false);
-
-  const normalizeRoomId = useCallback((roomId: string | number) => {
-  if (!roomId) return '';
-  
-  const stringId = String(roomId);
-  // Giữ nguyên ID đầy đủ nếu đã có định dạng chat-XXX
-  if (stringId.startsWith('chat-')) return stringId;
-  // Chuyển từ chat_XXX sang chat-XXX
-  if (stringId.startsWith('chat_')) return stringId.replace('chat_', 'chat-');
-  // Thêm tiền tố nếu chưa có
-  return `chat-${stringId}`;
-}, []);
+  // Cải tiến hàm normalizeRoomId để xử lý đồng nhất ID phòng chat
+  const normalizeRoomId = useCallback((roomId: string | number | undefined | null) => {
+    if (!roomId) return '';
+    
+    const stringId = String(roomId).trim();
+    if (!stringId) return '';
+    
+    // Xử lý chuỗi ID để đảm bảo định dạng luôn thống nhất là chat-XXX
+    let cleanId = stringId;
+    
+    // Bước 1: Loại bỏ tiền tố nếu có
+    if (cleanId.startsWith('chat-')) {
+      cleanId = cleanId.substring(5);
+    } else if (cleanId.startsWith('chat_')) {
+      cleanId = cleanId.substring(5);
+    }
+    
+    // Bước 2: Đảm bảo ID sạch không còn các prefix
+    cleanId = cleanId.trim();
+    
+    // Bước 3: Thêm tiền tố chuẩn
+    return `chat-${cleanId}`;
+  }, []);
 
   // Mark messages as read
   const markMessagesAsRead = useCallback((messageIds: string[]) => {
     if (!activeRoom) return;
     
     // Send message read status via WebSocket
-    websocket.sendMessage({
+    websocket.sendMessage({ 
       type: 'mark_read',
       message_ids: messageIds,
       user_id: userId
@@ -119,13 +131,26 @@ export const useChatService = (userId: number) => {
     setChatRooms(prevRooms => {
       return prevRooms.map(room => {
         const normalizedMessageRoomId = normalizeRoomId(chatroomId);
-        const normalizedActiveRoomId = activeRoom ? normalizeRoomId(activeRoom.id) : '';
-        if (room.id === normalizedMessageRoomId) {
+        const normalizedRoomId = normalizeRoomId(room.id);        if (normalizedRoomId === normalizedMessageRoomId) {
           console.log('Updating room with new message:', room.id);
+          
+          // Cập nhật số lượng tin nhắn chưa đọc
+          // Chỉ tăng unreadCount nếu:
+          // 1. Phòng này không phải phòng đang mở
+          // 2. Người gửi tin nhắn không phải là người dùng hiện tại (không đếm tin nhắn của chính mình)
+          const isCurrentUserSender = String(newMessage.senderId) === String(userId);
+          const isActiveRoom = activeRoom?.id === room.id;
+          
+          // Chỉ tăng số tin nhắn chưa đọc khi không phải là tin nhắn của chính mình
+          // và không phải là phòng đang hoạt động
+          const newUnreadCount = isCurrentUserSender || isActiveRoom 
+            ? room.unreadCount || 0  // Giữ nguyên số lượng
+            : (room.unreadCount || 0) + 1; // Tăng thêm 1
+          
           return {
             ...room,
             lastMessage: newMessage,
-            unreadCount: activeRoom?.id === room.id ? 0 : (room.unreadCount || 0) + 1,
+            unreadCount: newUnreadCount,
             isTyping: false
           };
         }
@@ -135,45 +160,38 @@ export const useChatService = (userId: number) => {
     
     if (activeRoom) {
       const normalizedActiveRoomId = normalizeRoomId(activeRoom.id);
-      const normalizedMsgRoomId = normalizeRoomId(chatroomId);    // Nếu tin nhắn thuộc phòng chat đang mở, thêm vào danh sách tin nhắn
-    if (activeRoom && normalizedMsgRoomId === normalizedActiveRoomId) {
-      console.log('Tin nhắn thuộc phòng đang mở, thêm vào danh sách tin nhắn');
+      const normalizedMsgRoomId = normalizeRoomId(chatroomId);
       
-      // Thêm tin nhắn mới vào state
-      setMessages(prevMessages => {
-        // Kiểm tra trùng lặp
-        const existingIndex = prevMessages.findIndex(msg => 
-          msg.id === newMessage.id ||
-          (newMessage.tempId && msg.tempId === newMessage.tempId) ||
-          (msg.id.startsWith('temp-') && msg.tempId === newMessage.tempId)
-        );
-
-        if (existingIndex >= 0) {
-          // Nếu tìm thấy, thay thế tin nhắn tạm thời bằng tin nhắn thật
-          console.log('Thay thế tin nhắn tạm thời bằng tin nhắn thực tế');
-          const updatedMessages = [...prevMessages];
-          updatedMessages[existingIndex] = {
-            ...newMessage,
-            tempId: prevMessages[existingIndex].tempId // giữ tempId để theo dõi
-          };
-          return updatedMessages;
-        } else if (!prevMessages.some(msg => msg.id === newMessage.id)) {
-          // Nếu không tìm thấy và không phải trùng lặp, thêm mới
-          console.log('Thêm tin nhắn mới vào giao diện');
-          return [...prevMessages, newMessage];
-        }
+      // Nếu tin nhắn thuộc phòng chat đang mở, thêm vào danh sách tin nhắn
+      if (normalizedMsgRoomId === normalizedActiveRoomId) {
+        console.log('Tin nhắn thuộc phòng đang mở, thêm vào danh sách tin nhắn');
+          setMessages(prevMessages => {
+          // Kiểm tra xem tin nhắn đã tồn tại trong danh sách chưa (có thể là tin nhắn optimistic)
+          const tempId = data.message.temp_id || newMessage.tempId;
+          const existingIndex = prevMessages.findIndex(msg => 
+            msg.id === newMessage.id || 
+            (tempId && msg.tempId === tempId) ||
+            (msg.id.startsWith('temp-') && tempId && msg.tempId === tempId)
+          );
+          
+          if (existingIndex !== -1) {
+            // Nếu tin nhắn đã tồn tại, thay thế phiên bản optimistic
+            console.log('Thay thế tin nhắn optimistic bằng tin nhắn thực tế:', tempId);
+            const updatedMessages = [...prevMessages];
+            updatedMessages[existingIndex] = newMessage;
+            return updatedMessages;
+          } else {
+            // Nếu tin nhắn chưa tồn tại, thêm vào danh sách
+            console.log('Thêm tin nhắn mới vào danh sách tin nhắn:', newMessage.id);
+            return [...prevMessages, newMessage];
+          }
+        });
         
-        return prevMessages;
-      });
-      
-      // Tự động đánh dấu đã đọc nếu là người nhận
-      if (data.message.receiver_id === userId.toString()) {
-        markMessagesAsRead([newMessage.id]);
+        // Tự động đánh dấu đã đọc nếu là người nhận
+        if (data.message.receiver_id === userId.toString()) {
+          markMessagesAsRead([newMessage.id]);
+        }
       }
-    } else {
-      // Tin nhắn không thuộc phòng đang mở
-      // Chỉ cập nhật tin nhắn mới nhất cho danh sách phòng, không thêm vào danh sách tin nhắn
-      console.log('Tin nhắn không thuộc phòng đang mở');
     }
   } else if (data.type === 'messages_read') {
       // Update message status
@@ -187,11 +205,8 @@ export const useChatService = (userId: number) => {
           });
         });
       }
-    } else if (data.type === 'typing') {
-      // Handle typing indicators if needed
-      console.log(`User ${data.username} is ${data.is_typing ? 'typing' : 'stopped typing'}`);
     }
-  }}, [activeRoom, userId, markMessagesAsRead]);
+  }, [activeRoom, userId, markMessagesAsRead, normalizeRoomId]);
   
 
   // Initialize WebSocket connection
@@ -379,41 +394,59 @@ export const useChatService = (userId: number) => {
   // Start a direct chat with another user
   const startDirectChat = useCallback(async (otherUserId: number) => {
     try {
+      console.log(`Attempting to start direct chat with user ${otherUserId}`);
+      
       // Check if we already have a 1-on-1 chat with this user
       const existingRoom = chatRooms.find(room => {
         // Direct chat should have exactly 2 participants
         if (room.participants.length === 2) {
           // Check if current user and target user are in the room
-          const hasCurrentUser = room.participants.some(p => p.id === userId);
-          const hasTargetUser = room.participants.some(p => p.id === otherUserId);
+          const hasCurrentUser = room.participants.some(p => String(p.id) === String(userId));
+          const hasTargetUser = room.participants.some(p => String(p.id) === String(otherUserId));
+          
           return hasCurrentUser && hasTargetUser && !room.isGroup;
         }
         return false;
       });
-
+      
+      // If a chat already exists, return it
       if (existingRoom) {
-        // If room exists, just open it
-        setActiveChatRoom(existingRoom);
+        console.log('Found existing direct chat room:', existingRoom.id);
         return existingRoom;
-      } else {
-        // If not, create a new chat room
-        const otherUser = contacts.find(c => c.id === otherUserId);
-        const roomName = otherUser ? otherUser.name : `Chat with ${otherUserId}`;
-        
-        // Create new chat room with just 2 participants
-        const newRoom = await createChatRoom({ 
-          name: roomName, 
-          participantIds: [otherUserId] 
-        });
-        setActiveChatRoom(newRoom);
-        return newRoom;
       }
+      
+      console.log('No existing chat room found, creating new one...');
+      
+      // Otherwise, create a new 1-on-1 chat room
+      // First, fetch user info to get their name
+      const { data: userData } = await axios.get(`/api/users/${otherUserId}/`);
+      
+      if (!userData) {
+        throw new Error('Could not fetch user information');
+      }
+      
+      // Create a new room with a name based on the other user's name
+      const roomName = userData.name || `Chat với ${userData.username || `Người dùng ${otherUserId}`}`;
+      
+      console.log('Creating new direct chat room with name:', roomName);
+      
+      // Create new chat room with just 2 participants
+      const newRoom = await createNewChatRoom({
+        name: roomName,
+        participantIds: [userId, otherUserId],
+        isDirectChat: true // Đánh dấu là phòng chat 1-1
+      });
+      
+      // Add the new room to our state
+      setChatRooms(prev => [...prev, newRoom]);
+      
+      console.log('New direct chat room created:', newRoom.id);
+      return newRoom;
     } catch (err) {
-      console.error('Lỗi khi khởi tạo cuộc trò chuyện:', err);
-      setError('Không thể tạo cuộc trò chuyện với người dùng này');
-      return null;
+      console.error('Error starting direct chat:', err);
+      throw err;
     }
-  }, [userId, contacts, chatRooms, createChatRoom, setActiveChatRoom]);
+  }, [chatRooms, userId, createNewChatRoom]);
 
   // Set typing status
   const setTypingStatus = useCallback((isTyping: boolean) => {
