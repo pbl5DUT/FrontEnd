@@ -712,14 +712,19 @@
 .participantItem {
   display: flex;
   align-items: center;
-  padding: 8px;
+  padding: 10px;
   border-radius: 8px;
-  margin-bottom: 4px;
-  transition: background-color 0.2s;
+  margin-bottom: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .participantItem:hover {
-  background-color: #eaeaea;
+  background-color: #f5f7fa;
+  border-color: #e4e9f2;
+  transform: translateY(-1px);
 }
 
 .participantAvatar {
@@ -733,6 +738,15 @@
   justify-content: center;
   font-weight: 500;
   color: #444;
+  overflow: hidden;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.participantAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .participantInfo {
@@ -743,6 +757,29 @@
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.currentUser {
+  font-size: 12px;
+  color: #666;
+  margin-left: 4px;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.ownerBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+  font-size: 12px;
+  color: #f59e0b;
+  font-weight: bold;
+  background-color: rgba(245, 158, 11, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .participantStatus {
@@ -756,15 +793,30 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-right: 4px;
+  margin-right: 6px;
+  position: relative;
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .online {
   background-color: #4caf50;
+  animation: pulse 2s infinite;
 }
 
 .offline {
   background-color: #9e9e9e;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
 }
 
 .activeButton {
@@ -802,17 +854,26 @@
 /* Project Users Styling */
 .projectUserItem {
   border-left: 3px solid transparent;
+  position: relative;
+  transition: all 0.2s ease-in-out;
 }
 
 .projectUserItem:hover {
   border-left-color: #1a73e8;
   background-color: rgba(26, 115, 232, 0.05);
+  transform: translateX(3px);
 }
 
 .projectInfo {
   font-size: 11px;
   color: #555;
   margin-top: 2px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 .noResults {

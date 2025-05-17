@@ -443,8 +443,7 @@ const ChatRoom: React.FC = () => {
                         {projectUser.isOnline && (
                           <span className={styles.onlineIndicator}></span>
                         )}
-                      </div>
-                      <div className={styles.contactInfo}>
+                      </div>                      <div className={styles.contactInfo}>
                         <div className={styles.contactName}>{projectUser.name}</div>
                         <div className={styles.projectInfo}>
                           {projectUser.projectName ? `Dự án: ${projectUser.projectName}` : 'Cùng dự án với bạn'}

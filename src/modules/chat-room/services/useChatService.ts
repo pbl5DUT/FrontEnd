@@ -428,13 +428,11 @@ export const useChatService = (userId: number) => {
       // Create a new room with a name based on the other user's name
       const roomName = userData.name || `Chat với ${userData.username || `Người dùng ${otherUserId}`}`;
       
-      console.log('Creating new direct chat room with name:', roomName);
-      
-      // Create new chat room with just 2 participants
+      console.log('Creating new direct chat room with name:', roomName);      // Create new chat room with just 2 participants
       const newRoom = await createNewChatRoom({
         name: roomName,
         participantIds: [userId, otherUserId],
-        isDirectChat: true // Đánh dấu là phòng chat 1-1
+        isDirectChat: true // Đánh dấu đây là phòng chat 1-1
       });
       
       // Add the new room to our state

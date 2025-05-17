@@ -19,7 +19,6 @@ const useProjectUsers = (userId: number) => {
   const [projectUsers, setProjectUsers] = useState<ProjectUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
   // Lấy danh sách người dùng trong các dự án mà người dùng hiện tại tham gia
   const fetchProjectUsers = useCallback(async () => {
     if (!userId) return;
@@ -33,9 +32,8 @@ const useProjectUsers = (userId: number) => {
       // Lấy danh sách thành viên cho từng dự án
       await Promise.all(projects.map(async (project: any) => {
         try {
-          const { data: users } = await axios.get(`/projects/${project.id}/members/`);
-          
-          // Lọc ra những người dùng không trùng với người dùng hiện tại
+          const { data: users } = await axios.get(`/projects/${project.project_id}/members/`);
+            // Lọc ra những người dùng không trùng với người dùng hiện tại
           const projectMembers = users
             .filter((user: any) => user.id !== userId)
             .map((user: any) => ({
@@ -44,7 +42,7 @@ const useProjectUsers = (userId: number) => {
               avatar: user.avatar,
               isOnline: !!user.isOnline,
               email: user.email,
-              projectId: project.id,
+              projectId: project.project_id,
               projectName: project.name
             }));
             
