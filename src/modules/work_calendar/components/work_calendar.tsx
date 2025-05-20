@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/vi';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -13,12 +13,12 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
-  mockProjects,
-} from '../services/canlendar_service_mock'; // Sử dụng dữ liệu giả
+  fetchProjects,
+} from '../services/calendar_service'; // ✅ Dùng dữ liệu thật
 import { EventType, CalendarEvent } from '../types/calendar';
 import styles from '../styles/work_calendar.module.css';
+import { v4 as uuidv4 } from 'uuid';
 
-// Cấu hình ngôn ngữ tiếng Việt
 moment.locale('vi');
 const localizer = momentLocalizer(moment);
 
@@ -28,36 +28,51 @@ const { TextArea } = Input;
 
 const WorkCalendar: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
-    null
-  );
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [form] = Form.useForm();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [currentView, setCurrentView] = useState<View>('month'); // fix kiểu View
 
-  // Fetch sự kiện khi component mount
   useEffect(() => {
     loadEvents();
+    loadProjects();
   }, []);
 
   const loadEvents = async () => {
+  try {
+    setLoading(true);
+    const data = await fetchEvents();
+    const eventsWithDates = data.map(ev => ({
+      ...ev,
+      start: new Date(ev.start),
+      end: new Date(ev.end),
+    }));
+    setEvents(eventsWithDates);
+  } catch (error) {
+    console.error('Error loading events:', error);
+    message.error('Không thể tải lịch làm việc. Vui lòng thử lại sau.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const loadProjects = async () => {
     try {
-      setLoading(true);
-      const data = await fetchEvents();
-      setEvents(data);
+      const data = await fetchProjects();
+      setProjects(data);
     } catch (error) {
-      console.error('Error loading events:', error);
-      message.error('Không thể tải lịch làm việc. Vui lòng thử lại sau.');
-    } finally {
-      setLoading(false);
+      console.error('Error loading projects:', error);
     }
   };
-
   const showModal = () => {
     setIsModalVisible(true);
     setIsEditMode(false);
+    setSelectedEvent(null);
     form.resetFields();
   };
 
@@ -81,45 +96,52 @@ const WorkCalendar: React.FC = () => {
     });
   };
 
-  const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      const eventData: Partial<CalendarEvent> = {
-        title: values.title,
-        description: values.description,
-        type: values.type,
-        start: values.dateRange[0].toDate(),
-        end: values.dateRange[1].toDate(),
-        projectId: values.projectId,
-        // userId: user?.id || 'user-1', // Sử dụng ID người dùng từ auth context nếu có
-      };
+const handleSubmit = async () => {
+  try {
+    const values = await form.validateFields();
 
-      setLoading(true);
+    const newId = uuidv4(); // <-- tạo ID mới nếu là tạo mới
 
-      if (isEditMode && selectedEvent) {
-        await updateEvent(selectedEvent.id, eventData);
-        message.success('Cập nhật sự kiện thành công');
-      } else {
-        await createEvent(eventData);
-        message.success('Tạo sự kiện thành công');
-      }
+    const eventData: Partial<CalendarEvent> = {
+      event_id: isEditMode && selectedEvent ? selectedEvent.event_id : newId, // luôn có event_id
+      title: values.title,
+      description: values.description,
+      type: values.type,
+      start: values.dateRange[0].toISOString(),
+      end: values.dateRange[1].toISOString(),
+      projectId: values.projectId,
+      userId: user?.user_id?.toString(),
+    };
 
-      setIsModalVisible(false);
-      loadEvents();
-    } catch (error) {
-      console.error('Error submitting event:', error);
-      message.error('Có lỗi xảy ra. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
+    console.log('Dữ liệu gửi lên API:', eventData);
+
+    setLoading(true);
+
+    if (isEditMode && selectedEvent) {
+      await updateEvent(selectedEvent.event_id, eventData);
+      message.success('Cập nhật sự kiện thành công');
+    } else {
+      await createEvent(eventData);
+      message.success('Tạo sự kiện thành công');
     }
-  };
+
+    setIsModalVisible(false);
+    loadEvents();
+  } catch (error) {
+    console.error('Error submitting event:', error);
+    message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDelete = async () => {
     if (!selectedEvent) return;
 
     try {
       setLoading(true);
-      await deleteEvent(selectedEvent.id);
+      await deleteEvent(selectedEvent.event_id);
       message.success('Đã xóa sự kiện');
       setIsModalVisible(false);
       loadEvents();
@@ -132,33 +154,35 @@ const WorkCalendar: React.FC = () => {
   };
 
   const eventStyleGetter = (event: CalendarEvent) => {
-    let style = {
-      backgroundColor: '#3174ad',
-      borderRadius: '5px',
-      color: 'white',
-      border: '0px',
-      display: 'block',
-    };
-
-    switch (event.type) {
-      case EventType.MEETING:
-        style.backgroundColor = '#1890ff';
-        break;
-      case EventType.DEADLINE:
-        style.backgroundColor = '#ff4d4f';
-        break;
-      case EventType.TASK:
-        style.backgroundColor = '#52c41a';
-        break;
-      case EventType.OTHER:
-        style.backgroundColor = '#722ed1';
-        break;
-      default:
-        break;
-    }
-
-    return { style };
+  let style = {
+    backgroundColor: '#3174ad', // màu mặc định
+    borderRadius: '5px',
+    color: 'white',
+    border: '0px',
+    display: 'block',
   };
+
+  const normalizedType = event.type?.toUpperCase(); // chuẩn hóa thành chữ hoa
+
+  switch (normalizedType) {
+    case EventType.MEETING:
+      style.backgroundColor = '#1890ff';
+      break;
+    case EventType.DEADLINE:
+      style.backgroundColor = '#ff4d4f';
+      break;
+    case EventType.TASK:
+      style.backgroundColor = '#52c41a';
+      break;
+    case EventType.OTHER:
+      style.backgroundColor = '#722ed1';
+      break;
+    default:
+      break;
+  }
+
+  return { style };
+};
 
   return (
     <div className={styles.calendarContainer}>
@@ -177,6 +201,8 @@ const WorkCalendar: React.FC = () => {
         eventPropGetter={eventStyleGetter}
         onSelectEvent={handleEventSelect}
         views={['month', 'week', 'day', 'agenda']}
+        view={currentView}               // fix ở đây: set kiểu View
+        onView={(view: View) => setCurrentView(view)}
         messages={{
           month: 'Tháng',
           week: 'Tuần',
@@ -195,24 +221,14 @@ const WorkCalendar: React.FC = () => {
         onCancel={handleCancel}
         footer={[
           isEditMode && (
-            <Button
-              key="delete"
-              danger
-              onClick={handleDelete}
-              loading={loading}
-            >
+            <Button key="delete" danger onClick={handleDelete} loading={loading}>
               Xóa
             </Button>
           ),
           <Button key="cancel" onClick={handleCancel}>
             Hủy
           </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            onClick={handleSubmit}
-            loading={loading}
-          >
+          <Button key="submit" type="primary" onClick={handleSubmit} loading={loading}>
             {isEditMode ? 'Cập nhật' : 'Tạo'}
           </Button>,
         ].filter(Boolean)}
@@ -221,9 +237,7 @@ const WorkCalendar: React.FC = () => {
           <Form.Item
             name="title"
             label="Tiêu đề"
-            rules={[
-              { required: true, message: 'Vui lòng nhập tiêu đề sự kiện' },
-            ]}
+            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề sự kiện' }]}
           >
             <Input placeholder="Nhập tiêu đề sự kiện" />
           </Form.Item>
@@ -260,7 +274,7 @@ const WorkCalendar: React.FC = () => {
 
           <Form.Item name="projectId" label="Dự án liên quan">
             <Select placeholder="Chọn dự án (tùy chọn)" allowClear>
-              {mockProjects.map((project) => (
+              {projects.map((project) => (
                 <Option key={project.id} value={project.id}>
                   {project.name}
                 </Option>

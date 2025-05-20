@@ -82,26 +82,26 @@ export const isManager = (): boolean => {
 };
 
 // Hàm này sẽ gọi API để refresh token
-export const refreshToken = async (): Promise<string | null> => {
-  try {
-    const refresh = localStorage.getItem('refresh_token');
+// export const refreshToken = async (): Promise<string | null> => {
+//   try {
+//     const refresh = localStorage.getItem('refresh_token');
 
-    if (!refresh) return null;
+//     if (!refresh) return null;
 
-    const response = await axios.post(`${API_URL}/token/refresh/`, {
-      refresh: refresh,
-    });
+//     const response = await axios.post(`${API_URL}/token/refresh/`, {
+//       refresh: refresh,
+//     });
 
-    const newAccessToken = response.data.access;
-    localStorage.setItem('access_token', newAccessToken);
+//     const newAccessToken = response.data.access;
+//     localStorage.setItem('access_token', newAccessToken);
 
-    return newAccessToken;
-  } catch (error) {
-    console.error('Error refreshing token:', error);
-    logout();
-    return null;
-  }
-};
+//     return newAccessToken;
+//   } catch (error) {
+//     console.error('Error refreshing token:', error);
+//     logout();
+//     return null;
+//   }
+// };
 
 // Thiết lập axios interceptor để tự động thêm token vào header
 axios.interceptors.request.use(
@@ -118,23 +118,23 @@ axios.interceptors.request.use(
 );
 
 // Thiết lập axios interceptor để tự động refresh token khi token hết hạn
-axios.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+// axios.interceptors.response.use(
+//   (response) => response,
+//   async (error) => {
+//     const originalRequest = error.config;
 
-    // Nếu lỗi 401 (Unauthorized) và chưa thử refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+//     // Nếu lỗi 401 (Unauthorized) và chưa thử refresh token
+//     if (error.response?.status === 401 && !originalRequest._retry) {
+//       originalRequest._retry = true;
 
-      const newToken = await refreshToken();
+//       const newToken = await refreshToken();
 
-      if (newToken) {
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return axios(originalRequest);
-      }
-    }
+//       if (newToken) {
+//         originalRequest.headers.Authorization = `Bearer ${newToken}`;
+//         return axios(originalRequest);
+//       }
+//     }
 
-    return Promise.reject(error);
-  }
-);
+//     return Promise.reject(error);
+//   }
+// );

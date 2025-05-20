@@ -34,6 +34,9 @@ export default function CreateEmployeeForm({
   const [districts, setDistricts] = useState([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  const [emailToCheck, setEmailToCheck] = useState('');
+  const [checkingEmail, setCheckingEmail] = useState(false);
+
   useEffect(() => {
     fetch('https://esgoo.net/api-tinhthanh/1/0.htm')
       .then((res) => res.json())
@@ -62,12 +65,39 @@ export default function CreateEmployeeForm({
       });
   }, [formData.province, provinces]);
 
+  useEffect(() => {
+    if (!emailToCheck) return;
+
+    const timeout = setTimeout(async () => {
+      setCheckingEmail(true);
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/check-email/?email=${encodeURIComponent(emailToCheck)}`);
+        const data = await res.json();
+        if (data.exists) {
+          setErrors((prev) => ({ ...prev, email: 'Email đã tồn tại.' }));
+        }
+      } catch (error) {
+        console.error('Lỗi kiểm tra email:', error);
+      } finally {
+        setCheckingEmail(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [emailToCheck]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
+    if (name === 'email') {
+      setEmailToCheck(value);
+    }
+
     setErrors((prev) => ({
       ...prev,
       [name]: '',
@@ -104,7 +134,6 @@ export default function CreateEmployeeForm({
 
       await employeeService.createEmployee(payload);
 
-      // Gửi email chứa mật khẩu
       await fetch('http://127.0.0.1:8000/api/send-password-email/', {
         method: 'POST',
         headers: {
@@ -213,6 +242,7 @@ export default function CreateEmployeeForm({
           <div>
             <label className={styles.label}>Email:</label>
             <input type="email" name="email" className={styles.input} value={formData.email} onChange={handleChange} />
+            {checkingEmail && <p className={styles.info}>Đang kiểm tra email...</p>}
             {errors.email && <p className={styles.error}>{errors.email}</p>}
           </div>
           <div>

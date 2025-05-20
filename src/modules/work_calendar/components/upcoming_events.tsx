@@ -6,23 +6,35 @@ import { ClockCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { CalendarEvent, EventType } from '../types/calendar';
 import {
   fetchUpcomingEvents,
-  mockProjects,
-} from '../services/canlendar_service_mock'; // Sử dụng dữ liệu giả
+  fetchProjects,
+} from '../services/calendar_service';
 import moment from 'moment';
 import 'moment/locale/vi';
 import styles from '../styles/work_calendar.module.css';
 
-// Định dạng ngôn ngữ tiếng Việt
 moment.locale('vi');
 
 const UpcomingEvents: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7); // Hiển thị sự kiện trong 7 ngày tới
 
   useEffect(() => {
     loadUpcomingEvents();
   }, [days]);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const data = await fetchProjects();
+        setProjects(data);
+      } catch (error) {
+        console.error('Error loading projects:', error);
+      }
+    };
+    loadProjects();
+  }, []);
 
   const loadUpcomingEvents = async () => {
     try {
@@ -36,7 +48,6 @@ const UpcomingEvents: React.FC = () => {
     }
   };
 
-  // Chuyển đổi loại sự kiện sang tag màu
   const getEventTypeTag = (type: EventType) => {
     switch (type) {
       case EventType.MEETING:
@@ -52,7 +63,6 @@ const UpcomingEvents: React.FC = () => {
     }
   };
 
-  // Format thời gian
   const formatEventTime = (start: Date, end: Date, isAllDay?: boolean) => {
     if (isAllDay) {
       return `Cả ngày ${moment(start).format('DD/MM/YYYY')}`;
@@ -61,40 +71,33 @@ const UpcomingEvents: React.FC = () => {
     const startDate = moment(start);
     const endDate = moment(end);
 
-    // Nếu cùng ngày
     if (startDate.isSame(endDate, 'day')) {
       return `${startDate.format('HH:mm')} - ${endDate.format(
         'HH:mm, DD/MM/YYYY'
       )}`;
     }
 
-    // Nếu khác ngày
     return `${startDate.format('HH:mm, DD/MM')} - ${endDate.format(
       'HH:mm, DD/MM/YYYY'
     )}`;
   };
 
-  // Định dạng cho hiển thị "Còn X ngày" hoặc "Hôm nay"
   const getDaysFromNow = (date: Date) => {
     const today = moment().startOf('day');
     const eventDate = moment(date).startOf('day');
     const diffDays = eventDate.diff(today, 'days');
 
-    if (diffDays === 0) {
-      return <Tag color="magenta">Hôm nay</Tag>;
-    } else if (diffDays === 1) {
-      return <Tag color="orange">Ngày mai</Tag>;
-    } else if (diffDays > 1 && diffDays < 7) {
+    if (diffDays === 0) return <Tag color="magenta">Hôm nay</Tag>;
+    if (diffDays === 1) return <Tag color="orange">Ngày mai</Tag>;
+    if (diffDays > 1 && diffDays < 7)
       return <Tag color="blue">Còn {diffDays} ngày</Tag>;
-    } else {
-      return <Tag color="default">{eventDate.format('DD/MM/YYYY')}</Tag>;
-    }
+
+    return <Tag color="default">{eventDate.format('DD/MM/YYYY')}</Tag>;
   };
 
-  // Lấy tên dự án từ ID
   const getProjectName = (projectId?: string) => {
     if (!projectId) return '';
-    const project = mockProjects.find((p) => p.id === projectId);
+    const project = projects.find((p) => p.id === projectId);
     return project ? project.name : '';
   };
 
@@ -125,7 +128,10 @@ const UpcomingEvents: React.FC = () => {
             itemLayout="horizontal"
             dataSource={events}
             renderItem={(event) => (
-              <List.Item className={styles.upcomingEventItem}>
+              <List.Item
+                className={styles.upcomingEventItem}
+                key={event.event_id || `${event.title}-${event.start}`}
+              >
                 <div className={styles.eventMeta}>
                   <div className={styles.eventTime}>
                     <ClockCircleOutlined />

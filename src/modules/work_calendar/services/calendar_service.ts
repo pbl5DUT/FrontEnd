@@ -49,11 +49,21 @@ export const fetchUserEvents = async (): Promise<CalendarEvent[]> => {
 /**
  * Tạo sự kiện mới
  */
+function toSnakeCase(obj: any) {
+  const newObj: any = {};
+  for (const key in obj) {
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    newObj[snakeKey] = obj[key];
+  }
+  return newObj;
+}
+
 export const createEvent = async (
   eventData: Partial<CalendarEvent>
 ): Promise<CalendarEvent> => {
   try {
-    const response = await axios.post(`${API_URL}/calendar/events`, eventData);
+    const snakeEventData = toSnakeCase(eventData);
+    const response = await axios.post(`${API_URL}/calendar/events`, snakeEventData);
     return response.data;
   } catch (error) {
     console.error('Error creating event:', error);
@@ -69,8 +79,10 @@ export const updateEvent = async (
   eventData: Partial<CalendarEvent>
 ): Promise<CalendarEvent> => {
   try {
+    console.log('eventData:', eventData);
+    console.log('URL:', `${API_URL}/calendar/events/${eventId}/update`);
     const response = await axios.put(
-      `${API_URL}/calendar/events/${eventId}`,
+      `${API_URL}/calendar/events/${eventId}/update`,
       eventData
     );
     return response.data;
@@ -85,7 +97,7 @@ export const updateEvent = async (
  */
 export const deleteEvent = async (eventId: string): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/calendar/events/${eventId}`);
+    await axios.delete(`${API_URL}/calendar/events/${eventId}/delete`);
   } catch (error) {
     console.error('Error deleting event:', error);
     throw error;
@@ -124,6 +136,19 @@ export const syncWithGoogleCalendar = async (): Promise<{
     throw error;
   }
 };
+export const fetchProjects = async (): Promise<{ id: string; name: string }[]> => {
+  try {
+    const response = await axios.get(`${API_URL}/projects`);
+    const projects = response.data.map((project: any) => ({
+      id: project.project_id,
+      name: project.project_name,
+    }));
+    return projects;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    throw error;
+  }
+};
 
 export default {
   fetchEvents,
@@ -134,4 +159,5 @@ export default {
   deleteEvent,
   fetchUpcomingEvents,
   syncWithGoogleCalendar,
+  fetchProjects,
 };
