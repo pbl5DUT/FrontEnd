@@ -112,7 +112,7 @@ export const fetchUpcomingEvents = async (
 ): Promise<CalendarEvent[]> => {
   try {
     const response = await axios.get(
-      `${API_URL}/calendar/events/upcoming?days=${days}`
+      `${API_URL}/calendar/events/upcoming?}`
     );
     return response.data;
   } catch (error) {
