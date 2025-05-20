@@ -1,0 +1,39 @@
+.sidebar {
+  width: 320px;
+  border-right: 1px solid #eaeaea;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa;
+}
+
+.sidebarFooter {
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid #eaeaea;
+}
+
+.addChatButton {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.addChatButton:hover {
+  background-color: #1765cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.addChatButton:active {
+  transform: translateY(0);
+}
