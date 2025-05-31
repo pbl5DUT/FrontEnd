@@ -4,7 +4,7 @@ import TaskCategories from './TaskCategories';
 import CategoryTasks from './CategoryTasks';
 import TaskDetail from './TaskDetail';
 import CreateCategoryModal from '../modal/CreateCategoryModal/CreateCategoryModal';
-import CreateTaskModal from './CreateTaskModal';
+import CreateTaskModal from '../modal/CreateTaskModal/CreateTaskModal';
 import { Task } from '../../types/Task';
 import { 
   getTaskCategories, 
