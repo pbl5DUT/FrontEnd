@@ -21,7 +21,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     task_name: '',
     description: '',
     status: 'Todo',
-    priority: 'Medium',
+    priority: 'High', 
     start_date: '',
     due_date: '',
     assignee_id: '',
@@ -45,11 +45,9 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     try {
       const taskData = {
         ...formData,
-        project_id: projectId,
-        category_id: categoryId,
       };
 
-      const newTask = await createTask(taskData);
+      const newTask = await createTask(projectId,categoryId,taskData );
       onSuccess(newTask);
       onClose();
       

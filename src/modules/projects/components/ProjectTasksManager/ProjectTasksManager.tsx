@@ -29,6 +29,8 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<TaskCategory | null>(null);
 
+  const [refreshTasks, setRefreshTasks] = useState<number>(0);
+
   useEffect(() => {
     fetchCategories();
   }, [projectId]);
@@ -107,6 +109,8 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
 
   const handleTaskSuccess = (task: Task) => {
     setShowCreateTaskModal(false);
+      // Force refresh CategoryTasks component để load lại danh sách tasks
+    setRefreshTasks(prev => prev + 1);
   };
 
   const handleTaskUpdate = (updatedTask: TaskWithDetails) => {
@@ -162,6 +166,7 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
       
       {view === 'tasks' && selectedCategory && (
         <CategoryTasks
+          key={`${selectedCategory.id}-${refreshTasks}`} // Thêm key để force re-render
           projectId={projectId}
           category={selectedCategory}
           onAddTask={handleAddTask}
