@@ -32,6 +32,8 @@ export const dashboardService = {
         totalTasks: 324,
         pendingTasks: 87,
         overdueTasks: 23,
+        totalRevenue: 500000, // Example value
+        totalExpenses: 300000, // Example value
       };
     } catch (error) {
       console.error('Error fetching admin stats:', error);
@@ -61,7 +63,7 @@ export const dashboardService = {
           name: 'Trần Thị B',
           avatar: '/assets/avatars/user2.jpg',
           lastActive: new Date(Date.now() - 1000 * 60 * 5), // 5 phút trước
-          role: 'Manager',
+          role: 'Manage',
           department: 'Marketing',
           isOnline: true,
         },
@@ -372,6 +374,7 @@ export const dashboardService = {
         labels: ['Đang thực hiện', 'Hoàn thành', 'Trễ hạn', 'Tạm dừng'],
         values: [28, 12, 5, 3],
         colors: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12'],
+        datasets: [], // Ensure this property is included as required by the interface
       };
     } catch (error) {
       console.error('Error fetching project status chart:', error);
@@ -379,23 +382,23 @@ export const dashboardService = {
     }
   },
 
-  // Lấy dữ liệu cho biểu đồ trạng thái công việc
-  getTaskStatusChart: async (): Promise<PieChartData> => {
-    try {
-      // const response = await axiosInstance.get('/admin/charts/task-status');
-      // return response.data;
+  // // Lấy dữ liệu cho biểu đồ trạng thái công việc
+  // getTaskStatusChart: async (): Promise<PieChartData> => {
+  //   try {
+  //     // const response = await axiosInstance.get('/admin/charts/task-status');
+  //     // return response.data;
 
-      // Mô phỏng dữ liệu
-      return {
-        labels: ['Chưa bắt đầu', 'Đang thực hiện', 'Đã hoàn thành', 'Trễ hạn'],
-        values: [45, 128, 151, 23],
-        colors: ['#9b59b6', '#3498db', '#2ecc71', '#e74c3c'],
-      };
-    } catch (error) {
-      console.error('Error fetching task status chart:', error);
-      throw error;
-    }
-  },
+  //     // // Mô phỏng dữ liệu
+  //     // return {
+  //     //   labels: ['Chưa bắt đầu', 'Đang thực hiện', 'Đã hoàn thành', 'Trễ hạn'],
+  //     //   values: [45, 128, 151, 23],
+  //     //   colors: ['#9b59b6', '#3498db', '#2ecc71', '#e74c3c'],
+  //     // };
+  //   } catch (error) {
+  //     console.error('Error fetching task status chart:', error);
+  //     throw error;
+  //   }
+  // },
 
   // Lấy dữ liệu cho biểu đồ hoạt động người dùng
   getUserActivityChart: async (): Promise<ChartData> => {
@@ -465,7 +468,7 @@ export const dashboardService = {
         projectStatusChart,
         taskStatusChart,
         userActivityChart,
-        systemStatus,
+        // systemStatus,
       ] = await Promise.all([
         dashboardService.getAdminStats(),
         dashboardService.getActiveUsers(),
@@ -476,7 +479,7 @@ export const dashboardService = {
         dashboardService.getDepartmentStats(),
         dashboardService.getRecentReports(),
         dashboardService.getProjectStatusChart(),
-        dashboardService.getTaskStatusChart(),
+        // dashboardService.getTaskStatusChart(),
         dashboardService.getUserActivityChart(),
         dashboardService.getSystemStatus(),
       ]);
@@ -493,7 +496,7 @@ export const dashboardService = {
         projectStatusChart,
         taskStatusChart,
         userActivityChart,
-        systemStatus,
+        // systemStatus,
       };
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
