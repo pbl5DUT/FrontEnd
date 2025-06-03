@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Employee, employeeService } from '../services/employeeService';
+import {  employeeService } from '../services/employeeService';
+import { Employee } from '../types/employee.types';
 
 export const useEmployees = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);

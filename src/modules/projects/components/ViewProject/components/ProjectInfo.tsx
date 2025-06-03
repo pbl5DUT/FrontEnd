@@ -20,7 +20,7 @@ export const ProjectInfo: React.FC<ProjectInfoProps> = ({ project }) => {
     });
     
     // Log cấu trúc manager để debug nếu có vấn đề với manager.name
-    console.log('Manager Details:', project.manager);
+    console.log('Manage Details:', project.manager);
     
   }, [project]);
   return (

@@ -6,6 +6,10 @@ import styles from './ProjectList.module.css';
 import { Project, ProjectFormData } from '../../types/project';
 import { useProjects } from '../../hooks/useProjects';
 import CreateProjectModal from '../modal/CreateProjectModal/CreateProjectModal';
+import { useEmployees } from '@/modules/employee/hooks/useEmployees';
+import { Employee } from '@/modules/employee/types/employee.types';
+import { employeeService } from '@/modules/employee/services/employeeService';
+
 
 const ProjectList: React.FC = () => {
   const router = useRouter();
@@ -29,12 +33,15 @@ const ProjectList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
   const [users, setUsers] = useState<{ user_id: string; full_name: string }[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   
   useEffect(() => {
     // Fetch managers và users khi component được mount
     fetchManagers();
     fetchUsers();
   }, []);
+
+ 
 
   const fetchManagers = async () => {
     try {
@@ -44,7 +51,14 @@ const ProjectList: React.FC = () => {
         { id: 'user-2', full_name: 'Trần Thị B' },
         { id: 'user-3', full_name: 'Lê Văn C' },
       ];
-      setManagers(mockManagers);
+      const data = await employeeService.getEmployees();
+
+      setManagers(
+        data.filter((employees)=>employees.role =='Manage').map((employee)=>({
+          id: employee.user_id.toString(),
+          full_name: employee.full_name,
+        }))
+      );
     } catch (error) {
       console.error('Failed to fetch managers:', error);
     }
@@ -52,15 +66,15 @@ const ProjectList: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      // Tạm thời mock data, thực tế sẽ gọi API
-      const mockUsers = [
-        { user_id: 'user-1', full_name: 'Nguyễn Văn A' },
-        { user_id: 'user-2', full_name: 'Trần Thị B' },
-        { user_id: 'user-3', full_name: 'Lê Văn C' },
-        { user_id: 'user-4', full_name: 'Phạm Thị D' },
-        { user_id: 'user-5', full_name: 'Hoàng Văn E' },
-      ];
-      setUsers(mockUsers);
+
+      const data = await employeeService.getEmployees();
+      setEmployees(data)
+      setUsers(
+        data.filter((employees)=> employees.role = 'User').map((employee) => ({
+          user_id: employee.user_id.toString(),
+          full_name: employee.full_name,
+        }))
+      );
     } catch (error) {
       console.error('Failed to fetch users:', error);
     }

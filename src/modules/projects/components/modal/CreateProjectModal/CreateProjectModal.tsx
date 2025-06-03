@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import styles from './CreateProjectModal.module.css';
 import { Project, ProjectFormData } from '../../../types/project';
+import { useEmployees } from '@/modules/employee/hooks/useEmployees';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     manager_id: '', // Đổi tên từ manager thành manager_id
     members: [], // Thêm mảng members
   });
+
+ 
 
   // Sử dụng state để theo dõi danh sách thành viên đã chọn
   const [selectedMembers, setSelectedMembers] = useState<{
