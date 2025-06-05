@@ -1,3 +1,5 @@
+'use client';
+
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -5,49 +7,115 @@ import styles from './topbar.module.css';
 import { useAuth } from '@/modules/auth/contexts/auth_context';
 import { getCurrentUser } from '@/modules/auth/services/authService';
 
+interface Notification {
+  id: string;
+  message: string;
+  time: Date;
+}
+
 export const Topbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userName, setUserName] = useState('');
-  const [userAvatar, setUserAvatar] = useState('/assets/user.png'); // Default avatar
-  const { logout } = useAuth(); // Sử dụng hook useAuth để lấy hàm logout
+  const [userAvatar, setUserAvatar] = useState('/assets/user.png');
+  const { logout } = useAuth();
 
-  // Lấy thông tin người dùng khi component được mount
+  // Lấy thông tin người dùng
   useEffect(() => {
     const user = getCurrentUser();
     if (user) {
       setUserName(user.full_name);
-      // Nếu user có avatar thì sử dụng, nếu không thì dùng ảnh mặc định
-      if (user.avatar) {
-        setUserAvatar(user.avatar);
-      }
+      if (user.avatar) setUserAvatar(user.avatar);
     }
   }, []);
 
-  // Hàm xử lý đăng xuất
+  // Gọi API sự kiện và đặt lịch thông báo
+  useEffect(() => {
+    let timers: NodeJS.Timeout[] = [];
+
+    const fetchEvents = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://127.0.0.1:8000/api/calendar/events', {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!res.ok) throw new Error(`Lỗi API: ${res.status}`);
+        const data = await res.json();
+
+        timers = data.map((event: any) => {
+          const eventTime = new Date(event.start).getTime();
+          const notifyTime = eventTime - 60 * 1000;
+          const now = Date.now();
+
+          if (notifyTime > now) {
+            return setTimeout(() => {
+              setNotifications((prev) => [
+                ...prev,
+                {
+                  id: event.event_id,
+                  message: `Sự kiện "${event.title}" sẽ diễn ra sau 1 phút.`,
+                  time: new Date(),
+                },
+              ]);
+            }, notifyTime - now);
+          }
+          return null;
+        });
+      } catch (err) {
+        console.error('Lỗi khi lấy sự kiện:', err);
+      }
+    };
+
+    fetchEvents();
+
+    return () => timers.forEach((t) => t && clearTimeout(t));
+  }, []);
+
   const handleLogout = () => {
-    // Gọi hàm logout từ context
     logout();
-    // Đóng dropdown sau khi đăng xuất
     setIsDropdownOpen(false);
   };
 
   return (
     <header className={styles.topbar}>
       <div className={styles.container}>
-        <header className={styles.topBar}>
+        <div className={styles.topBar}>
           <div className={styles.rightSection}>
             <img src="/assets/flag.png" alt="Flag" className={styles.icon} />
-            <img
-              src="/assets/notification.png"
-              alt="Notification"
-              className={styles.icon}
-            />
-            <div className={styles.userInfo}>
+
+            {/* Thông báo */}
+            <div className={styles.notificationWrapper}>
               <img
-                src={userAvatar}
-                alt="User Avatar"
-                className={styles.avatar}
+                src="/assets/notification.png"
+                alt="Notification"
+                className={styles.icon}
+                onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
               />
+              {notifications.length > 0 && <span className={styles.dot}></span>}
+
+              {showNotificationDropdown && (
+                <div className={styles.notificationDropdown}>
+                  {notifications.length > 0 ? (
+                    notifications.map((n) => (
+                      <div key={n.id} className={styles.notificationItem}>
+                        {n.message}
+                      </div>
+                    ))
+                  ) : (
+                    <div className={styles.empty}>Không có thông báo</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Người dùng */}
+            <div className={styles.userInfo}>
+              <img src={userAvatar} alt="User" className={styles.avatar} />
               <span
                 className={styles.userName}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -62,17 +130,14 @@ export const Topbar = () => {
                   <Link href="/settings" className={styles.dropdownItem}>
                     Cài đặt
                   </Link>
-                  <button
-                    onClick={handleLogout}
-                    className={styles.logoutButton}
-                  >
+                  <button onClick={handleLogout} className={styles.logoutButton}>
                     Đăng xuất
                   </button>
                 </div>
               )}
             </div>
           </div>
-        </header>
+        </div>
       </div>
     </header>
   );
