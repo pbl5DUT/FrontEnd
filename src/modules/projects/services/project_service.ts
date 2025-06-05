@@ -106,28 +106,58 @@ export const deleteProject = async (projectId: string): Promise<void> => {
   }
 };
 
-// Thêm thành viên vào dự án
-export const addProjectMembers = async (projectId: string, userIds: number[], role: string = 'Member'): Promise<Project> => {
+// Thêm 1 thành viên vào dự án (API chỉ nhận 1 user tại 1 thời điểm)
+export const addProjectMember = async (projectId: string, userId: string, roleInProject: string ): Promise<Project> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/members`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/members/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user_ids: userIds, role }),
+      body: JSON.stringify({ 
+        user_id: userId, 
+        role_in_project: roleInProject 
+      }),
     });
 
     return handleResponse(response);
+  } catch (error) {
+    console.error(`Error adding member to project with ID ${projectId}:`, error);
+    throw error;
+  }
+};
+
+// Thêm nhiều thành viên vào dự án (gọi API nhiều lần)
+export const addProjectMembers = async (projectId: string, members: { user_id: string; role_in_project: string }[]): Promise<Project[]> => {
+  try {
+    const results: Project[] = [];
+    
+    for (const member of members) {
+      const result = await addProjectMember(projectId, member.user_id, member.role_in_project);
+      results.push(result);
+    }
+    
+    return results;
   } catch (error) {
     console.error(`Error adding members to project with ID ${projectId}:`, error);
     throw error;
   }
 };
 
+// Backward compatibility - kept for existing code that uses userIds array
+export const addProjectMembersLegacy = async (projectId: string, userIds: string[], role: string = 'Member'): Promise<Project[]> => {
+  const members = userIds.map(userId => ({
+    user_id: userId,
+    role_in_project: role
+  }));
+  
+  return addProjectMembers(projectId, members);
+};
+
 // Xóa thành viên khỏi dự án
-export const removeProjectMember = async (projectId: string, userId: number): Promise<void> => {
+export const removeProjectMember = async (projectId: string, userId: String): Promise<void> => {
   try {
-    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/members/${userId}`, {
+    const response = await fetch(`${PROJECT_ENDPOINT}${projectId}/members/?user_id=${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
