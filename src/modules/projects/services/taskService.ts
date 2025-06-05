@@ -124,19 +124,6 @@ export const getTaskCategories = async (projectId: string): Promise<TaskCategory
   }
 };
 
-// export const createTaskCategory = async (
-//   projectId: string,
-//   categoryData: { name: string; description?: string }
-// ): Promise<TaskCategory> => {
-//   try {
-//     const response = await api.post(`/projects/${projectId}/task-categories/`, categoryData);
-//     return response.data;
-//   } catch (error) {
-//     console.error('Error creating task category:', error);
-//     throw error;
-//   }
-// };
-
 // Task APIs trong file services/taskService.js
 export const createTaskCategory = async (
   projectId: string,
@@ -208,19 +195,21 @@ export const getTaskDetail = async (taskId: string): Promise<TaskWithDetails> =>
   }
 };
 
-export const createTask = async (taskData: {
-  task_name: string;
-  description: string;
-  status: string;
-  priority: string;
-  start_date: string;
-  due_date: string;
-  assignee_id?: string;
-  project_id: string;
-  category_id: string;
-}): Promise<Task> => {
+export const createTask = async (
+  projectId: string,
+  categoryId: string,
+  taskData: {
+    task_name: string;
+    description: string;
+    status: string;
+    priority: string;
+    start_date: string;
+    due_date: string;
+    assignee_id?: string;
+  }
+): Promise<Task> => {
   try {
-    const response = await api.post('/tasks/', taskData);
+    const response = await api.post(`/projects/${projectId}/task-categories/${categoryId}/tasks/`, taskData);
     return response.data;
   } catch (error) {
     console.error('Error creating task:', error);

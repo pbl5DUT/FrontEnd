@@ -233,7 +233,7 @@ export default function CreateEmployeeForm({
             <select name="role" className={styles.input} value={formData.role} onChange={handleChange}>
               <option value="User">User</option>
               <option value="Admin">Admin</option>
-              <option value="Manager">Manager</option>
+              <option value="Manage">Manage</option>
             </select>
           </div>
         </div>
