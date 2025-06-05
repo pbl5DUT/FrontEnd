@@ -34,6 +34,26 @@ export const fetchProjects = async (): Promise<Project[]> => {
   }
 };
 
+export const fetchUser_Projects = async (userId: string): Promise<Project[]> => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}/projects/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const rawData = await response.json();
+    const projects = rawData.projects ?? []; // 👈 lấy ra mảng dự án
+    return Array.isArray(projects) ? projects : [];
+
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    throw error;
+  }
+};
+
+
 // Lấy thông tin chi tiết của một dự án
 export const fetchProjectById = async (projectId: string): Promise<Project> => {
   try {

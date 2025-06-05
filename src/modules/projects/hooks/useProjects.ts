@@ -10,8 +10,11 @@ import {
   addProjectMembers,
   removeProjectMember,
   updateMemberRole,
-  updateProjectStatus
+  updateProjectStatus,
+  fetchUser_Projects
 } from '../services/project_service';
+
+import { getCurrentUser, isAuthenticated, UserRole } from '@/modules/auth/services/authService';
 
 // Type definition for the status option
 interface StatusOption {
@@ -37,6 +40,7 @@ interface UseProjectsReturn {
   updateProject: (project: Project) => Promise<void>;
   getProjectStatusOptions: () => StatusOption[];
   refreshProjects: () => Promise<void>;
+  hasAccess: boolean;
 }
 
 export const useProjects = (): UseProjectsReturn => {
@@ -47,17 +51,72 @@ export const useProjects = (): UseProjectsReturn => {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [hasAccess, setHasAccess] = useState<boolean>(false);
 
   // Hàm để lấy dữ liệu từ API
   const getProjects = async (): Promise<void> => {
     setLoading(true);
     setError(null);
+    setProjects([]); // Reset projects về mảng rỗng
+    setHasAccess(false);
+    
     try {
-      const data = await fetchProjects();
-      setProjects(data);
-      setTotalPages(Math.ceil(data.length / 10)); // Giả sử 10 items mỗi trang
+      const isLoggedIn = isAuthenticated();
+      console.log('📣 [AuthContext] Is authenticated:', isLoggedIn);
+
+      // Nếu chưa đăng nhập
+      if (!isLoggedIn) {
+        setError('Vui lòng đăng nhập để xem dự án.');
+        setLoading(false);
+        return;
+      }
+
+      const currentUser = getCurrentUser();
+      
+      // Nếu không có thông tin user
+      if (!currentUser) {
+        setError('Không thể xác định thông tin người dùng.');
+        setLoading(false);
+        return;
+      }
+
+      let data: Project[] = [];
+        console.log('📣 [AuthContext] Current user--------:', currentUser);
+      // Xử lý theo role
+      switch (currentUser.role) {
+        case 'Admin':
+          data = await fetchProjects();
+          console.log('📊 Admin projects data:', data, 'Type:', typeof data, 'IsArray:', Array.isArray(data));
+          setHasAccess(true);
+          console.log('📣 [AuthContext] Current user--------:1');
+          break;
+          
+        case 'Manage':
+        case 'User':
+          console.log('📣 [AuthContext] Current user--------:o');
+          data = await fetchUser_Projects(String(currentUser.user_id));
+          console.log('📊 User projects data:', data, 'Type:', typeof data, 'IsArray:', Array.isArray(data));
+          setHasAccess(true);
+          break;
+          
+        default:
+          setError('Bạn không có quyền truy cập.');
+          setLoading(false);
+          return;
+      }
+console.log(' Current user--------:3', data);
+      // Cập nhật state với dữ liệu nhận được
+      const projectsArray = Array.isArray(data) ? data : [];
+      console.log(' Current user--------:4', projectsArray);
+      setProjects(projectsArray); // Đảm bảo luôn là mảng
+      setTotalPages(Math.ceil(projectsArray.length / 10)); // Giả sử 10 items mỗi trang
       setLoading(false);
+
     } catch (err) {
+      console.error('Error fetching projects:', err);
+      setProjects([]); // Đảm bảo projects là mảng rỗng khi có lỗi
+      setHasAccess(false);
+      
       if (err instanceof Error) {
         setError(
           err.message || 'Không thể tải dữ liệu. Vui lòng thử lại sau.'
@@ -80,7 +139,12 @@ export const useProjects = (): UseProjectsReturn => {
   };
 
   // Filtered projects based on search term and status filter
-  const filteredProjects = projects.filter((project: Project) => {
+  const filteredProjects = (Array.isArray(projects) ? projects : []).filter((project: Project) => {
+    // Debug log to check projects state
+    if (!Array.isArray(projects)) {
+      console.error('🚨 Projects is not an array:', projects, 'Type:', typeof projects);
+    }
+    
     const matchesSearch =
       searchTerm === '' ||
       project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -162,8 +226,17 @@ export const useProjects = (): UseProjectsReturn => {
       
       // Cập nhật state trực tiếp để không phải gọi API lại
       setProjects((prevProjects) =>
-        prevProjects.filter((project) => project.project_id !== projectId)
+        Array.isArray(prevProjects) 
+          ? prevProjects.filter((project) => project.project_id !== projectId)
+          : []
       );
+      
+      // Cập nhật lại totalPages sau khi xóa
+      setTotalPages(prev => {
+        const currentProjectsLength = Array.isArray(projects) ? projects.length : 0;
+        const newProjectsLength = Math.max(0, currentProjectsLength - 1);
+        return Math.ceil(newProjectsLength / 10);
+      });
       
       setLoading(false);
     } catch (err) {
@@ -247,5 +320,6 @@ export const useProjects = (): UseProjectsReturn => {
     updateProject,
     getProjectStatusOptions,
     refreshProjects,
+    hasAccess,
   };
 };
