@@ -1,17 +1,19 @@
 // modules/stacks/index.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import ProjectSelector from './components/project_selector';
 import TaskBoard from './components/task_board';
 import TaskList from './components/task_list';
 import TaskDetail from './components/task_detail';
-import { Task } from './types/stacks';
+import { Task } from './services/taskService';
 import styles from './styles/Stacks.module.css';
+import { getCurrentUser } from '../auth/services/authService';
 
 const TasksPage: React.FC = () => {
   // Trong ứng dụng thực tế, userId sẽ được lấy từ context authentication
-  const userId = 'user1'; // Giả lập ID người dùng
+  const [userId, setUserId] = useState<string>('');
+
 
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
@@ -37,6 +39,12 @@ const TasksPage: React.FC = () => {
     setSelectedTask(null);
   };
 
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUserId(currentUser.user_id.toString());
+    }
+  }, []);
   return (
     <DndProvider backend={HTML5Backend}>
       <div className={styles.tasksContainer}>
@@ -66,8 +74,8 @@ const TasksPage: React.FC = () => {
           />
         </div>
 
-        {viewMode === 'board' && (
-          <TaskBoard
+        {userId && viewMode === 'board' && (
+          < TaskBoard
             projectId={selectedProjectId}
             userId={userId}
             onSelectTask={handleSelectTask}
@@ -75,14 +83,14 @@ const TasksPage: React.FC = () => {
           />
         )}
 
-        {viewMode === 'list' && (
+        {/* {viewMode === 'list' && (
           <TaskList
             projectId={selectedProjectId}
             userId={userId}
             onSelectTask={handleSelectTask}
             key={`task-list-${refreshTasks}`}
           />
-        )}
+        )} */}
 
         {selectedTask && (
           <div className={styles.modalOverlay} onClick={handleCloseDetail}>
@@ -90,11 +98,11 @@ const TasksPage: React.FC = () => {
               className={styles.taskDetail}
               onClick={(e) => e.stopPropagation()}
             >
-              <TaskDetail
+              {/* <TaskDetail
                 task={selectedTask}
                 onClose={handleCloseDetail}
                 onTaskUpdated={handleTaskUpdated}
-              />
+              /> */}
             </div>
           </div>
         )}

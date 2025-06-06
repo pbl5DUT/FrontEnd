@@ -1,8 +1,9 @@
 // modules/stacks/components/TaskCard.tsx
 import React from 'react';
 import { useDrag } from 'react-dnd';
-import { Task, TaskPriority } from '../types/stacks';
+
 import styles from '../styles/Stacks.module.css';
+import { Task, TaskPriority } from '../services/taskService';
 
 interface TaskCardProps {
   task: Task;
@@ -18,13 +19,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
         return 'Trung bình';
       case TaskPriority.HIGH:
         return 'Cao';
+      case TaskPriority.CRITICAL:
+        return 'Nghiêm trọng';
+      case TaskPriority.URGENT:
+        return 'Khẩn cấp';
+      default:
+        return 'Không xác định';
     }
   };
+  
 
   // Setup React DnD drag source
   const [{ isDragging }, drag] = useDrag({
     type: 'TASK',
-    item: { id: task.id },
+    item: { id: task.task_id },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -39,18 +47,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   // Hiển thị tối đa 3 người, nếu nhiều hơn thì hiển thị +n
   const renderAssignees = () => {
     const maxVisible = 3;
-    const visibleAssignees = task.assignees.slice(0, maxVisible);
-    const remainingCount = task.assignees.length - maxVisible;
+    const visibleAssignees = task.assignees?.slice(0, maxVisible);
+    const remainingCount = (task.assignees?.length ?? 0) - maxVisible;
 
     return (
       <div className={styles.assigneesList}>
-        {visibleAssignees.map((assignee) => (
+        {visibleAssignees?.map((assignee) => (
           <div
             key={assignee.id}
             className={styles.assigneeAvatar}
             title={assignee.name}
           >
-            {assignee.avatar || assignee.name.charAt(0)}
+            {(assignee.avatar || assignee?.name?.charAt(0)) ?? ''}
           </div>
         ))}
         {remainingCount > 0 && (
@@ -70,14 +78,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       style={{ opacity: isDragging ? 0.5 : 1 }}
     >
       <div className={styles.cardHeader}>
-        <span className={styles.projectBadge}>{task.projectName}</span>
+        <span className={styles.projectBadge}>{task.project_info?.project_name}</span>
         {task.attachments && task.attachments.length > 0 && (
           <span className={styles.attachmentIcon} title="Có tệp đính kèm">
             📎
           </span>
         )}
       </div>
-      <h4 className={styles.taskTitle}>{task.title}</h4>
+      <h4 className={styles.taskTitle}>{task.task_name}</h4>
       <p className={styles.taskDescription}>{task.description}</p>
       <div className={styles.cardFooter}>
         <div
@@ -85,10 +93,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             styles[`priority${task.priority}`]
           }`}
         >
-          {getPriorityLabel(task.priority)}
+          {getPriorityLabel(task.priority ?? TaskPriority.MEDIUM)}
         </div>
         <div className={styles.dateInfo} title="Ngày hết hạn">
-          {formatDate(task.dueDate)}
+          {formatDate(task?.due_date || '')}
         </div>
       </div>
       <div className={styles.cardAssignees}>{renderAssignees()}</div>
