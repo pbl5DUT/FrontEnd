@@ -1,15 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation'; // Sửa import cho Next.js 13+
 import styles from './ProjectList.module.css';
 import { Project, ProjectFormData } from '../../types/project';
 import { useProjects } from '../../hooks/useProjects';
 import CreateProjectModal from '../modal/CreateProjectModal/CreateProjectModal';
-import { useEmployees } from '@/modules/employee/hooks/useEmployees';
 import { Employee } from '@/modules/employee/types/employee.types';
 import { employeeService } from '@/modules/employee/services/employeeService';
-
 
 const ProjectList: React.FC = () => {
   const router = useRouter();
@@ -33,7 +31,6 @@ const ProjectList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
   const [users, setUsers] = useState<{ user_id: string; full_name: string }[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
   
   useEffect(() => {
     // Fetch managers và users khi component được mount
@@ -41,42 +38,35 @@ const ProjectList: React.FC = () => {
     fetchUsers();
   }, []);
 
- 
-
   const fetchManagers = async () => {
     try {
-      // Tạm thời mock data, thực tế sẽ gọi API
-      const mockManagers = [
-        { id: 'user-1', full_name: 'Nguyễn Văn A' },
-        { id: 'user-2', full_name: 'Trần Thị B' },
-        { id: 'user-3', full_name: 'Lê Văn C' },
-      ];
       const data = await employeeService.getEmployees();
 
       setManagers(
-        data.filter((employees)=>employees.role =='Manage').map((employee)=>({
+        data.filter((employee) => employee.role === 'Manage').map((employee) => ({
           id: employee.user_id.toString(),
           full_name: employee.full_name,
         }))
       );
     } catch (error) {
       console.error('Failed to fetch managers:', error);
+      // Có thể set error state hoặc hiển thị toast notification
     }
   };
 
   const fetchUsers = async () => {
     try {
-
       const data = await employeeService.getEmployees();
-      setEmployees(data)
+      
       setUsers(
-        data.filter((employees)=> employees.role = 'User').map((employee) => ({
+        data.filter((employee) => employee.role === 'User').map((employee) => ({ // Sửa lỗi assignment
           user_id: employee.user_id.toString(),
           full_name: employee.full_name,
         }))
       );
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      // Có thể set error state hoặc hiển thị toast notification
     }
   };
 
@@ -103,6 +93,7 @@ const ProjectList: React.FC = () => {
   const handleSubmitCreateProject = async (projectData: ProjectFormData): Promise<void> => {
     try {
       await addProject(projectData);
+      setIsModalOpen(false); // Đóng modal sau khi tạo thành công
       // Có thể hiển thị thông báo thành công nếu cần
     } catch (error) {
       console.error('Error creating project:', error);
@@ -162,108 +153,110 @@ const ProjectList: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {projects.map((project, index) => (
-            <tr key={project.project_id}>
-              <td>{(currentPage - 1) * 10 + index + 1}</td>
-              <td>{project.project_name}</td>
-              <td>{project.description}</td>
-              <td>
-                {project.start_date} - {project.end_date}
-              </td>
-              <td>
-                <span
-                  className={`${styles.statusBadge} ${
-                    styles[project.status.toLowerCase().replace(/\s+/g, '_')]
-                  }`}
-                >
-                  {project.status}
-                </span>
-              </td>
-              <td>
-                <div className={styles.progressContainer}>
-                  <div
-                    className={`${styles.progressBar} ${
-                      (project.progress || 0) < 30
-                        ? styles.low
-                        : (project.progress || 0) < 70
-                        ? styles.medium
-                        : styles.high
+          {projects.length > 0 ? (
+            projects.map((project, index) => (
+              <tr key={project.project_id}>
+                <td>{(currentPage - 1) * 10 + index + 1}</td>
+                <td>{project.project_name}</td>
+                <td>{project.description}</td>
+                <td>
+                  {project.start_date} - {project.end_date}
+                </td>
+                <td>
+                  <span
+                    className={`${styles.statusBadge} ${
+                      styles[project.status.toLowerCase().replace(/\s+/g, '_')]
                     }`}
-                    style={{ width: `${project.progress || 0}%` }}
-                  ></div>
-                  <span>{project.progress || 0}%</span>
-                </div>
-              </td>
-              <td>{project.manager.full_name}</td>
-              <td>
-                <div className={styles.memberAvatars}>
-                  {project.members && project.members.length > 0 ? (
-                    <div className={styles.avatarGroup}>
-                      {project.members.slice(0, 3).map((member, idx) => (
-                        <div
-                          key={idx}
-                          className={styles.avatarWrapper}
-                          title={`${member.user.full_name} (${member.role_in_project})`}
-                        >
-                          {member.user.avatar ? (
-                            <img
-                              src={member.user.avatar}
-                              alt={member.user.full_name}
-                              className={styles.avatar}
-                            />
-                          ) : (
-                            <div className={styles.avatarPlaceholder}>
-                              {member.user.full_name.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {project.members.length > 3 && (
-                        <div className={styles.avatarMore}>
-                          +{project.members.length - 3}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <span className={styles.noMembers}>Chưa có thành viên</span>
-                  )}
-                </div>
-              </td>
-              <td className={styles.actions}>
-                <button
-                  className={styles.viewButton}
-                  title="Xem chi tiết"
-                  onClick={() => handleViewProject(project.project_id as string)}
-                >
-                  <img
-                    src="/assets/icons/list.png"
-                    alt="Xem chi tiết"
-                    className={styles.icon}
-                  />
-                </button>
+                  >
+                    {project.status}
+                  </span>
+                </td>
+                <td>
+                  <div className={styles.progressContainer}>
+                    <div
+                      className={`${styles.progressBar} ${
+                        (project.progress || 0) < 30
+                          ? styles.low
+                          : (project.progress || 0) < 70
+                          ? styles.medium
+                          : styles.high
+                      }`}
+                      style={{ width: `${project.progress || 0}%` }}
+                    ></div>
+                    <span>{project.progress || 0}%</span>
+                  </div>
+                </td>
+                <td>{project.manager?.full_name || 'Chưa có quản lý'}</td>
+                <td>
+                  <div className={styles.memberAvatars}>
+                    {project.members && project.members.length > 0 ? (
+                      <div className={styles.avatarGroup}>
+                        {project.members.slice(0, 3).map((member, idx) => (
+                          <div
+                            key={idx}
+                            className={styles.avatarWrapper}
+                            title={`${member.user.full_name} (${member.role_in_project})`}
+                          >
+                            {member.user.avatar ? (
+                              <img
+                                src={member.user.avatar}
+                                alt={member.user.full_name}
+                                className={styles.avatar}
+                              />
+                            ) : (
+                              <div className={styles.avatarPlaceholder}>
+                                {member.user.full_name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {project.members.length > 3 && (
+                          <div className={styles.avatarMore}>
+                            +{project.members.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className={styles.noMembers}>Chưa có thành viên</span>
+                    )}
+                  </div>
+                </td>
+                <td className={styles.actions}>
+                  <button
+                    className={styles.viewButton}
+                    title="Xem chi tiết"
+                    onClick={() => handleViewProject(project.project_id as string)}
+                  >
+                    <img
+                      src="/assets/icons/list.png"
+                      alt="Xem chi tiết"
+                      className={styles.icon}
+                    />
+                  </button>
 
-                <button
-                  className={styles.deleteButton}
-                  title="Xóa"
-                  onClick={() => handleDeleteProject(project.project_id)}
-                >
-                  <img
-                    src="/assets/icons/delete.png"
-                    alt="Xóa"
-                    className={styles.icon}
-                  />
-                </button>
+                  <button
+                    className={styles.deleteButton}
+                    title="Xóa"
+                    onClick={() => handleDeleteProject(project.project_id)}
+                  >
+                    <img
+                      src="/assets/icons/delete.png"
+                      alt="Xóa"
+                      className={styles.icon}
+                    />
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={9} className={styles.emptyState}>
+                <p>Không có dự án nào. Hãy tạo dự án mới để bắt đầu.</p>
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
-
-      {projects.length === 0 && !loading && (
-        <div className={styles.emptyState}>
-          <p>Không có dự án nào. Hãy tạo dự án mới để bắt đầu.</p>
-        </div>
-      )}
 
       {totalPages > 1 && (
         <div className={styles.pagination}>

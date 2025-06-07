@@ -31,8 +31,6 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     members: [], // Thêm mảng members
   });
 
- 
-
   // Sử dụng state để theo dõi danh sách thành viên đã chọn
   const [selectedMembers, setSelectedMembers] = useState<{
     user_id: string;

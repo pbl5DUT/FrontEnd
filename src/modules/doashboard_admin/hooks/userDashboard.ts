@@ -23,27 +23,27 @@ export const useDashboard = () => {
 
   // Lấy tất cả dữ liệu dashboard
   const fetchDashboardData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await dashboardService.getAllDashboardData();
+    // try {
+    //   setLoading(true);
+    //   setError(null);
+    //   const data = await dashboardService.getAllDashboardData();
 
-      // Ensure taskStatusChart conforms to ChartData
-      const updatedData = {
-        ...data,
-        taskStatusChart: {
-          ...data.taskStatusChart,
-          datasets: data.taskStatusChart?.datasets || [],
-        },
-      };
+    //   // Ensure taskStatusChart conforms to ChartData
+    //   const updatedData = {
+    //     ...data,
+    //     taskStatusChart: {
+    //       ...data.taskStatusChart,
+    //       datasets: data.taskStatusChart?.datasets || [],
+    //     },
+    //   };
 
-      setDashboardData(updatedData);
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Không thể tải dữ liệu dashboard. Vui lòng thử lại sau.');
-    } finally {
-      setLoading(false);
-    }
+    //   setDashboardData(updatedData);
+    // } catch (err) {
+    //   console.error('Error fetching dashboard data:', err);
+    //   setError('Không thể tải dữ liệu dashboard. Vui lòng thử lại sau.');
+    // } finally {
+    //   setLoading(false);
+    // }
   }, []);
 
   // Đánh dấu thông báo đã đọc
