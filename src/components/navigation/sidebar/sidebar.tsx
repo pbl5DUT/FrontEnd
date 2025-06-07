@@ -104,6 +104,13 @@ const sections: MenuSection[] = [
         icon: '/assets/icons/knowledge.png',
         roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
       },
+      {
+        href: '/chat',
+        label: 'Trợ lý ảo',
+        icon: '/assets/icons/chatbox.png',
+        roles: [UserRole.ADMIN, UserRole.MANAGE, UserRole.USER],
+      },
+
     ],
   },
 ];
