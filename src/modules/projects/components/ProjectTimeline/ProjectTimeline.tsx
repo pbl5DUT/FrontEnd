@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Task, TaskCategory } from '../../types/Task';
 
 // ===== CONSTANTS =====
 const DAY_WIDTH = 40;
@@ -64,37 +65,17 @@ export interface TaskAttachment {
   size: number;
 }
 
-export interface TaskCategory {
-  id: string;
-  name: string;
-  description?: string;
-  project_id: string;
-  tasks_count: number;
-  completed_tasks_count: number;
-  created_at?: string;
-  updated_at?: string;
-}
 
-export interface TaskData {
-  id: string;
-  name: string;
-  category_id: string;
-  category_name: string;
-  start_date: string;
-  due_date: string;
-  status: keyof typeof STATUS_COLORS;
-  assignees: any[];
-  progress?: number;
-}
+
 
 interface ProjectTimelineProps {
   projectId: string;
   projectStartDate: string;
   projectEndDate: string;
   categories: TaskCategory[];
-  tasks: TaskData[];
+  tasks: Task[];
   onClose?: () => void;
-  onTaskClick?: (task: TaskData) => void;
+  onTaskClick?: (task: Task) => void;
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -289,11 +270,11 @@ const TimelineHeader: React.FC<TimelineHeaderProps> = ({
 };
 
 interface TaskBarProps {
-  task: TaskData;
+  task: Task;
   timelineStart: Date;
   timelineEnd: Date;
   timelineWidth: number;
-  onClick?: (task: TaskData) => void;
+  onClick?: (task: Task) => void;
 }
 
 const TaskBar: React.FC<TaskBarProps> = ({ 
@@ -304,8 +285,8 @@ const TaskBar: React.FC<TaskBarProps> = ({
   onClick 
 }) => {
   const barStyles = useMemo(() => {
-    const taskStart = DateUtils.parseDate(task.start_date);
-    const taskEnd = DateUtils.parseDate(task.due_date);
+    const taskStart = task.start_date ? DateUtils.parseDate(task.start_date) : null;
+    const taskEnd = task.due_date ? DateUtils.parseDate(task.due_date) : null;
 
     if (!taskStart || !taskEnd) {
       return { left: '0%', width: '0%', backgroundColor: '#ff0000' };
@@ -345,7 +326,7 @@ const TaskBar: React.FC<TaskBarProps> = ({
         transition: 'transform 0.2s',
         ...barStyles
       }}
-      title={`${task.name}\n📅 ${task.start_date} → ${task.due_date}\n📊 ${task.status}`}
+      title={`${task.task_name}\n📅 ${task.start_date} → ${task.due_date}\n📊 ${task.status}`}
       onClick={() => onClick?.(task)}
       onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
       onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -355,7 +336,7 @@ const TaskBar: React.FC<TaskBarProps> = ({
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap'
       }}>
-        {task.name}
+        {task.task_name}
       </span>
     </div>
   );
@@ -439,9 +420,9 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
 
   // Group tasks by category
   const tasksByCategory = useMemo(() => {
-    const grouped: { [key: string]: TaskData[] } = {};
+    const grouped: { [key: string]: Task[] } = {};
     categories.forEach((category) => {
-      grouped[category.id] = tasks.filter((task) => task.category_id === category.id);
+      grouped[category.id] = tasks.filter((task) => task?.category_info?.id === category.id);
     });
     return grouped;
   }, [categories, tasks]);
@@ -612,7 +593,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                   </div>
                 </div>
                 {tasksByCategory[category.id]?.map((task) => (
-                  <div key={task.id} style={{
+                  <div key={task.task_id} style={{
                     padding: '10px 15px',
                     borderBottom: '1px solid #f0f0f0',
                     height: '50px',
@@ -621,7 +602,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                     justifyContent: 'center'
                   }}>
                     <div style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
-                      {task.name}
+                      {task.task_name}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span
@@ -676,7 +657,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                     ))}
                   </div>
                   {tasksByCategory[category.id]?.map((task) => (
-                    <div key={task.id} style={{
+                    <div key={task.task_id} style={{
                       height: '50px',
                       borderBottom: '1px solid #f0f0f0',
                       position: 'relative',

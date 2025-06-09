@@ -1,7 +1,7 @@
 // modules/stacks/components/TaskDetail.tsx
 import React, { useState, useEffect } from 'react';
 import stacksService from '../services/tasks_services_mock';
-import { Task, TaskStatus, TaskAssignee, TaskComment } from '../types/stacks';
+import { Task, TaskStatus, TaskAssignee, TaskComment } from '../types/task';
 import styles from '../styles/Stacks.module.css';
 
 interface TaskDetailProps {
@@ -29,7 +29,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
         const users = await stacksService.getAllUsers();
         // Lọc ra những người chưa tham gia task
         const filteredUsers = users.filter(
-          (user) => !task.assignees.some((assignee) => assignee.id === user.id)
+          (user) => !(task.assignees ?? []).some((assignee) => assignee.id === user.id)
         );
         setAvailableUsers(filteredUsers);
       } catch (error) {
@@ -47,7 +47,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
     try {
       setIsUpdating(true);
-      await stacksService.updateTaskStatus(task.id, status);
+      await stacksService.updateTaskStatus(task.task_id, status);
       onTaskUpdated();
     } catch (error) {
       console.error('Error updating task status:', error);
@@ -63,17 +63,17 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
       // Giả định userId là user1 (người dùng hiện tại)
       const userId = 'user1';
       const user =
-        task.assignees.find((a) => a.id === userId) ||
+        (task.assignees ?? []).find((a) => a.id === userId) ||
         (await stacksService.getAllUsers()).find((u) => u.id === userId);
 
       if (!user) return;
 
-      await stacksService.addComment(task.id, {
-        userId: user.id,
-        userName: user.name,
-        userAvatar: user.avatar,
-        content: commentText,
-      });
+      // await stacksService.addComment(task.task_id, {
+      //   userId: user.id,
+      //   userName: user.name,
+      //   userAvatar: user.avatar,
+      //   content: commentText,
+      // });
 
       setCommentText('');
       onTaskUpdated();
@@ -84,7 +84,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
   const handleAddAssignee = async (assigneeId: string) => {
     try {
-      await stacksService.addAssignee(task.id, assigneeId);
+      await stacksService.addAssignee(task.task_id, assigneeId);
       onTaskUpdated();
     } catch (error) {
       console.error('Error adding assignee:', error);
@@ -93,7 +93,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
   const handleRemoveAssignee = async (assigneeId: string) => {
     try {
-      await stacksService.removeAssignee(task.id, assigneeId);
+      await stacksService.removeAssignee(task.task_id, assigneeId);
       onTaskUpdated();
     } catch (error) {
       console.error('Error removing assignee:', error);
@@ -125,7 +125,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
   return (
     <>
       <div className={styles.detailHeader}>
-        <h2 className={styles.detailTitle}>{task.title}</h2>
+        <h2 className={styles.detailTitle}>{task.task_name}</h2>
         <button className={styles.closeButton} onClick={onClose}>
           ×
         </button>
@@ -142,12 +142,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
           <div className={styles.detailsGrid}>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>Dự án:</span>
-              <span className={styles.detailValue}>{task.projectName}</span>
+              <span className={styles.detailValue}>{task.project_info?.project_name}</span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>Ngày tạo:</span>
               <span className={styles.detailValue}>
-                {formatDate(task.createdAt)}
+                {/* {formatDate(task.created_at)} */}
               </span>
             </div>
             <div className={styles.detailItem}>
@@ -157,17 +157,17 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
                   styles[`priority${task.priority}`]
                 }`}
               >
-                {task.priority === 'LOW'
+                {/* {task.priority === 'LOW'
                   ? 'Thấp'
                   : task.priority === 'MEDIUM'
                   ? 'Trung bình'
-                  : 'Cao'}
+                  : 'Cao'} */}
               </span>
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>Ngày hết hạn:</span>
               <span className={styles.detailValue}>
-                {formatDate(task.dueDate)}
+                {task.due_date ? formatDate(task.due_date) : 'Không có ngày hết hạn'}
               </span>
             </div>
           </div>
@@ -176,17 +176,17 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
         <div className={styles.section}>
           <h3 className={styles.sectionTitle}>Người tham gia</h3>
           <div className={styles.assigneesContainer}>
-            {task.assignees.map((assignee) => (
+            {(task.assignees ?? []).map((assignee) => (
               <div key={assignee.id} className={styles.assigneeItem}>
                 <div className={styles.assigneeInfo}>
                   <div className={styles.assigneeAvatar}>
-                    {assignee.avatar || assignee.name.charAt(0)}
+                    {(assignee.avatar || assignee.name?.charAt(0)) ?? ''}
                   </div>
                   <span className={styles.assigneeName}>{assignee.name}</span>
                 </div>
                 <button
                   className={styles.removeAssigneeBtn}
-                  onClick={() => handleRemoveAssignee(assignee.id)}
+                  onClick={() => handleRemoveAssignee(assignee.id ?? '')}
                   title="Xóa khỏi task"
                 >
                   ×
@@ -214,7 +214,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
                     : 'Thêm người tham gia'}
                 </option>
                 {availableUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
+                  <option key={user.id} value={user.id ?? ''}>
                     {user.name}
                   </option>
                 ))}
@@ -266,7 +266,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
                     </div>
                     <div className={styles.attachmentMeta}>
                       {(attachment.size / 1024 / 1024).toFixed(2)} MB •{' '}
-                      {formatDate(attachment.uploadedAt)}
+                      {attachment.uploadedAt ? formatDate(attachment.uploadedAt) : 'Không có ngày tải lên'}
                     </div>
                   </div>
                 </div>
@@ -292,7 +292,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
                         </span>
                       </div>
                       <div className={styles.commentDate}>
-                        {formatDate(comment.createdAt)}
+                        {comment.createdAt ? formatDate(comment.createdAt) : 'Không có ngày tạo'}
                       </div>
                     </div>
                     <div className={styles.commentContent}>

@@ -1,5 +1,5 @@
 // modules/stacks/types/report.ts
-import { TaskStatus } from '../../stacks/types/stacks';
+import { TaskStatus } from '../../stacks/types/task';
 
 export enum ReportType {
   DAILY = 'DAILY',
@@ -45,4 +45,4 @@ export interface WorkReport {
   updatedAt: string;
 }
 
-export { TaskStatus, type Project, type Task } from '../../stacks/types/stacks';
+export { TaskStatus, type Project, type Task } from '../../stacks/types/task';

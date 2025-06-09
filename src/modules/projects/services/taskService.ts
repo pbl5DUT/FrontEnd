@@ -1,5 +1,7 @@
+
+import { Task, TaskAttachment, TaskCategory, TaskComment, TaskWithDetails } from '@/modules/stacks/types/task';
 import axios from 'axios';
-import { Task, TaskAttachment, TaskCategory, TaskComment, TaskWithDetails } from '../types/Task';
+// import { Task, TaskAttachment, TaskCategory, TaskComment, TaskWithDetails } from '../types/Task';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',

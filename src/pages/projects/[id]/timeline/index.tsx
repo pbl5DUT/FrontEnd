@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { MainLayout } from '@/layouts/Mainlayout';
 import ProjectTimeline from '@/modules/projects/components/ProjectTimeline/ProjectTimeline';
-import { fetchProjectById } from '@/modules/projects/services/project_service';
+import { fetchProjectById  } from '@/modules/projects/services/project_service';
 import { Project } from '@/modules/projects/types/project';
-import { TaskData, CategoryData } from '@/modules/projects/components/ProjectTimeline/ProjectTimeline';
 import Link from 'next/link';
+import { getTaskCategories } from '@/modules/projects/services/taskService';
+import { getTasksByProject } from '@/modules/stacks/services/taskService';
+import { getCurrentUser } from '@/modules/auth/services/authService';
+import { Task, TaskCategory } from '@/modules/projects/types/Task';
 
 // 🎨 Constants cho styling
 const STYLES = {
   container: {
     padding: '20px',
-    paddingLeft: '260px', // 🆕 Thêm padding-left để tránh sidebar (sidebar width ~220px)
+    paddingLeft: '260px', 
     height: 'calc(100vh - 80px)',
     overflow: 'hidden'
   },
@@ -46,15 +49,6 @@ const STYLES = {
     color: '#333',
     border: '1px solid #e0e0e0'
   },
-  demoBadge: {
-    backgroundColor: '#e3f2fd',
-    padding: '6px 12px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '500',
-    color: '#1976d2',
-    border: '1px solid #bbdefb'
-  },
   timelineContainer: {
     height: 'calc(100% - 80px)',
     backgroundColor: '#f8f9fa',
@@ -62,165 +56,6 @@ const STYLES = {
     overflow: 'hidden'
   }
 } as const;
-
-// 🎭 Mock data
-const mockCategories: CategoryData[] = [
-  {
-    id: 'cat1',
-    name: 'Definition & Analysis',
-    project_id: '1',
-    tasks_count: 5,
-    completed_tasks_count: 4
-  },
-  {
-    id: 'cat2', 
-    name: 'Design & Planning',
-    project_id: '1',
-    tasks_count: 7,
-    completed_tasks_count: 3
-  },
-  {
-    id: 'cat3',
-    name: 'Frontend Development', 
-    project_id: '1',
-    tasks_count: 8,
-    completed_tasks_count: 2
-  },
-  {
-    id: 'cat4',
-    name: 'Backend Development',
-    project_id: '1', 
-    tasks_count: 6,
-    completed_tasks_count: 1
-  },
-  {
-    id: 'cat5',
-    name: 'Testing & QA',
-    project_id: '1',
-    tasks_count: 5,
-    completed_tasks_count: 0
-  },
-  {
-    id: 'cat6',
-    name: 'Deployment & DevOps',
-    project_id: '1',
-    tasks_count: 4,
-    completed_tasks_count: 0
-  },
-  {
-    id: 'cat7',
-    name: 'Documentation',
-    project_id: '1',
-    tasks_count: 3,
-    completed_tasks_count: 0
-  }
-];
-
-const mockTasks: TaskData[] = [
-  // Definition & Analysis tasks
-  {
-    id: 'task1',
-    name: 'Phân tích yêu cầu khách hàng',
-    category_id: 'cat1',
-    category_name: 'Definition & Analysis',
-    start_date: '01/06/2025',
-    due_date: '03/06/2025',
-    status: 'Done',
-    assignees: ['John Doe', 'Mary Smith']
-  },
-  {
-    id: 'task2',
-    name: 'Thiết kế kiến trúc hệ thống',
-    category_id: 'cat1', 
-    category_name: 'Definition & Analysis',
-    start_date: '02/06/2025',
-    due_date: '06/06/2025',
-    status: 'Done',
-    assignees: ['Alex Johnson']
-  },
-  {
-    id: 'task3',
-    name: 'Định nghĩa API specifications',
-    category_id: 'cat1',
-    category_name: 'Definition & Analysis', 
-    start_date: '05/06/2025',
-    due_date: '08/06/2025',
-    status: 'Done',
-    assignees: ['Mike Wilson']
-  },
-  {
-    id: 'task4',
-    name: 'Thiết kế database schema',
-    category_id: 'cat1',
-    category_name: 'Definition & Analysis',
-    start_date: '07/06/2025',
-    due_date: '10/06/2025',
-    status: 'In Progress',
-    assignees: ['Sarah Davis']
-  },
-  {
-    id: 'task5',
-    name: 'Đánh giá công nghệ và stack',
-    category_id: 'cat1',
-    category_name: 'Definition & Analysis',
-    start_date: '09/06/2025',
-    due_date: '11/06/2025',
-    status: 'Todo',
-    assignees: ['Tom Brown']
-  },
-  // Design & Planning tasks
-  {
-    id: 'task6',
-    name: 'Thiết kế UI/UX cho dashboard',
-    category_id: 'cat2',
-    category_name: 'Design & Planning',
-    start_date: '10/06/2025',
-    due_date: '15/06/2025',
-    status: 'In Progress',
-    assignees: ['Lisa Chen', 'David Lee']
-  },
-  {
-    id: 'task7',
-    name: 'Tạo wireframe cho mobile app',
-    category_id: 'cat2',
-    category_name: 'Design & Planning',
-    start_date: '12/06/2025', 
-    due_date: '17/06/2025',
-    status: 'In Progress',
-    assignees: ['Emma White']
-  },
-  {
-    id: 'task8',
-    name: 'Design system và component library',
-    category_id: 'cat2',
-    category_name: 'Design & Planning',
-    start_date: '14/06/2025',
-    due_date: '20/06/2025',
-    status: 'Todo',
-    assignees: ['Kevin Zhang']
-  },
-  // Frontend Development tasks
-  {
-    id: 'task9',
-    name: 'Setup React project structure',
-    category_id: 'cat3',
-    category_name: 'Frontend Development',
-    start_date: '25/06/2025',
-    due_date: '27/06/2025',
-    status: 'Todo',
-    assignees: ['John Doe']
-  },
-  {
-    id: 'task10',
-    name: 'Implement authentication flow',
-    category_id: 'cat3',
-    category_name: 'Frontend Development',
-    start_date: '28/06/2025',
-    due_date: '05/07/2025',
-    status: 'Todo',
-    assignees: ['Mary Smith', 'Alex Johnson']
-  }
-];
 
 // 🔄 Loading Spinner Component
 const Spinner: React.FC = () => (
@@ -410,40 +245,45 @@ const Breadcrumb: React.FC<{ projectId: string; projectName: string }> = ({
       <div style={STYLES.projectBadge}>
         📊 Timeline: {projectName}
       </div>
-      
-      <div style={STYLES.demoBadge}>
-        🎭 Demo Data
-      </div>
     </div>
   );
 };
 
 // 🎯 Custom Hook cho Timeline Data
+
 const useTimelineData = (projectId: string) => {
   const [project, setProject] = useState<Project | null>(null);
-  const [tasks, setTasks] = useState<TaskData[]>([]);
-  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]); // Ensure initial state is Task[]
+  const [categories, setCategories] = useState<TaskCategory[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string>('');
 
   useEffect(() => {
-    if (!projectId) return;
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUserId(currentUser.user_id.toString());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!projectId || !userId) return;
 
     const fetchTimelineData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // 📡 Fetch project data (real API)
         const projectData = await fetchProjectById(projectId);
         setProject(projectData);
 
-        // 🎭 Use mock data cho tasks và categories
-        // Simulate loading delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        setTasks(mockTasks);
-        setCategories(mockCategories);
+        const categoryData = await getTaskCategories(projectId);
+        setCategories(categoryData);
+
+        const tasksData = await getTasksByProject(projectId, userId);
+        console.log('Fetched tasks:', tasksData); // Debug log
+        setTasks(tasksData); // Pass tasksData directly
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching timeline data:', err);
@@ -453,9 +293,9 @@ const useTimelineData = (projectId: string) => {
     };
 
     fetchTimelineData();
-  }, [projectId]);
+  }, [projectId, userId]);
 
-  return { project, tasks, categories, loading, error };
+  return { project, tasks, categories, loading, error, setTasks };
 };
 
 // 🏁 Main Component
@@ -465,10 +305,14 @@ const ProjectTimelinePage: React.FC = () => {
   const projectId = id as string;
 
   // 🎯 Use custom hook
-  const { project, tasks, categories, loading, error } = useTimelineData(projectId);
+  const { project, tasks, categories, loading, error, setTasks } = useTimelineData(projectId);
 
   const handleCloseTimeline = () => {
     router.push(`/projects/${projectId}`);
+  };
+
+  const handleTaskUpdate = (taskId: string, updatedTask: Partial<Task>) => {
+    setTasks(tasks.map(task => task.task_id === taskId ? { ...task, ...updatedTask } : task));
   };
 
   // 📱 Early returns for different states
@@ -491,7 +335,7 @@ const ProjectTimelinePage: React.FC = () => {
             categories={categories}
             tasks={tasks}
             onClose={handleCloseTimeline}
-  
+     
           />
         </div>
       </div>

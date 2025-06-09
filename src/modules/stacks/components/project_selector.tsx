@@ -1,7 +1,7 @@
 // modules/stacks/components/ProjectSelector.tsx
 import React, { useState, useEffect } from 'react';
 import stacksService from '../services/tasks_services_mock';
-import { Project } from '../types/stacks';
+import { Project } from '../types/task';
 import styles from '../styles/Stacks.module.css';
 
 interface ProjectSelectorProps {

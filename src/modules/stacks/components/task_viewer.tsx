@@ -1,7 +1,7 @@
 // modules/stacks/components/DocumentViewer.tsx
 import React, { useState } from 'react';
 import stacksService from '../services/tasks_services_mock';
-import { Task, TaskStatus } from '../types/stacks';
+import { Task, TaskStatus } from '../types/task';
 import styles from '../styles/Stacks.module.css';
 
 interface TaskViewerProps {

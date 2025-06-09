@@ -5,13 +5,13 @@ import CategoryTasks from './CategoryTasks';
 import TaskDetail from './TaskDetail';
 import CreateCategoryModal from '../modal/CreateCategoryModal/CreateCategoryModal';
 import CreateTaskModal from '../modal/CreateTaskModal/CreateTaskModal';
-import { Task } from '../../types/Task';
+import { Task, TaskCategory } from '../../types/Task';
 import { 
   getTaskCategories, 
   deleteTaskCategory,
-  TaskWithDetails,
-  TaskCategory 
+  
 } from '../../services/taskService';
+import { TaskWithDetails } from '@/modules/stacks/services/taskService';
 
 interface ProjectTasksManagerProps {
   projectId: string;
@@ -119,7 +119,7 @@ const ProjectTasksManager: React.FC<ProjectTasksManagerProps> = ({ projectId }) 
       task_name: updatedTask.task_name,
       description: updatedTask.description,
       status: updatedTask.status,
-      priority: updatedTask.priority,
+      // priority: updatedTask.priority,
       start_date: updatedTask.start_date,
       due_date: updatedTask.due_date,
       actual_end_date: updatedTask.actual_end_date,

@@ -117,12 +117,12 @@ const TaskList: React.FC<TaskListProps> = ({
           <tbody>
             {filteredTasks.map((task) => (
               <tr
-                key={task.id}
+                key={task.task_id}
                 onClick={() => onSelectTask(task)}
                 className={styles.taskRow}
               >
-                <td className={styles.taskTitleCell}>{task.title}</td>
-                <td>{task.projectName}</td>
+                <td className={styles.taskTitleCell}>{task.task_name}</td>
+                <td>{task.project_info?.project_name}</td>
                 <td>
                   <span
                     className={`${styles.statusBadge} ${
@@ -138,10 +138,10 @@ const TaskList: React.FC<TaskListProps> = ({
                       styles[`priority${task.priority}`]
                     }`}
                   >
-                    {getPriorityLabel(task.priority)}
+                    {getPriorityLabel(task.priority ?? TaskPriority.LOW)}
                   </span>
                 </td>
-                <td>{new Date(task.dueDate).toLocaleDateString('vi-VN')}</td>
+                <td>{new Date(task?.due_date ?? '').toLocaleDateString('vi-VN')}</td>
               </tr>
             ))}
           </tbody>

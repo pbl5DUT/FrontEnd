@@ -1,20 +1,13 @@
 // modules/stacks/services/stacksServiceMock.ts
-import {
-  Task,
-  TaskStatus,
-  TaskPriority,
-  Project,
-  TaskAssignee,
-  TaskComment,
-  TaskAttachment,
-} from '../types/stacks';
+
+import { Project, Task, TaskAssignee, TaskAttachment, TaskComment } from "../types/task";
 
 // Danh sách người dùng mẫu
 const mockUsers: TaskAssignee[] = [
-  { id: 'user1', name: 'Nguyễn Văn A', avatar: 'A' },
-  { id: 'user2', name: 'Trần Thị B', avatar: 'B' },
-  { id: 'user3', name: 'Lê Văn C', avatar: 'C' },
-  { id: 'user4', name: 'Phạm Thị D', avatar: 'D' },
+  { id: 'user1', name: 'Nguyễn Văn A', avatar: 'A', user_id: 'u1', user: { id: 'u1', full_name: 'Nguyễn Văn A', avatar: 'A' }, role: 'Developer', assigned_date: '2025-01-01' },
+  { id: 'user2', name: 'Trần Thị B', avatar: 'B', user_id: 'u2', user: { id: 'u2', full_name: 'Trần Thị B', avatar: 'B' }, role: 'Designer', assigned_date: '2025-01-02' },
+  { id: 'user3', name: 'Lê Văn C', avatar: 'C', user_id: 'u3', user: { id: 'u3', full_name: 'Lê Văn C', avatar: 'C' }, role: 'Tester', assigned_date: '2025-01-03' },
+  { id: 'user4', name: 'Phạm Thị D', avatar: 'D', user_id: 'u4', user: { id: 'u4', full_name: 'Phạm Thị D', avatar: 'D' }, role: 'Manager', assigned_date: '2025-01-04' },
 ];
 
 // Dữ liệu mẫu cho dự án
@@ -45,6 +38,9 @@ const mockComments: TaskComment[] = [
     userAvatar: 'B',
     content: 'Tôi đã cập nhật wireframe, bạn xem lại giúp mình nhé.',
     createdAt: '2025-05-05T10:30:00Z',
+    user_name: 'Trần Thị B',
+    user: { id: 'user2', full_name: 'Trần Thị B', avatar: 'B' },
+    created_at: '2025-05-05T10:30:00Z',
   },
   {
     id: 'comment2',
@@ -53,6 +49,9 @@ const mockComments: TaskComment[] = [
     userAvatar: 'A',
     content: 'Đã xem wireframe, tôi sẽ tiến hành thiết kế UI.',
     createdAt: '2025-05-05T14:15:00Z',
+    user_name: 'Nguyễn Văn A',
+    user: { id: 'user1', full_name: 'Nguyễn Văn A', avatar: 'A' },
+    created_at: '2025-05-05T14:15:00Z',
   },
 ];
 
@@ -66,6 +65,10 @@ const mockAttachments: TaskAttachment[] = [
     size: 2048000,
     uploadedBy: 'user2',
     uploadedAt: '2025-05-05T10:28:00Z',
+    file_type: 'application/pdf',
+    file_size: '2048000',
+    uploaded_by: 'user2',
+    upload_date: '2025-05-05T10:28:00Z',
   },
 ];
 

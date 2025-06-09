@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './TaskCategories.module.css';
-import { TaskCategory } from '../../services/taskService';
+import { TaskCategory } from '../../types/Task';
+
 
 interface TaskCategoriesProps {
   projectId: string;

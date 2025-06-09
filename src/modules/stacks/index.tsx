@@ -6,9 +6,10 @@ import ProjectSelector from './components/project_selector';
 import TaskBoard from './components/task_board';
 import TaskList from './components/task_list';
 import TaskDetail from './components/task_detail';
-import { Task } from './services/taskService';
+
 import styles from './styles/Stacks.module.css';
 import { getCurrentUser } from '../auth/services/authService';
+import { Task } from './types/task';
 
 const TasksPage: React.FC = () => {
   // Trong ứng dụng thực tế, userId sẽ được lấy từ context authentication

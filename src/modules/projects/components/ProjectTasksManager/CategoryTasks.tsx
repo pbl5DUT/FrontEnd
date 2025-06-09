@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './CategoryTasks.module.css';
-import { Task, getTasksByCategory } from '../../services/taskService';
-import { TaskCategory } from '../../services/taskService';
+import { Task, TaskCategory } from '../../types/Task';
+import { getTasksByCategory } from '../../services/taskService';
 
 interface CategoryTasksProps {
   projectId: string;

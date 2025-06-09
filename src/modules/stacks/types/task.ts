@@ -1,3 +1,61 @@
+// modules/stacks/types/stacks.ts
+// export enum TaskStatus {
+//   TODO = 'TODO',
+//   IN_PROGRESS = 'IN_PROGRESS',
+//   DONE = 'DONE',
+// }
+
+// export enum TaskPriority {
+//   LOW = 'LOW',
+//   MEDIUM = 'MEDIUM',
+//   HIGH = 'HIGH',
+// }
+
+export enum TaskStatus {
+  TODO = 'Todo',              // ✅ Changed back to 'Todo' to match API
+  IN_PROGRESS = 'In Progress',
+  DONE = 'Done',
+  CANCELLED = 'Cancelled',
+}
+
+export enum TaskPriority {
+  LOW = 'Low',
+  MEDIUM = 'Medium',
+  HIGH = 'High',
+  CRITICAL = 'Critical',
+  URGENT = 'Urgent',
+  REVIEW = 'Review',
+}
+
+// Comment trong task
+export interface TaskComment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  content: string;
+  createdAt: string;
+}
+
+// Tệp đính kèm trong task
+export interface TaskAttachment {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  members?: TaskAssignee[]; // Thêm danh sách thành viên dự án
+}
+
+
+
 export interface TaskAssignee {
   name: string | undefined;
   avatar: any;
@@ -89,6 +147,10 @@ export interface Task {
     id?: string;
     name?: string;
     project_id?: string;
+};
+project_info: {
+  project_id: string;
+  project_name: string;
 };
   assignees?: TaskAssignee[];
   comments?: TaskComment[];
