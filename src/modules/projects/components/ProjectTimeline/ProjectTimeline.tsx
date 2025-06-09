@@ -125,7 +125,7 @@ interface ProjectTimelineProps {
   projectEndDate: string;
   categories: CategoryData[];
   tasks: TaskData[];
-  onClose: () => void;
+  onClose?: () => void; // 🔄 Optional vì không cần close button trong page mode
 }
 
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
@@ -214,16 +214,13 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
   if (!projectStartDate || !projectEndDate || !categories || !tasks) {
     return (
       <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 50,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000
+        height: '400px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        border: '1px solid #e0e0e0'
       }}>
         <div style={{
           backgroundColor: 'white',
@@ -231,33 +228,10 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
           borderRadius: '8px',
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           maxWidth: '500px',
-          width: '90%'
+          width: '90%',
+          textAlign: 'center'
         }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1rem'
-          }}>
-            <h2>Loading Timeline...</h2>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                padding: '0',
-                width: '30px',
-                height: '30px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              ×
-            </button>
-          </div>
+          <h2 style={{ marginBottom: '1rem', color: '#333' }}>Loading Timeline...</h2>
           <div style={{ fontSize: '14px', color: '#666' }}>
             <div>projectStartDate: {projectStartDate || 'missing'}</div>
             <div>projectEndDate: {projectEndDate || 'missing'}</div>
@@ -352,200 +326,230 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
   // Calculate minimum width for timeline to ensure proper scrolling
   const timelineWidth = Math.max(800, timelineDays.length * 40);
 
+  // 🎨 Page Mode - No Modal Styling
   return (
     <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 200,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      width: '100%',
+      height: '100%',
+      left: '400px',
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      border: '1px solid #e0e0e0',
       display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px'
+      flexDirection: 'column',
+      overflow: 'hidden',
     }}>
+      {/* Header */}
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-        width: '95%',
-        height: '90%',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
+        padding: '20px',
+        borderBottom: '1px solid #e0e0e0',
+        backgroundColor: '#f8f9fa'
       }}>
-        {/* Header */}
+        <div>
+          <h2 style={{ margin: 0, color: '#333', fontSize: '24px' }}>📊 Gantt Chart Timeline</h2>
+          <div style={{ 
+            fontSize: '14px', 
+            color: '#666', 
+            marginTop: '8px',
+            display: 'flex',
+            gap: '20px'
+          }}>
+            <span>📅 {formatDate(parseDate(projectStartDate))} → {formatDate(parseDate(projectEndDate))}</span>
+            <span>📋 {tasks.length} tasks</span>
+            <span>🗂️ {categories.length} categories</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Gantt Chart */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Timeline Header */}
         <div style={{
-          padding: '20px',
-          borderBottom: '1px solid #e0e0e0',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          borderBottom: '2px solid #e0e0e0',
           backgroundColor: '#f8f9fa'
         }}>
-          <div>
-            <h2 style={{ margin: 0, color: '#333', fontSize: '24px' }}>📊 Gantt Chart Timeline</h2>
-            <div style={{ 
-              fontSize: '14px', 
-              color: '#666', 
-              marginTop: '8px',
-              display: 'flex',
-              gap: '20px'
-            }}>
-              <span>📅 {formatDate(parseDate(projectStartDate))} → {formatDate(parseDate(projectEndDate))}</span>
-              <span>📋 {tasks.length} tasks</span>
-              <span>🗂️ {categories.length} categories</span>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '28px',
-              cursor: 'pointer',
-              padding: '0',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '50%',
-              transition: 'background-color 0.2s',
-              color: '#666'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Gantt Chart */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Timeline Header */}
+          {/* Category Column Header */}
           <div style={{
-            display: 'flex',
-            borderBottom: '2px solid #e0e0e0',
-            backgroundColor: '#f8f9fa'
+            width: '300px',
+            minWidth: '300px',
+            padding: '15px',
+            borderRight: '1px solid #e0e0e0',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            color: '#333',
+            backgroundColor: '#fff'
           }}>
-            {/* Category Column Header */}
-            <div style={{
-              width: '300px',
-              minWidth: '300px',
-              padding: '15px',
-              borderRight: '1px solid #e0e0e0',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#333',
-              backgroundColor: '#fff'
+            Danh mục / Công việc
+          </div>
+          
+          {/* Timeline Column Header */}
+          <div style={{
+            flex: 1,
+            overflowX: 'auto',
+            borderLeft: '1px solid #e0e0e0'
+          }}>
+            <div style={{ 
+              width: `${timelineWidth}px`,
+              minWidth: '100%'
             }}>
-              Danh mục / Công việc
-            </div>
-            
-            {/* Timeline Column Header */}
-            <div style={{
-              flex: 1,
-              overflowX: 'auto',
-              borderLeft: '1px solid #e0e0e0'
-            }}>
-              <div style={{ 
-                width: `${timelineWidth}px`,
-                minWidth: '100%'
+              {/* Month/Year Label */}
+              <div style={{
+                padding: '10px 15px',
+                borderBottom: '1px solid #e0e0e0',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                color: '#333',
+                textAlign: 'center',
+                backgroundColor: '#f0f0f0'
               }}>
-                {/* Month/Year Label */}
-                <div style={{
-                  padding: '10px 15px',
-                  borderBottom: '1px solid #e0e0e0',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  color: '#333',
-                  textAlign: 'center',
-                  backgroundColor: '#f0f0f0'
-                }}>
-                  {getMonthYear(timelineStart)} - {getMonthYear(timelineEnd)}
-                </div>
-                
-                {/* Date Labels */}
-                <div style={{
-                  display: 'flex',
-                  position: 'relative',
-                  backgroundColor: '#fff'
-                }}>
-                  {timelineDays.map((day, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        width: '40px',
-                        minWidth: '40px',
-                        padding: '8px 2px',
-                        borderRight: '1px solid #f0f0f0',
-                        fontSize: '12px',
-                        textAlign: 'center',
-                        color: day.getDay() === 0 || day.getDay() === 6 ? '#ff5722' : '#333',
-                        backgroundColor: day.getDay() === 0 || day.getDay() === 6 ? '#fff3e0' : 'transparent'
-                      }}
-                      title={formatDate(day)}
-                    >
-                      <div style={{ fontWeight: 'bold' }}>{day.getDate()}</div>
-                      <div style={{ fontSize: '10px', color: '#999' }}>
-                        {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day.getDay()]}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Today Marker */}
+                {getMonthYear(timelineStart)} - {getMonthYear(timelineEnd)}
+              </div>
+              
+              {/* Date Labels */}
+              <div style={{
+                display: 'flex',
+                position: 'relative',
+                backgroundColor: '#fff'
+              }}>
+                {timelineDays.map((day, idx) => (
                   <div
+                    key={idx}
                     style={{
-                      position: 'absolute',
-                      top: 0,
-                      bottom: 0,
-                      width: '2px',
-                      backgroundColor: '#ff4444',
-                      left: getTodayMarkerPosition(),
-                      zIndex: 10,
-                      boxShadow: '0 0 4px rgba(255,68,68,0.5)'
+                      width: '40px',
+                      minWidth: '40px',
+                      padding: '8px 2px',
+                      borderRight: '1px solid #f0f0f0',
+                      fontSize: '12px',
+                      textAlign: 'center',
+                      color: day.getDay() === 0 || day.getDay() === 6 ? '#ff5722' : '#333',
+                      backgroundColor: day.getDay() === 0 || day.getDay() === 6 ? '#fff3e0' : 'transparent'
                     }}
-                    title="Hôm nay 06:36 PM +07"
-                  />
-                </div>
+                    title={formatDate(day)}
+                  >
+                    <div style={{ fontWeight: 'bold' }}>{day.getDate()}</div>
+                    <div style={{ fontSize: '10px', color: '#999' }}>
+                      {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day.getDay()]}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Today Marker */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    width: '2px',
+                    backgroundColor: '#ff4444',
+                    left: getTodayMarkerPosition(),
+                    zIndex: 10,
+                    boxShadow: '0 0 4px rgba(255,68,68,0.5)'
+                  }}
+                  title="Hôm nay 06:36 PM +07"
+                />
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Timeline Body */}
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            {categories.map((category) => (
-              <React.Fragment key={category.id}>
-                {/* Category Row */}
+        {/* Timeline Body */}
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          {categories.map((category) => (
+            <React.Fragment key={category.id}>
+              {/* Category Row */}
+              <div style={{
+                display: 'flex',
+                borderBottom: '1px solid #f0f0f0',
+                backgroundColor: '#f8f9fa'
+              }}>
                 <div style={{
+                  width: '300px',
+                  minWidth: '300px',
+                  padding: '12px 15px',
+                  borderRight: '1px solid #e0e0e0',
+                  backgroundColor: '#fff'
+                }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
+                    {category.name}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                    {category.completed_tasks_count}/{category.tasks_count} hoàn thành
+                  </div>
+                </div>
+                <div style={{
+                  flex: 1,
+                  overflowX: 'auto'
+                }}>
+                  <div style={{
+                    width: `${timelineWidth}px`,
+                    height: '60px',
+                    position: 'relative',
+                    display: 'flex'
+                  }}>
+                    {/* Grid Background */}
+                    {timelineDays.map((day, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          width: '40px',
+                          minWidth: '40px',
+                          borderRight: '1px solid #f5f5f5',
+                          backgroundColor: day.getDay() === 0 || day.getDay() === 6 ? '#fafafa' : 'transparent'
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Task Rows */}
+              {tasksByCategory[category.id]?.map((task) => (
+                <div key={task.id} style={{
                   display: 'flex',
                   borderBottom: '1px solid #f0f0f0',
-                  backgroundColor: '#f8f9fa'
+                  minHeight: '50px'
                 }}>
                   <div style={{
                     width: '300px',
                     minWidth: '300px',
-                    padding: '12px 15px',
+                    padding: '10px 15px',
                     borderRight: '1px solid #e0e0e0',
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
                   }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
-                      {category.name}
+                    <div style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
+                      {task.name}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                      {category.completed_tasks_count}/{category.tasks_count} hoàn thành
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          backgroundColor: getStatusColor(task.status),
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: '500'
+                        }}
+                      >
+                        {task.status}
+                      </span>
+                      <span style={{ fontSize: '11px', color: '#666' }}>
+                        {task.start_date} → {task.due_date}
+                      </span>
                     </div>
                   </div>
+                  
                   <div style={{
                     flex: 1,
                     overflowX: 'auto'
                   }}>
                     <div style={{
                       width: `${timelineWidth}px`,
-                      height: '60px',
+                      height: '50px',
                       position: 'relative',
                       display: 'flex'
                     }}>
@@ -561,144 +565,77 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                           }}
                         />
                       ))}
+                      
+                      {/* Task Bar */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '15px',
+                          height: '20px',
+                          borderRadius: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '0 8px',
+                          fontSize: '11px',
+                          color: 'white',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          transition: 'transform 0.2s',
+                          ...getTaskBarStyles(task)
+                        }}
+                        title={`${task.name}\n📅 ${task.start_date} → ${task.due_date}\n📊 ${task.status}`}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <span style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {task.name}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Task Rows */}
-                {tasksByCategory[category.id]?.map((task) => (
-                  <div key={task.id} style={{
-                    display: 'flex',
-                    borderBottom: '1px solid #f0f0f0',
-                    minHeight: '50px'
-                  }}>
-                    <div style={{
-                      width: '300px',
-                      minWidth: '300px',
-                      padding: '10px 15px',
-                      borderRight: '1px solid #e0e0e0',
-                      backgroundColor: '#fff',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center'
-                    }}>
-                      <div style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
-                        {task.name}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                          style={{
-                            padding: '2px 8px',
-                            borderRadius: '12px',
-                            backgroundColor: getStatusColor(task.status),
-                            color: 'white',
-                            fontSize: '10px',
-                            fontWeight: '500'
-                          }}
-                        >
-                          {task.status}
-                        </span>
-                        <span style={{ fontSize: '11px', color: '#666' }}>
-                          {task.start_date} → {task.due_date}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div style={{
-                      flex: 1,
-                      overflowX: 'auto'
-                    }}>
-                      <div style={{
-                        width: `${timelineWidth}px`,
-                        height: '50px',
-                        position: 'relative',
-                        display: 'flex'
-                      }}>
-                        {/* Grid Background */}
-                        {timelineDays.map((day, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              width: '40px',
-                              minWidth: '40px',
-                              borderRight: '1px solid #f5f5f5',
-                              backgroundColor: day.getDay() === 0 || day.getDay() === 6 ? '#fafafa' : 'transparent'
-                            }}
-                          />
-                        ))}
-                        
-                        {/* Task Bar */}
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '15px',
-                            height: '20px',
-                            borderRadius: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '0 8px',
-                            fontSize: '11px',
-                            color: 'white',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            transition: 'transform 0.2s',
-                            ...getTaskBarStyles(task)
-                          }}
-                          title={`${task.name}\n📅 ${task.start_date} → ${task.due_date}\n📊 ${task.status}`}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                        >
-                          <span style={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {task.name}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div style={{
-          padding: '15px 20px',
-          borderTop: '1px solid #e0e0e0',
-          backgroundColor: '#f8f9fa',
-          display: 'flex',
-          gap: '20px',
-          alignItems: 'center',
-          flexWrap: 'wrap'
-        }}>
-          <span style={{ fontWeight: '500', fontSize: '14px', color: '#333' }}>Trạng thái:</span>
-          {[
-            { status: 'Todo', color: '#9e9e9e' },
-            { status: 'In Progress', color: '#2196f3' },
-            { status: 'Review', color: '#ff9800' },
-            { status: 'Done', color: '#4caf50' },
-            { status: 'Cancelled', color: '#f44336' }
-          ].map(({ status, color }) => (
-            <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{
-                width: '12px',
-                height: '12px',
-                backgroundColor: color,
-                borderRadius: '2px'
-              }} />
-              <span style={{ fontSize: '12px', color: '#666' }}>{status}</span>
-            </div>
+              ))}
+            </React.Fragment>
           ))}
         </div>
+      </div>
+
+      {/* Legend */}
+      <div style={{
+        padding: '15px 20px',
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#f8f9fa',
+        display: 'flex',
+        gap: '20px',
+        alignItems: 'center',
+        flexWrap: 'wrap'
+      }}>
+        <span style={{ fontWeight: '500', fontSize: '14px', color: '#333' }}>Trạng thái:</span>
+        {[
+          { status: 'Todo', color: '#9e9e9e' },
+          { status: 'In Progress', color: '#2196f3' },
+          { status: 'Review', color: '#ff9800' },
+          { status: 'Done', color: '#4caf50' },
+          { status: 'Cancelled', color: '#f44336' }
+        ].map(({ status, color }) => (
+          <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              backgroundColor: color,
+              borderRadius: '2px'
+            }} />
+            <span style={{ fontSize: '12px', color: '#666' }}>{status}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
 export default ProjectTimeline;
-
