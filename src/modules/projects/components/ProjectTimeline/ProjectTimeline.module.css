@@ -1,34 +1,32 @@
+/* ProjectTimeline.css */
 
-/* Container Styles */
+/* ===== MAIN CONTAINER ===== */
 .timeline-container {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 1200px;
-  margin: 20px auto;
+  height: 100%;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* Header Styles */
+/* ===== HEADER ===== */
 .timeline-header {
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   background-color: #f8f9fa;
 }
 
-.timeline-header h2 {
+.timeline-title {
   margin: 0;
   color: #333;
   font-size: 24px;
 }
 
-.header-info {
+.timeline-meta {
   font-size: 14px;
   color: #666;
   margin-top: 8px;
@@ -36,42 +34,53 @@
   gap: 20px;
 }
 
-.close-button {
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  padding: 0;
-  width: 40px;
-  height: 40px;
+/* ===== LOADING/ERROR STATES ===== */
+.timeline-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  height: 400px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.timeline-loading-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.timeline-loading-title {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.timeline-loading-details {
+  font-size: 14px;
   color: #666;
-  transition: background-color 0.2s;
 }
 
-.close-button:hover {
-  background-color: #f0f0f0;
-}
-
-/* Gantt Chart Container */
-.gantt-container {
+/* ===== GANTT CHART ===== */
+.timeline-chart {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* Timeline Header */
-.timeline-header-row {
+/* ===== TIMELINE HEADER SECTION ===== */
+.timeline-header-section {
   display: flex;
   border-bottom: 2px solid #e0e0e0;
   background-color: #f8f9fa;
 }
 
-.category-column-header {
+.timeline-category-header {
   width: 300px;
   min-width: 300px;
   padding: 15px;
@@ -82,52 +91,67 @@
   background-color: #fff;
 }
 
-.timeline-column-header {
+.timeline-dates-container {
   flex: 1;
   overflow-x: auto;
+  overflow-y: hidden;
   border-left: 1px solid #e0e0e0;
 }
 
-.month-year-label {
-  padding: 10px 15px;
-  border-bottom: 1px solid #e0e0e0;
-  font-weight: bold;
-  font-size: 14px;
-  color: #333;
-  text-align: center;
-  background-color: #f0f0f0;
+.timeline-dates-wrapper {
+  min-width: 100%;
 }
 
-.date-labels {
+/* ===== MONTH HEADER ===== */
+.timeline-months {
+  display: flex;
+  position: relative;
+  background-color: #e0eaff;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.timeline-month {
+  position: absolute;
+  text-align: center;
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* ===== DATE HEADER ===== */
+.timeline-dates {
   display: flex;
   position: relative;
   background-color: #fff;
 }
 
-.date-label {
+.timeline-date {
   width: 40px;
   min-width: 40px;
   padding: 8px 2px;
   border-right: 1px solid #f0f0f0;
   font-size: 12px;
   text-align: center;
+  color: #333;
 }
 
-.date-label.weekend {
+.timeline-date.weekend {
   color: #ff5722;
   background-color: #fff3e0;
 }
 
-.date-label .day-number {
+.timeline-date-number {
   font-weight: bold;
 }
 
-.date-label .weekday {
+.timeline-date-day {
   font-size: 10px;
   color: #999;
 }
 
-.today-marker {
+/* ===== TODAY MARKER ===== */
+.timeline-today-marker {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -137,19 +161,35 @@
   box-shadow: 0 0 4px rgba(255, 68, 68, 0.5);
 }
 
-/* Timeline Body */
+.timeline-today-label {
+  position: absolute;
+  top: -20px;
+  left: -10px;
+  background-color: #ff4444;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+/* ===== TIMELINE BODY ===== */
 .timeline-body {
   flex: 1;
   overflow: auto;
 }
 
-.category-row {
+.timeline-body-wrapper {
+  min-width: 100%;
+}
+
+/* ===== CATEGORY ROW ===== */
+.timeline-category-row {
   display: flex;
   border-bottom: 1px solid #f0f0f0;
   background-color: #f8f9fa;
 }
 
-.category-info {
+.timeline-category-info {
   width: 300px;
   min-width: 300px;
   padding: 12px 15px;
@@ -157,47 +197,32 @@
   background-color: #fff;
 }
 
-.category-name {
+.timeline-category-name {
   font-weight: bold;
   font-size: 14px;
   color: #333;
 }
 
-.category-stats {
+.timeline-category-progress {
   font-size: 12px;
   color: #666;
   margin-top: 4px;
 }
 
-.category-timeline {
-  flex: 1;
-  overflow-x: auto;
-}
-
-.grid-background {
+.timeline-category-timeline {
   height: 60px;
   position: relative;
   display: flex;
 }
 
-.grid-cell {
-  width: 40px;
-  min-width: 40px;
-  border-right: 1px solid #f5f5f5;
-}
-
-.grid-cell.weekend {
-  background-color: #fafafa;
-}
-
-/* Task Row */
-.task-row {
+/* ===== TASK ROW ===== */
+.timeline-task-row {
   display: flex;
   border-bottom: 1px solid #f0f0f0;
   min-height: 50px;
 }
 
-.task-info {
+.timeline-task-info {
   width: 300px;
   min-width: 300px;
   padding: 10px 15px;
@@ -208,19 +233,19 @@
   justify-content: center;
 }
 
-.task-name {
+.timeline-task-name {
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 4px;
 }
 
-.task-details {
+.timeline-task-meta {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.status-badge {
+.timeline-task-status {
   padding: 2px 8px;
   border-radius: 12px;
   color: white;
@@ -228,24 +253,58 @@
   font-weight: 500;
 }
 
-.task-dates {
+.timeline-task-status.todo {
+  background-color: #9e9e9e;
+}
+
+.timeline-task-status.in-progress {
+  background-color: #2196f3;
+}
+
+.timeline-task-status.review {
+  background-color: #ff9800;
+}
+
+.timeline-task-status.done {
+  background-color: #4caf50;
+}
+
+.timeline-task-status.cancelled {
+  background-color: #f44336;
+}
+
+.timeline-task-dates {
   font-size: 11px;
   color: #666;
 }
 
-.task-timeline {
-  flex: 1;
-  overflow-x: auto;
-}
-
-.task-bar-container {
-  width: 100%;
+.timeline-task-timeline {
   height: 50px;
   position: relative;
   display: flex;
 }
 
-.task-bar {
+/* ===== DAY CELLS ===== */
+.timeline-day-cell {
+  width: 40px;
+  min-width: 40px;
+  border-right: 1px solid #f5f5f5;
+}
+
+.timeline-day-cell.weekend {
+  background-color: #fafafa;
+}
+
+.timeline-day-cell.category {
+  height: 60px;
+}
+
+.timeline-day-cell.task {
+  height: 50px;
+}
+
+/* ===== TASK BAR ===== */
+.timeline-task-bar {
   position: absolute;
   top: 15px;
   height: 20px;
@@ -261,18 +320,51 @@
   transition: transform 0.2s;
 }
 
-.task-bar:hover {
+.timeline-task-bar:hover {
   transform: translateY(-2px);
 }
 
-.task-bar span {
+.timeline-task-bar.readonly {
+  cursor: default;
+}
+
+.timeline-task-bar-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Legend */
-.legend {
+/* Task bar colors by category */
+.timeline-task-bar.definition {
+  background-color: #8e24aa;
+}
+
+.timeline-task-bar.design-planning {
+  background-color: #ff8f00;
+}
+
+.timeline-task-bar.development {
+  background-color: #1976d2;
+}
+
+.timeline-task-bar.testing {
+  background-color: #d32f2f;
+}
+
+.timeline-task-bar.deployment {
+  background-color: #388e3c;
+}
+
+.timeline-task-bar.planning {
+  background-color: #8bc34a;
+}
+
+.timeline-task-bar.default {
+  background-color: #546e7a;
+}
+
+/* ===== LEGEND ===== */
+.timeline-legend {
   padding: 15px 20px;
   border-top: 1px solid #e0e0e0;
   background-color: #f8f9fa;
@@ -282,73 +374,118 @@
   flex-wrap: wrap;
 }
 
-.legend-label {
+.timeline-legend-title {
   font-weight: 500;
   font-size: 14px;
   color: #333;
 }
 
-.legend-item {
+.timeline-legend-item {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.legend-color {
+.timeline-legend-color {
   width: 12px;
   height: 12px;
   border-radius: 2px;
 }
 
-.legend-text {
+.timeline-legend-label {
   font-size: 12px;
   color: #666;
 }
 
-/* Status Colors */
-.status-todo {
-  background-color: #9e9e9e;
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .timeline-category-header,
+  .timeline-category-info,
+  .timeline-task-info {
+    width: 250px;
+    min-width: 250px;
+  }
+  
+  .timeline-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .timeline-legend {
+    padding: 10px 15px;
+  }
 }
 
-.status-in-progress {
-  background-color: #2196f3;
+@media (max-width: 480px) {
+  .timeline-header {
+    padding: 15px;
+  }
+  
+  .timeline-title {
+    font-size: 20px;
+  }
+  
+  .timeline-category-header,
+  .timeline-category-info,
+  .timeline-task-info {
+    width: 200px;
+    min-width: 200px;
+    padding: 8px 10px;
+  }
+  
+  .timeline-day-cell {
+    width: 30px;
+    min-width: 30px;
+  }
 }
 
-.status-review {
-  background-color: #ff9800;
+/* ===== SCROLLBAR STYLING ===== */
+.timeline-dates-container::-webkit-scrollbar,
+.timeline-body::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
 }
 
-.status-done {
-  background-color: #4caf50;
+.timeline-dates-container::-webkit-scrollbar-track,
+.timeline-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
 }
 
-.status-cancelled {
-  background-color: #f44336;
+.timeline-dates-container::-webkit-scrollbar-thumb,
+.timeline-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
 }
 
-/* Loading State */
-.loading-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 100%;
-  margin: 20px auto;
-  padding: 2rem;
+.timeline-dates-container::-webkit-scrollbar-thumb:hover,
+.timeline-body::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }
 
-.loading-content {
-  width: 100%;
+/* ===== ACCESSIBILITY ===== */
+.timeline-task-bar:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
 }
 
-.loading-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+.timeline-date:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: -2px;
 }
 
-.loading-info {
-  font-size: 14px;
-  color: #666;
+/* ===== PRINT STYLES ===== */
+@media print {
+  .timeline-container {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .timeline-today-marker {
+    display: none;
+  }
+  
+  .timeline-task-bar:hover {
+    transform: none;
+  }
 }
