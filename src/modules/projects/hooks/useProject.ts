@@ -77,7 +77,7 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
 
     try {
       setLoading(true);
-      await apiRemoveProjectMember(projectId, Number(userId));
+      await apiRemoveProjectMember(projectId, String(userId));
       await fetchData();
     } catch (err) {
       console.error('Error removing member:', err);
@@ -95,7 +95,7 @@ export const useProject = (projectId: string | string[] | undefined): UseProject
 
     try {
       setLoading(true);
-      await apiAddProjectMembers(projectId, userIds, role);
+      // await apiAddProjectMembers(projectId, userIds, role);
       await fetchData();
     } catch (err) {
       console.error('Error adding members:', err);

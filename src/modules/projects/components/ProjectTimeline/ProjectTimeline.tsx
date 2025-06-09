@@ -1,23 +1,122 @@
 import React, { useState, useEffect } from 'react';
-import styles from './ProjectTimeline.module.css';
 
-interface TaskData {
-  id: string;
-  name: string;
-  category_id: string;
-  category_name: string;
-  start_date: string;
-  due_date: string;
-  status: string;
-  assignees: any[];
+// ===== INTERFACES =====
+export interface TaskAssignee {
+  name: string | undefined;
+  avatar: any;
+  id: string | null | undefined;
+  user_id: string;
+  user: {
+    id: string;
+    full_name: string;
+    avatar: string | null;
+  };
+  role: string;
+  assigned_date: string;
 }
 
-interface CategoryData {
+export interface TaskComment {
+  id: string;
+  user_name: string;
+  user: {
+    id: string;
+    full_name: string;
+    avatar: string | null;
+  };
+  content: string;
+  created_at: string;
+}
+
+export interface TaskAttachment {
+  id: string;
+  name: string;
+  url: string;
+  file_type: string;
+  file_size: string;
+  uploaded_by: string;
+  upload_date: string;
+  size: number;
+}
+
+export interface TaskCategory {
+  id: string;
+  name: string;
+  description?: string;
+  project_id: string;
+  tasks_count: number;
+  completed_tasks_count: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Task {
+  task_id: string;
+  task_name: string;
+  status: 'Todo' | 'In Progress' | 'Done' | 'Cancelled' | 'Review';
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical' | 'Urgent';
+  description?: string;
+  start_date?: string;
+  due_date?: string;
+  actual_end_date?: string;
+  progress?: number;
+  created_at?: string;
+  updated_at?: string;
+  category_name?: string;
+  assignee?: {
+    user_id: string;
+    full_name: string;
+    email?: string;
+    role?: string;
+    department?: string;
+    gender?: string;
+    birth_date?: string;
+    phone?: string;
+    province?: string;
+    district?: string;
+    address?: string;
+    position?: string;
+    avatar?: string | null;
+    created_at?: string;
+    enterprise?: {
+      enterprise_id: string;
+      name: string;
+      address: string;
+      phone_number: string;
+      email: string;
+      industry: string;
+      created_at: string;
+      updated_at: string;
+    };
+  };
+  assignees?: TaskAssignee[];
+  comments?: TaskComment[];
+  attachments?: TaskAttachment[];
+}
+
+export interface TaskWithDetails extends Task {
+  comments?: TaskComment[];
+  attachments?: TaskAttachment[];
+  assignees?: TaskAssignee[];
+}
+
+// ===== INTERFACES CHO TIMELINE =====
+export interface CategoryData {
   id: string;
   name: string;
   project_id: string;
   tasks_count: number;
   completed_tasks_count: number;
+}
+
+export interface TaskData {
+  id: string;
+  name: string;
+  category_id: string;
+  category_name: string;
+  start_date: string; // DD/MM/YYYY format
+  due_date: string; // DD/MM/YYYY format
+  status: 'Todo' | 'In Progress' | 'Done' | 'Cancelled' | 'Review';
+  assignees: any[];
 }
 
 interface ProjectTimelineProps {
@@ -26,7 +125,7 @@ interface ProjectTimelineProps {
   projectEndDate: string;
   categories: CategoryData[];
   tasks: TaskData[];
-  onClose: () => void;
+  onClose?: () => void; // 🔄 Optional vì không cần close button trong page mode
 }
 
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
@@ -40,219 +139,463 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
   const [timelineStart, setTimelineStart] = useState<Date>(new Date());
   const [timelineEnd, setTimelineEnd] = useState<Date>(new Date());
   const [timelineDays, setTimelineDays] = useState<Date[]>([]);
-  const [monthLabels, setMonthLabels] = useState<
-    { month: string; position: number }[]
-  >([]);
   const [tasksByCategory, setTasksByCategory] = useState<{
     [key: string]: TaskData[];
   }>({});
 
-  // Parse date from DD/MM/YYYY format
-  const parseDate = (dateString: string): Date => {
-    const [day, month, year] = dateString.split('/').map(Number);
-    return new Date(year, month - 1, day);
+  // Normalize date to DD/MM/YYYY format
+  const normalizeDate = (dateString: string): string => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    if (year && month && day) return `${day}/${month}/${year}`;
+    const [d, m, y] = dateString.split('/');
+    return `${d}/${m}/${y}`;
+  };
+
+  // Parse date with error handling
+  const parseDate = (dateString: string): Date | null => {
+    if (!dateString) return null;
+    try {
+      const [day, month, year] = normalizeDate(dateString).split('/').map(Number);
+      const date = new Date(year, month - 1, day);
+      return isNaN(date.getTime()) ? null : date;
+    } catch (error) {
+      console.error(`Error parsing date ${dateString}:`, error);
+      return null;
+    }
   };
 
   // Format date to DD/MM/YYYY
-  const formatDate = (date: Date): string => {
-    return `${date.getDate().toString().padStart(2, '0')}/${(
-      date.getMonth() + 1
-    )
-      .toString()
-      .padStart(2, '0')}/${date.getFullYear()}`;
+  const formatDate = (date: Date | null): string => {
+    if (!date || isNaN(date.getTime())) return 'Invalid Date';
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  };
+
+  // Get month-year string
+  const getMonthYear = (date: Date): string => {
+    return `Tháng ${date.getMonth() + 1} - ${date.getFullYear()}`;
   };
 
   // Initialize timeline
   useEffect(() => {
-    if (projectStartDate && projectEndDate) {
-      const start = parseDate(projectStartDate);
-      const end = parseDate(projectEndDate);
+    const start = parseDate(projectStartDate) || new Date();
+    const end = parseDate(projectEndDate) || new Date();
+    if (start > end) [start, end] = [end, start];
 
-      // Add buffer days to timeline for better visualization
-      start.setDate(start.getDate() - 7);
-      end.setDate(end.getDate() + 7);
+    // Extend timeline để có buffer
+    const bufferStart = new Date(start);
+    const bufferEnd = new Date(end);
+    bufferStart.setDate(bufferStart.getDate() - 7);
+    bufferEnd.setDate(bufferEnd.getDate() + 7);
 
-      setTimelineStart(start);
-      setTimelineEnd(end);
+    setTimelineStart(bufferStart);
+    setTimelineEnd(bufferEnd);
 
-      // Generate array of dates for the timeline
-      const days: Date[] = [];
-      const months: { month: string; position: number }[] = [];
-      let currentDate = new Date(start);
-      let currentMonth = '';
-      let dayCounter = 0;
-
-      while (currentDate <= end) {
-        days.push(new Date(currentDate));
-
-        // Track months for labels
-        const monthName =
-          currentDate.toLocaleString('default', { month: 'short' }) +
-          ' ' +
-          currentDate.getFullYear();
-        if (monthName !== currentMonth) {
-          months.push({ month: monthName, position: dayCounter });
-          currentMonth = monthName;
-        }
-
-        currentDate.setDate(currentDate.getDate() + 1);
-        dayCounter++;
-      }
-
-      setTimelineDays(days);
-      setMonthLabels(months);
+    const days: Date[] = [];
+    let currentDate = new Date(bufferStart);
+    while (currentDate <= bufferEnd) {
+      days.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
     }
+    setTimelineDays(days);
   }, [projectStartDate, projectEndDate]);
 
   // Group tasks by category
   useEffect(() => {
+    if (!categories || !tasks) return;
     const tasksByCat: { [key: string]: TaskData[] } = {};
-
     categories.forEach((category) => {
-      tasksByCat[category.id] = tasks.filter(
-        (task) => task.category_id === category.id
-      );
+      tasksByCat[category.id] = tasks.filter((task) => task.category_id === category.id);
     });
-
     setTasksByCategory(tasksByCat);
   }, [categories, tasks]);
 
-  // Calculate position and width of a task bar
+  // Early return if no data
+  if (!projectStartDate || !projectEndDate || !categories || !tasks) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '400px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        border: '1px solid #e0e0e0'
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '2rem',
+          borderRadius: '8px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          maxWidth: '500px',
+          width: '90%',
+          textAlign: 'center'
+        }}>
+          <h2 style={{ marginBottom: '1rem', color: '#333' }}>Loading Timeline...</h2>
+          <div style={{ fontSize: '14px', color: '#666' }}>
+            <div>projectStartDate: {projectStartDate || 'missing'}</div>
+            <div>projectEndDate: {projectEndDate || 'missing'}</div>
+            <div>categories: {categories?.length || 0}</div>
+            <div>tasks: {tasks?.length || 0}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate task bar styles with improved positioning
   const getTaskBarStyles = (task: TaskData) => {
     const taskStart = parseDate(task.start_date);
     const taskEnd = parseDate(task.due_date);
 
-    // Calculate days from timeline start
-    const daysFromStart = Math.max(
-      0,
-      (taskStart.getTime() - timelineStart.getTime()) / (1000 * 3600 * 24)
-    );
-    const taskDuration = Math.max(
-      1,
-      (taskEnd.getTime() - taskStart.getTime()) / (1000 * 3600 * 24) + 1
-    );
-
-    const left = `${(daysFromStart / timelineDays.length) * 100}%`;
-    const width = `${(taskDuration / timelineDays.length) * 100}%`;
-
-    // Determine color based on status
-    let backgroundColor = '';
-    switch (task.status.toLowerCase()) {
-      case 'done':
-        backgroundColor = '#4caf50'; // green
-        break;
-      case 'in progress':
-        backgroundColor = '#2196f3'; // blue
-        break;
-      case 'review':
-        backgroundColor = '#ff9800'; // orange
-        break;
-      default:
-        backgroundColor = '#9e9e9e'; // grey for todo or other statuses
+    if (!taskStart || !taskEnd || !timelineStart || !timelineEnd) {
+      console.error(`Invalid dates for task ${task.name}`);
+      return { left: '0%', width: '0%', backgroundColor: '#ff0000' };
     }
 
-    return { left, width, backgroundColor };
+    const timelineStartTime = timelineStart.getTime();
+    const timelineEndTime = timelineEnd.getTime();
+    const totalTimelineMs = timelineEndTime - timelineStartTime;
+
+    if (totalTimelineMs <= 0) {
+      return { left: '0%', width: '0%', backgroundColor: '#ff0000' };
+    }
+
+    const taskStartTime = taskStart.getTime();
+    const taskEndTime = taskEnd.getTime();
+
+    // Ensure valid task duration
+    if (taskStartTime > taskEndTime) {
+      console.warn(`Task ${task.name} has invalid range`);
+      return { left: '0%', width: '0%', backgroundColor: '#ff0000' };
+    }
+
+    // Calculate position and width
+    const startOffset = Math.max(0, taskStartTime - timelineStartTime);
+    const endOffset = Math.min(totalTimelineMs, taskEndTime - timelineStartTime);
+
+    const leftPercent = (startOffset / totalTimelineMs) * 100;
+    const widthPercent = Math.max(0.5, ((endOffset - startOffset) / totalTimelineMs) * 100);
+
+    return {
+      left: `${leftPercent}%`,
+      width: `${widthPercent}%`,
+      backgroundColor: getCategoryColor(task.category_name),
+    };
   };
 
-  // Calculate today's marker position
+  // Get category color
+  const getCategoryColor = (categoryName: string): string => {
+    const colors: { [key: string]: string } = {
+      'Definition': '#8e24aa',
+      'Design & Planning': '#ff8f00',
+      'Development': '#1976d2',
+      'Testing': '#d32f2f',
+      'Deployment': '#388e3c',
+      'Planning': '#8bc34a',
+    };
+    return colors[categoryName] || '#546e7a';
+  };
+
+  // Calculate today marker position
   const getTodayMarkerPosition = () => {
-    const today = new Date();
-    const daysFromStart = Math.max(
-      0,
-      (today.getTime() - timelineStart.getTime()) / (1000 * 3600 * 24)
-    );
-    return `${(daysFromStart / timelineDays.length) * 100}%`;
+    const today = new Date('2025-06-08T18:36:00+07:00'); // 06:36 PM +07, 08/06/2025
+    if (!timelineStart || !timelineEnd) return '0%';
+    
+    const totalTimelineMs = timelineEnd.getTime() - timelineStart.getTime();
+    if (totalTimelineMs <= 0) return '0%';
+    
+    const todayOffset = today.getTime() - timelineStart.getTime();
+    const todayPercent = (todayOffset / totalTimelineMs) * 100;
+    
+    return `${Math.max(0, Math.min(100, todayPercent))}%`;
   };
 
+  // Get status color
+  const getStatusColor = (status: string): string => {
+    const colors: { [key: string]: string } = {
+      'Todo': '#9e9e9e',
+      'In Progress': '#2196f3',
+      'Review': '#ff9800',
+      'Done': '#4caf50',
+      'Cancelled': '#f44336',
+    };
+    return colors[status] || '#9e9e9e';
+  };
+
+  // Calculate minimum width for timeline to ensure proper scrolling
+  const timelineWidth = Math.max(800, timelineDays.length * 40);
+
+  // 🎨 Page Mode - No Modal Styling
   return (
-    <div className={styles.timelineContainer}>
-      <div className={styles.timelineHeader}>
-        <h2>Lịch trình dự án</h2>
-        <button className={styles.closeButton} onClick={onClose}>
-          ×
-        </button>
-      </div>
-
-      <div className={styles.timelineToolbar}>
-        <div className={styles.projectDateRange}>
-          <span className={styles.dateLabel}>Thời gian dự án:</span>
-          <span className={styles.dateValue}>
-            {projectStartDate} - {projectEndDate}
-          </span>
+    <div style={{
+      width: '100%',
+      height: '100%',
+      left: '400px',
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      border: '1px solid #e0e0e0',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '20px',
+        borderBottom: '1px solid #e0e0e0',
+        backgroundColor: '#f8f9fa'
+      }}>
+        <div>
+          <h2 style={{ margin: 0, color: '#333', fontSize: '24px' }}>📊 Gantt Chart Timeline</h2>
+          <div style={{ 
+            fontSize: '14px', 
+            color: '#666', 
+            marginTop: '8px',
+            display: 'flex',
+            gap: '20px'
+          }}>
+            <span>📅 {formatDate(parseDate(projectStartDate))} → {formatDate(parseDate(projectEndDate))}</span>
+            <span>📋 {tasks.length} tasks</span>
+            <span>🗂️ {categories.length} categories</span>
+          </div>
         </div>
       </div>
 
-      <div className={styles.ganttChartContainer}>
-        {/* Timeline header with month labels */}
-        <div className={styles.timelineHeader}>
-          <div className={styles.categoryColumn}>
-            <div className={styles.categoryHeader}>Danh mục / Công việc</div>
+      {/* Gantt Chart */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Timeline Header */}
+        <div style={{
+          display: 'flex',
+          borderBottom: '2px solid #e0e0e0',
+          backgroundColor: '#f8f9fa'
+        }}>
+          {/* Category Column Header */}
+          <div style={{
+            width: '300px',
+            minWidth: '300px',
+            padding: '15px',
+            borderRight: '1px solid #e0e0e0',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            color: '#333',
+            backgroundColor: '#fff'
+          }}>
+            Danh mục / Công việc
           </div>
-          <div className={styles.timelineColumn}>
-            <div className={styles.monthLabels}>
-              {monthLabels.map((month, idx) => (
+          
+          {/* Timeline Column Header */}
+          <div style={{
+            flex: 1,
+            overflowX: 'auto',
+            borderLeft: '1px solid #e0e0e0'
+          }}>
+            <div style={{ 
+              width: `${timelineWidth}px`,
+              minWidth: '100%'
+            }}>
+              {/* Month/Year Label */}
+              <div style={{
+                padding: '10px 15px',
+                borderBottom: '1px solid #e0e0e0',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                color: '#333',
+                textAlign: 'center',
+                backgroundColor: '#f0f0f0'
+              }}>
+                {getMonthYear(timelineStart)} - {getMonthYear(timelineEnd)}
+              </div>
+              
+              {/* Date Labels */}
+              <div style={{
+                display: 'flex',
+                position: 'relative',
+                backgroundColor: '#fff'
+              }}>
+                {timelineDays.map((day, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      width: '40px',
+                      minWidth: '40px',
+                      padding: '8px 2px',
+                      borderRight: '1px solid #f0f0f0',
+                      fontSize: '12px',
+                      textAlign: 'center',
+                      color: day.getDay() === 0 || day.getDay() === 6 ? '#ff5722' : '#333',
+                      backgroundColor: day.getDay() === 0 || day.getDay() === 6 ? '#fff3e0' : 'transparent'
+                    }}
+                    title={formatDate(day)}
+                  >
+                    <div style={{ fontWeight: 'bold' }}>{day.getDate()}</div>
+                    <div style={{ fontSize: '10px', color: '#999' }}>
+                      {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day.getDay()]}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Today Marker */}
                 <div
-                  key={idx}
-                  className={styles.monthLabel}
                   style={{
-                    left: `${(month.position / timelineDays.length) * 100}%`,
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    width: '2px',
+                    backgroundColor: '#ff4444',
+                    left: getTodayMarkerPosition(),
+                    zIndex: 10,
+                    boxShadow: '0 0 4px rgba(255,68,68,0.5)'
                   }}
-                >
-                  {month.month}
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.dayGrid}>
-              {timelineDays.map((day, idx) => (
-                <div
-                  key={idx}
-                  className={`${styles.dayColumn} ${
-                    day.getDay() === 0 || day.getDay() === 6
-                      ? styles.weekend
-                      : ''
-                  }`}
-                  title={formatDate(day)}
+                  title="Hôm nay 06:36 PM +07"
                 />
-              ))}
+              </div>
             </div>
-
-            {/* Today marker */}
-            <div
-              className={styles.todayMarker}
-              style={{ left: getTodayMarkerPosition() }}
-              title="Hôm nay"
-            />
           </div>
         </div>
 
-        {/* Timeline rows for categories and tasks */}
-        <div className={styles.timelineBody}>
+        {/* Timeline Body */}
+        <div style={{ flex: 1, overflow: 'auto' }}>
           {categories.map((category) => (
             <React.Fragment key={category.id}>
-              {/* Category row */}
-              <div className={styles.timelineRow}>
-                <div className={styles.categoryColumn}>
-                  <div className={styles.categoryName}>{category.name}</div>
+              {/* Category Row */}
+              <div style={{
+                display: 'flex',
+                borderBottom: '1px solid #f0f0f0',
+                backgroundColor: '#f8f9fa'
+              }}>
+                <div style={{
+                  width: '300px',
+                  minWidth: '300px',
+                  padding: '12px 15px',
+                  borderRight: '1px solid #e0e0e0',
+                  backgroundColor: '#fff'
+                }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
+                    {category.name}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                    {category.completed_tasks_count}/{category.tasks_count} hoàn thành
+                  </div>
                 </div>
-                <div className={styles.timelineColumn}>
-                  <div className={styles.categoryBar}></div>
+                <div style={{
+                  flex: 1,
+                  overflowX: 'auto'
+                }}>
+                  <div style={{
+                    width: `${timelineWidth}px`,
+                    height: '60px',
+                    position: 'relative',
+                    display: 'flex'
+                  }}>
+                    {/* Grid Background */}
+                    {timelineDays.map((day, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          width: '40px',
+                          minWidth: '40px',
+                          borderRight: '1px solid #f5f5f5',
+                          backgroundColor: day.getDay() === 0 || day.getDay() === 6 ? '#fafafa' : 'transparent'
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Task rows for this category */}
+              {/* Task Rows */}
               {tasksByCategory[category.id]?.map((task) => (
-                <div key={task.id} className={styles.timelineRow}>
-                  <div className={styles.categoryColumn}>
-                    <div className={styles.taskName}>{task.name}</div>
+                <div key={task.id} style={{
+                  display: 'flex',
+                  borderBottom: '1px solid #f0f0f0',
+                  minHeight: '50px'
+                }}>
+                  <div style={{
+                    width: '300px',
+                    minWidth: '300px',
+                    padding: '10px 15px',
+                    borderRight: '1px solid #e0e0e0',
+                    backgroundColor: '#fff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
+                    <div style={{ fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
+                      {task.name}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          backgroundColor: getStatusColor(task.status),
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: '500'
+                        }}
+                      >
+                        {task.status}
+                      </span>
+                      <span style={{ fontSize: '11px', color: '#666' }}>
+                        {task.start_date} → {task.due_date}
+                      </span>
+                    </div>
                   </div>
-                  <div className={styles.timelineColumn}>
-                    <div
-                      className={styles.taskBar}
-                      style={getTaskBarStyles(task)}
-                      title={`${task.name}: ${task.start_date} - ${task.due_date}`}
-                    >
-                      <span className={styles.taskBarLabel}>{task.name}</span>
+                  
+                  <div style={{
+                    flex: 1,
+                    overflowX: 'auto'
+                  }}>
+                    <div style={{
+                      width: `${timelineWidth}px`,
+                      height: '50px',
+                      position: 'relative',
+                      display: 'flex'
+                    }}>
+                      {/* Grid Background */}
+                      {timelineDays.map((day, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            width: '40px',
+                            minWidth: '40px',
+                            borderRight: '1px solid #f5f5f5',
+                            backgroundColor: day.getDay() === 0 || day.getDay() === 6 ? '#fafafa' : 'transparent'
+                          }}
+                        />
+                      ))}
+                      
+                      {/* Task Bar */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '15px',
+                          height: '20px',
+                          borderRadius: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '0 8px',
+                          fontSize: '11px',
+                          color: 'white',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          transition: 'transform 0.2s',
+                          ...getTaskBarStyles(task)
+                        }}
+                        title={`${task.name}\n📅 ${task.start_date} → ${task.due_date}\n📊 ${task.status}`}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <span style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {task.name}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -262,35 +605,34 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
         </div>
       </div>
 
-      <div className={styles.timelineLegend}>
-        <div className={styles.legendItem}>
-          <div
-            className={styles.legendColor}
-            style={{ backgroundColor: '#9e9e9e' }}
-          ></div>
-          <span>Chưa làm</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div
-            className={styles.legendColor}
-            style={{ backgroundColor: '#2196f3' }}
-          ></div>
-          <span>Đang thực hiện</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div
-            className={styles.legendColor}
-            style={{ backgroundColor: '#ff9800' }}
-          ></div>
-          <span>Đang kiểm duyệt</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div
-            className={styles.legendColor}
-            style={{ backgroundColor: '#4caf50' }}
-          ></div>
-          <span>Hoàn thành</span>
-        </div>
+      {/* Legend */}
+      <div style={{
+        padding: '15px 20px',
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#f8f9fa',
+        display: 'flex',
+        gap: '20px',
+        alignItems: 'center',
+        flexWrap: 'wrap'
+      }}>
+        <span style={{ fontWeight: '500', fontSize: '14px', color: '#333' }}>Trạng thái:</span>
+        {[
+          { status: 'Todo', color: '#9e9e9e' },
+          { status: 'In Progress', color: '#2196f3' },
+          { status: 'Review', color: '#ff9800' },
+          { status: 'Done', color: '#4caf50' },
+          { status: 'Cancelled', color: '#f44336' }
+        ].map(({ status, color }) => (
+          <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              backgroundColor: color,
+              borderRadius: '2px'
+            }} />
+            <span style={{ fontSize: '12px', color: '#666' }}>{status}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

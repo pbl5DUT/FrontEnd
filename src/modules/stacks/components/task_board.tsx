@@ -1,10 +1,10 @@
 // modules/stacks/components/TaskBoard.tsx
 import React, { useState, useEffect } from 'react';
 import { useDrop } from 'react-dnd';
-import stacksService from '../services/tasks_services_mock';
-import { Task, TaskStatus } from '../types/stacks';
+
 import TaskCard from './task_card';
 import styles from '../styles/Stacks.module.css';
+import { getTasksByProject, getUserTasks, Task, TaskStatus, updateTaskStatus } from '../services/taskService';
 
 interface TaskBoardProps {
   projectId: string | null;
@@ -65,7 +65,7 @@ const Column: React.FC<{
         ) : (
           tasks.map((task) => (
             <TaskCard
-              key={task.id}
+              key={task.task_id}
               task={task}
               onClick={() => onSelectTask(task)}
             />
@@ -83,55 +83,117 @@ const TaskBoard: React.FC<TaskBoardProps> = ({
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         setLoading(true);
-        let data: Task[];
+        setError(null);
+        let response: any;
 
         if (projectId) {
-          data = await stacksService.getTasksByProject(projectId, userId);
+          response = await getTasksByProject(projectId, userId);
         } else {
-          data = await stacksService.getUserTasks(userId);
+          response = await getUserTasks(userId);
         }
 
-        setTasks(data);
+        console.log('API Response okoki:', response); // Debug log
+        
+        // Handle different response formats
+        let tasksData: Task[] = [];
+        
+        if (Array.isArray(response)) {
+          // Direct array response
+          tasksData = response;
+        } else if (response && response.data) {
+          // Response with data wrapper
+          if (Array.isArray(response.data)) {
+            tasksData = response.data;
+          } else if (response.data.tasks && Array.isArray(response.data.tasks)) {
+            tasksData = response.data.tasks;
+          } else if (response.data.pending_tasks && Array.isArray(response.data.pending_tasks)) {
+            tasksData = response.data.pending_tasks;
+          } else if (response.data.user_tasks && Array.isArray(response.data.user_tasks)) {
+            tasksData = response.data.user_tasks;
+          }
+        } else if (response && response.tasks && Array.isArray(response.tasks)) {
+          // Direct tasks property
+          tasksData = response.tasks;
+        }
+
+        // Ensure we have a valid array
+        if (!Array.isArray(tasksData)) {
+          console.warn('Tasks data is not an array:', tasksData);
+          tasksData = [];
+        }
+
+        setTasks(tasksData);
       } catch (error) {
         console.error('Error fetching tasks:', error);
+        setError('Không thể tải công việc. Vui lòng thử lại.');
+        setTasks([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTasks();
+    if (userId) {
+      fetchTasks();
+    }
   }, [projectId, userId]);
 
-  const todoTasks = tasks.filter((task) => task.status === TaskStatus.TODO);
-  const inProgressTasks = tasks.filter(
+  // Ensure tasks is always an array before filtering
+  const safeFilter = (filterFn: (task: Task) => boolean): Task[] => {
+    if (!Array.isArray(tasks)) {
+      console.warn('Tasks is not an array:', tasks);
+      return [];
+    }
+    return tasks.filter(filterFn);
+  };
+
+  const todoTasks = safeFilter((task) => task.status === TaskStatus.TODO);
+  const inProgressTasks = safeFilter(
     (task) => task.status === TaskStatus.IN_PROGRESS
   );
-  const doneTasks = tasks.filter((task) => task.status === TaskStatus.DONE);
+  const doneTasks = safeFilter((task) => task.status === TaskStatus.DONE);
 
   const handleDropTask = async (taskId: string, newStatus: TaskStatus) => {
     try {
-      const task = tasks.find((t) => t.id === taskId);
+      const task = tasks.find((t) => t.task_id === taskId);
       if (task && task.status !== newStatus) {
-        await stacksService.updateTaskStatus(taskId, newStatus);
+        await updateTaskStatus(taskId, newStatus);
         // Cập nhật state local
         setTasks((prevTasks) =>
-          prevTasks.map((t) =>
-            t.id === taskId ? { ...t, status: newStatus } : t
-          )
+          Array.isArray(prevTasks) 
+            ? prevTasks.map((t) =>
+                t.task_id === taskId ? { ...t, status: newStatus } : t
+              )
+            : []
         );
       }
     } catch (error) {
       console.error('Error updating task status:', error);
+      setError('Không thể cập nhật trạng thái công việc.');
     }
   };
 
   if (loading) {
     return <div className={styles.loading}>Đang tải công việc...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <p>{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className={styles.retryButton}
+        >
+          Thử lại
+        </button>
+      </div>
+    );
   }
 
   return (

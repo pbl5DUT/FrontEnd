@@ -3,15 +3,14 @@
   top: 20px;
   right: 20px;
   background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  width: 320px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  width: 300px;
+  padding: 15px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease-out;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 @keyframes slideIn {
@@ -25,36 +24,11 @@
   }
 }
 
-.notificationHeader {
-  background-color: #f5f5f5;
-  padding: 10px 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  font-weight: 500;
-  color: #333;
-}
-
-.pulsingDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #f44336;
-  animation: pulse 1.5s infinite;
-}
-
-.timer {
-  margin-left: auto;
-  color: #666;
-  font-size: 14px;
-}
-
 .notificationContent {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin: 15px;
+  margin-bottom: 10px;
 }
 
 .callInfo {
@@ -62,7 +36,7 @@
 }
 
 .callerName {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 16px;
   color: #333;
   margin-bottom: 4px;
@@ -75,25 +49,20 @@
 
 .actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 12px 15px;
 }
 
 .actionButton {
-  flex: 1;
+  width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   border: none;
   cursor: pointer;
   transition: all 0.2s;
-  font-weight: 500;
-  font-size: 14px;
 }
 
 .acceptButton {
@@ -112,19 +81,4 @@
 
 .rejectButton:hover {
   background-color: #d32f2f;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
 }

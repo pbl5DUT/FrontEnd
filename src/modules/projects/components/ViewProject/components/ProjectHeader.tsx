@@ -6,13 +6,11 @@ import styles from '../ViewProjectPage.module.css';
 
 interface ProjectHeaderProps {
   project: Project;
-  onToggleTimeline: () => void;
   onDeleteProject: () => void;
 }
 
 export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   project,
-  onToggleTimeline,
   onDeleteProject
 }) => {
   const router = useRouter();
@@ -31,10 +29,10 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
         <h1>{project.project_name}</h1>
       </div>
       <div className={styles.headerRight}>
-        {/* Nút Timeline */}
+        {/* Nút Timeline - Navigate to page */}
         <button
           className={styles.timelineButton}
-          onClick={onToggleTimeline}
+          onClick={() => router.push(`/projects/${project.project_id}/timeline`)}
           title="Xem lịch trình"
         >
           <img

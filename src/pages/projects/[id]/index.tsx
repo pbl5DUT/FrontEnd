@@ -3,8 +3,5 @@ import ViewProjectPage from '@/modules/projects/components/ViewProject/ViewProje
 import pageStyles from '@/styles/mainPage.module.css';
 
 export default function ProjectDetailsPage() {
-  // Trong Pages Router, không cần truyền params vào component
-  // ViewProjectPage sẽ tự lấy params từ router.query
   return <ViewProjectPage />;
-
 }
