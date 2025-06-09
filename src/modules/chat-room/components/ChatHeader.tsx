@@ -8,12 +8,16 @@ interface ChatHeaderProps {
   activeContact: Contact | null;
   showParticipants: boolean;
   setShowParticipants: React.Dispatch<React.SetStateAction<boolean>>;
+  onVoiceCallClick?: () => void;
+  onVideoCallClick?: () => void;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
   activeContact,
   showParticipants,
   setShowParticipants,
+  onVoiceCallClick,
+  onVideoCallClick,
 }) => {
   if (!activeContact) {
     return (
@@ -42,10 +46,10 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         <button className={styles.actionButton}>
           <FiSearch />
         </button>
-        <button className={styles.actionButton}>
+        <button className={styles.actionButton} onClick={onVoiceCallClick}>
           <FiPhone />
         </button>
-        <button className={styles.actionButton}>
+        <button className={styles.actionButton} onClick={onVideoCallClick}>
           <FiVideo />
         </button>
         <button className={styles.actionButton}>

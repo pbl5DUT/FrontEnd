@@ -77,8 +77,7 @@ export const useChatService = (userId: number) => {
       )
     );
   }, [activeRoom, userId]); 
-  
-  // Handle WebSocket messages
+    // Handle WebSocket messages
   const handleWebSocketMessage = useCallback((data: any) => {
     console.log('WebSocket message received:', data);
     // Xử lý typing indicator
@@ -103,6 +102,35 @@ export const useChatService = (userId: number) => {
         return room;
       }));
     }
+    return;
+  }  // Handle WebRTC signaling messages
+  if (data.type === 'call_offer' || data.type === 'call_answer' || 
+      data.type === 'ice_candidate' || data.type === 'call_end') {
+    // Log the signaling message for debugging
+    console.log(`WebRTC ${data.type} signal received:`, data);
+    
+    // Make sure we have valid userId for both sides
+    // Convert to number to ensure consistent types
+    if (data.userId) {
+      data.userId = Number(data.userId);
+    }
+    if (data.user_id) {
+      data.user_id = Number(data.user_id);
+    }
+    
+    // Add chatroom_id if it's not present but roomId is
+    if (!data.chatroom_id && data.roomId) {
+      data.chatroom_id = data.roomId;
+    }
+    
+    // Add roomId if it's not present but chatroom_id is
+    if (!data.roomId && data.chatroom_id) {
+      data.roomId = data.chatroom_id;
+    }
+    
+    // Emit a custom event for this WebRTC message that can be listened to by components
+    const event = new CustomEvent('webrtc_signal', { detail: data });
+    window.dispatchEvent(event);
     return;
   }
   if (data.type === 'chat_message') {
@@ -477,7 +505,6 @@ export const useChatService = (userId: number) => {
       isMountedRef.current = false;
     };
   }, [loadChatRooms]);
-
   return {
     contacts,
     chatRooms,
@@ -494,6 +521,7 @@ export const useChatService = (userId: number) => {
     markMessagesAsRead,
     setActiveChatRoom,
     setTypingStatus,
-    startDirectChat
+    startDirectChat,
+    websocket // Expose websocket for signaling
   };
 };

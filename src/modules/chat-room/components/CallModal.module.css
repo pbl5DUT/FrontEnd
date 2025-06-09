@@ -1,0 +1,310 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.callModal {
+  background-color: #fff;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 800px;
+  height: 80%;
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.callHeader {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eaeaea;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.callHeader h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.participantCount {
+  font-size: 14px;
+  color: #666;
+  background-color: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.videoContainer {
+  flex: 1;
+  position: relative;
+  background-color: #212121;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Different layouts based on participant count */
+.videoContainerEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videoContainerSingle {
+  display: flex;
+  flex-direction: row;
+}
+
+.videoContainerDouble {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+.videoContainerTriple {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.videoContainerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+  padding: 10px;
+}
+
+.localVideoWrapper {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 150px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.localVideoWrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.localVideoLabel {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.remoteVideosContainer {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.remoteVideoItem {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  background-color: #333;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.remoteVideoItem video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.participantName {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 2;
+}
+
+.audioOnlyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.callerName {
+  margin-top: 20px;
+  font-size: 24px;
+  font-weight: 500;
+  color: white;
+}
+
+.callStatus {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #ccc;
+}
+
+.waitingForConnection {
+  color: white;
+  font-size: 18px;
+}
+
+.callControls {
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  background-color: #f8f9fa;
+}
+
+.controlButton {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: #e9ecef;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.2s;
+}
+
+.controlButton:hover {
+  background-color: #dee2e6;
+}
+
+.controlActive {
+  background-color: #6c757d;
+  color: white;
+}
+
+.endCallButton {
+  background-color: #dc3545;
+  color: white;
+}
+
+.endCallButton:hover {
+  background-color: #c82333;
+}
+
+/* Add Participant Panel */
+.addParticipantPanel {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  background-color: white;
+  border-radius: 8px;
+  width: 300px;
+  max-height: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 100;
+}
+
+.addParticipantPanel h3 {
+  margin: 0;
+  padding: 15px;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 16px;
+  color: #333;
+}
+
+.contactsList {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0 10px;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.contactItem:hover {
+  background-color: #f5f5f5;
+}
+
+.contactName {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.noContacts {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .callModal {
+    width: 95%;
+    height: 90%;
+  }
+  
+  .localVideoWrapper {
+    width: 100px;
+    height: 70px;
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .callControls {
+    gap: 10px;
+  }
+  
+  .controlButton {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .addParticipantPanel {
+    width: 250px;
+    right: 10px;
+    bottom: 70px;
+  }
+}

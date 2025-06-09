@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './ContactsList.module.css';
 import Avatar from './Avatar';
-import { FiUsers } from 'react-icons/fi';
+import { FiUsers, FiPhone, FiVideo } from 'react-icons/fi';
 import { ChatRoom, ProjectUser } from './types';
 
 interface ContactsListProps {
@@ -17,6 +17,9 @@ interface ContactsListProps {
   handleContactClick: (contact: any) => void;
   startDirectChat: (userId: number) => Promise<any>;
   setActiveChatRoom: (room: ChatRoom) => void;
+  // Add these new props for call functionality
+  onVoiceCallClick?: (userId: number | string, roomId: string | number) => void;
+  onVideoCallClick?: (userId: number | string, roomId: string | number) => void;
 }
 
 const ContactsList: React.FC<ContactsListProps> = ({
@@ -32,6 +35,8 @@ const ContactsList: React.FC<ContactsListProps> = ({
   handleContactClick,
   startDirectChat,
   setActiveChatRoom,
+  onVoiceCallClick,
+  onVideoCallClick,
 }) => {
   if (loading) {
     return <div className={styles.loading}>Đang tải...</div>;
@@ -47,27 +52,55 @@ const ContactsList: React.FC<ContactsListProps> = ({
       <>
         {chatRooms
           .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()))
-          .map((room) => (
-            <div
+          .map((room) => (            <div
               key={room.id}
               className={`${styles.contactItem} ${
                 room.id === activeRoom?.id ? styles.activeContact : ''
               }`}
-              onClick={() => handleContactClick(room)}
-            >              <Avatar
-                name={room.name}
-                avatar={room.isGroup ? undefined : room.participants[0]?.avatar}
-                isOnline={room.isGroup ? false : room.participants[0]?.isOnline}
-                isGroup={room.isGroup}
-              />
-              <div className={styles.contactInfo}>
-                <div className={styles.contactName}>{room.name}</div>
-                <div className={styles.lastSeen}>
-                  {room.lastMessage ? room.lastMessage.text.substring(0, 30) : 'No messages yet'}
+            >
+              <div className={styles.contactMain} onClick={() => handleContactClick(room)}>
+                <Avatar
+                  name={room.name}
+                  avatar={room.isGroup ? undefined : room.participants[0]?.avatar}
+                  isOnline={room.isGroup ? false : room.participants[0]?.isOnline}
+                  isGroup={room.isGroup}
+                />
+                <div className={styles.contactInfo}>
+                  <div className={styles.contactName}>{room.name}</div>
+                  <div className={styles.lastSeen}>
+                    {room.lastMessage ? room.lastMessage.text.substring(0, 30) : 'No messages yet'}
+                  </div>
                 </div>
+                {room.unreadCount > 0 && (
+                  <div className={styles.unreadBadge}>{room.unreadCount}</div>
+                )}
               </div>
-              {room.unreadCount > 0 && (
-                <div className={styles.unreadBadge}>{room.unreadCount}</div>
+
+              {!room.isGroup && onVoiceCallClick && onVideoCallClick && (
+                <div className={styles.contactActions}>
+                  <button 
+                    className={styles.callButton} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const participantId = room.participants.find(p => String(p.id) !== String(activeRoom?.senderId))?.id;
+                      if (participantId) onVoiceCallClick(participantId, room.id);
+                    }}
+                    title="Voice call"
+                  >
+                    <FiPhone size={16} />
+                  </button>
+                  <button 
+                    className={styles.callButton} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const participantId = room.participants.find(p => String(p.id) !== String(activeRoom?.senderId))?.id;
+                      if (participantId) onVideoCallClick(participantId, room.id);
+                    }}
+                    title="Video call"
+                  >
+                    <FiVideo size={16} />
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -117,25 +150,51 @@ const ContactsList: React.FC<ContactsListProps> = ({
               }
             };
             
-            return (
-              <div
+            return (              <div
                 key={`project-user-${projectUser.id}`}
                 className={`${styles.contactItem} ${styles.projectUserItem}`}
-                onClick={handleProjectUserClick}
-              >                <Avatar
-                  name={projectUser.name}
-                  avatar={projectUser.avatar}
-                  isOnline={projectUser.isOnline}
-                  isGroup={false}
-                />
-                <div className={styles.contactInfo}>
-                  <div className={styles.contactName}>{projectUser.name}</div>
-                  <div className={styles.projectInfo}>
-                    {projectUser.projectName ? `Dự án: ${projectUser.projectName}` : 'Cùng dự án với bạn'}
+              >
+                <div className={styles.contactMain} onClick={handleProjectUserClick}>
+                  <Avatar
+                    name={projectUser.name}
+                    avatar={projectUser.avatar}
+                    isOnline={projectUser.isOnline}
+                    isGroup={false}
+                  />
+                  <div className={styles.contactInfo}>
+                    <div className={styles.contactName}>{projectUser.name}</div>
+                    <div className={styles.projectInfo}>
+                      {projectUser.projectName ? `Dự án: ${projectUser.projectName}` : 'Cùng dự án với bạn'}
+                    </div>
                   </div>
+                  {existingChatRoom && existingChatRoom.unreadCount > 0 && (
+                    <div className={styles.unreadBadge}>{existingChatRoom.unreadCount}</div>
+                  )}
                 </div>
-                {existingChatRoom && existingChatRoom.unreadCount > 0 && (
-                  <div className={styles.unreadBadge}>{existingChatRoom.unreadCount}</div>
+
+                {onVoiceCallClick && onVideoCallClick && (
+                  <div className={styles.contactActions}>
+                    <button 
+                      className={styles.callButton} 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onVoiceCallClick(projectUser.id, existingChatRoom?.id || '');
+                      }}
+                      title="Voice call"
+                    >
+                      <FiPhone size={16} />
+                    </button>
+                    <button 
+                      className={styles.callButton} 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onVideoCallClick(projectUser.id, existingChatRoom?.id || '');
+                      }}
+                      title="Video call"
+                    >
+                      <FiVideo size={16} />
+                    </button>
+                  </div>
                 )}
               </div>
             );

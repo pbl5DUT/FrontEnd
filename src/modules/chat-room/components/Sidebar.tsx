@@ -22,6 +22,9 @@ interface SidebarProps {
   startDirectChat: (userId: number) => Promise<any>;
   setShowNewChatModal: React.Dispatch<React.SetStateAction<boolean>>;
   handleContactClick: (contact: any) => void;
+  // Add these new props for call functionality
+  onVoiceCallClick?: (userId: number | string, roomId: string | number) => void;
+  onVideoCallClick?: (userId: number | string, roomId: string | number) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -40,6 +43,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   startDirectChat,
   setShowNewChatModal,
   handleContactClick,
+  onVoiceCallClick,
+  onVideoCallClick,
 }) => {
   return (
     <div className={styles.sidebar}>
@@ -47,8 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <div className={styles.contactsList}>
-        <ContactsList
+      <div className={styles.contactsList}>        <ContactsList
           activeTab={activeTab}
           loading={loading}
           error={error}
@@ -61,6 +65,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           handleContactClick={handleContactClick}
           startDirectChat={startDirectChat}
           setActiveChatRoom={setActiveChatRoom}
+          onVoiceCallClick={onVoiceCallClick}
+          onVideoCallClick={onVideoCallClick}
         />
       </div>
       
