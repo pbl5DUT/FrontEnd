@@ -9,13 +9,12 @@ interface ContactsListProps {
   loading: boolean;
   error: string | null;
   loadingProjectUsers: boolean;
-  projectUsersError: string | null;
-  chatRooms: ChatRoom[];
+  projectUsersError: string | null;  chatRooms: ChatRoom[];
   projectUsers: ProjectUser[];
   activeRoom: ChatRoom | null;
   searchTerm: string;
   handleContactClick: (contact: any) => void;
-  startDirectChat: (userId: number) => Promise<any>;
+  startDirectChat: (userId: number | string) => Promise<any>;
   setActiveChatRoom: (room: ChatRoom) => void;
   // Add these new props for call functionality
   onVoiceCallClick?: (userId: number | string, roomId: string | number) => void;
@@ -138,9 +137,13 @@ const ContactsList: React.FC<ContactsListProps> = ({
                 if (existingChatRoom) {
                   // Nếu đã có phòng chat, mở phòng chat đó
                   setActiveChatRoom(existingChatRoom);
-                } else {
-                  // Nếu chưa có, tạo phòng chat mới
-                  const newRoom = await startDirectChat(projectUser.id);
+                } else {                  // Nếu chưa có, tạo phòng chat mới
+                  // Chuyển đổi ID sang dạng số nếu là chuỗi
+                  const userId = typeof projectUser.id === 'string' ? 
+                    Number(projectUser.id.replace(/^\D+/g, '')) : 
+                    projectUser.id;
+                  
+                  const newRoom = await startDirectChat(userId);
                   if (newRoom) {
                     setActiveChatRoom(newRoom);
                   }

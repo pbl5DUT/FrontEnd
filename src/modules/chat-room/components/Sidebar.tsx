@@ -16,10 +16,9 @@ interface SidebarProps {
   chatRooms: ChatRoom[];
   projectUsers: ProjectUser[];
   loadingProjectUsers: boolean;
-  projectUsersError: string | null;
-  activeRoom: ChatRoom | null;
+  projectUsersError: string | null;  activeRoom: ChatRoom | null;
   setActiveChatRoom: (room: ChatRoom) => void;
-  startDirectChat: (userId: number) => Promise<any>;
+  startDirectChat: (userId: number | string) => Promise<any>;
   setShowNewChatModal: React.Dispatch<React.SetStateAction<boolean>>;
   handleContactClick: (contact: any) => void;
   // Add these new props for call functionality

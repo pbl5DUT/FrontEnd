@@ -143,7 +143,6 @@ export const useChatService = (userId: number) => {
     
     // Định dạng tin nhắn nhận được
     const newMessage = formatMessageFromResponse(data.message);
-    console.log('Formatted message from WebSocket:', newMessage);
     
     // Xác định phòng chat từ tin nhắn
     let chatroomId = '';
@@ -160,7 +159,6 @@ export const useChatService = (userId: number) => {
       return prevRooms.map(room => {
         const normalizedMessageRoomId = normalizeRoomId(chatroomId);
         const normalizedRoomId = normalizeRoomId(room.id);        if (normalizedRoomId === normalizedMessageRoomId) {
-          console.log('Updating room with new message:', room.id);
           
           // Cập nhật số lượng tin nhắn chưa đọc
           // Chỉ tăng unreadCount nếu:
@@ -420,7 +418,7 @@ export const useChatService = (userId: number) => {
   }, []);
   
   // Start a direct chat with another user
-  const startDirectChat = useCallback(async (otherUserId: number) => {
+  const startDirectChat = useCallback(async (otherUserId: number | string) => {
     try {
       console.log(`Attempting to start direct chat with user ${otherUserId}`);
       
@@ -452,15 +450,28 @@ export const useChatService = (userId: number) => {
       if (!userData) {
         throw new Error('Could not fetch user information');
       }
-      
-      // Create a new room with a name based on the other user's name
+        // Create a new room with a name based on the other user's name
       const roomName = userData.full_name;
 
       console.log('Creating new direct chat room with name:', roomName);
+      
+      // Make sure we pass numeric user IDs to the API
+      // For userId, we already know it's a number from the hook parameter
+      const numericUserId = userId;
+      
+      // For otherUserId, handle string conversion properly with type guards
+      let numericOtherUserId: number;
+      if (typeof otherUserId === 'string') {
+        // Remove any non-numeric characters and convert to number
+        numericOtherUserId = parseInt(otherUserId.replace(/\D/g, '') || '0', 10);
+      } else {
+        numericOtherUserId = otherUserId;
+      }
+      
       // Create new chat room with just 2 participants
       const newRoom = await createNewChatRoom({
         name: roomName,
-        participantIds: [userId, otherUserId],
+        participantIds: [numericUserId, numericOtherUserId],
         isDirectChat: true // Đánh dấu đây là phòng chat 1-1
       });
       
@@ -523,6 +534,6 @@ export const useChatService = (userId: number) => {
     setActiveChatRoom,
     setTypingStatus,
     startDirectChat,
-    websocket // Expose websocket for signaling
+    websocket 
   };
 };
