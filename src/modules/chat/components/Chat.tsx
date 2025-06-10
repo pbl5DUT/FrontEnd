@@ -28,7 +28,6 @@ export default function Chat() {
     }
   };
 
-  // Auto scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);

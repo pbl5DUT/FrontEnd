@@ -1,8 +1,20 @@
-import axios from 'axios';
+export async function sendMessageToGemini(messages: { role: string; content: string }[]) {
+  const lastUserMessage = messages
+    .filter((m) => m.role === 'user')
+    .slice(-1)[0];
 
-const API_URL = 'http://localhost:8000/api/chat/'; // chỉnh lại theo BE thật của bạn
+  const response = await fetch('http://127.0.0.1:8000/api/chat-ai/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ question: lastUserMessage.content }),
+  });
 
-export const sendMessageToGemini = async (messages: { role: string; content: string }[]) => {
-  const res = await axios.post(API_URL, { messages });
-  return res.data;
-};
+  if (!response.ok) {
+    throw new Error('API Error');
+  }
+
+  const data = await response.json();
+  return { reply: data.query_result };
+}
