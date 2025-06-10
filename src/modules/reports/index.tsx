@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import ReportsList from './components/reports_list';
 import ReportDetail from './components/report_detail';
+import CreateReportForm from './components/create_report_form';
 import { WorkReport } from './types/report';
 import styles from './styles/Reports.module.css';
 
@@ -22,6 +23,7 @@ const Reports: React.FC = () => {
   };
 
   const handleCreateReport = () => {
+    console.log('Opening create form'); // Debug log
     setIsCreating(true);
   };
 
@@ -30,6 +32,7 @@ const Reports: React.FC = () => {
   };
 
   const handleCloseCreateForm = () => {
+    console.log('Closing create form'); // Debug log
     setIsCreating(false);
   };
 
@@ -38,12 +41,19 @@ const Reports: React.FC = () => {
     setSelectedReport(null); // Close modal after update
   };
 
+  const handleReportCreated = () => {
+    console.log('Report created successfully'); // Debug log
+    setRefreshReports((prev) => prev + 1); // Refresh the reports list
+    setIsCreating(false); // Close the create form
+  };
+
   return (
     <div className={styles.reportsWrapper}>
       <ReportsList
         userId={CURRENT_USER.id}
         onSelectReport={handleSelectReport}
         onCreateReport={handleCreateReport}
+        // refreshTrigger={refreshReports}
         key={`reports-list-${refreshReports}`}
       />
 
@@ -63,6 +73,7 @@ const Reports: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000,
+            backdropFilter: 'blur(2px)',
           }}
         >
           <div
@@ -70,12 +81,13 @@ const Reports: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
             style={{
               backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '20px',
+              borderRadius: '12px',
               maxWidth: '90vw',
               maxHeight: '90vh',
               overflow: 'auto',
               position: 'relative',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              animation: 'modalEnter 0.2s ease-out',
             }}
           >
             <ReportDetail
@@ -87,7 +99,7 @@ const Reports: React.FC = () => {
         </div>
       )}
 
-      {/* Modal for Create Report Form - if needed later */}
+      {/* Modal for Create Report Form */}
       {isCreating && (
         <div 
           className={styles.modalOverlay} 
@@ -103,6 +115,7 @@ const Reports: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000,
+            backdropFilter: 'blur(2px)',
           }}
         >
           <div
@@ -110,19 +123,21 @@ const Reports: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
             style={{
               backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '20px',
+              borderRadius: '12px',
               maxWidth: '90vw',
               maxHeight: '90vh',
               overflow: 'auto',
               position: 'relative',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              animation: 'modalEnter 0.2s ease-out',
             }}
           >
-            <div>
-              <h2>Tạo báo cáo mới</h2>
-              <p>Form tạo báo cáo sẽ được implement sau...</p>
-              <button onClick={handleCloseCreateForm}>Đóng</button>
-            </div>
+            <CreateReportForm
+              userId={CURRENT_USER.id}
+              userName={CURRENT_USER.name}
+              onClose={handleCloseCreateForm}
+              onReportCreated={handleReportCreated}
+            />
           </div>
         </div>
       )}

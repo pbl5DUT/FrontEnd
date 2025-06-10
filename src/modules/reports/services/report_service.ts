@@ -1,4 +1,4 @@
-// modules/stacks/services/reportService.ts - ✅ Aligned with BE WorkReportViewSet
+// modules/stacks/services/reportService.ts - ✅ Fixed to match exact API format
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import {
   WorkReport,
@@ -7,42 +7,47 @@ import {
   PaginatedResponse,
   ReportStatistics,
   TaskForReporting,
+  CreateReportRequest, // Use the correct interface
 } from '../types/report';
 
-// Define backend payload interfaces for type safety
+// ✅ Updated to match EXACT API format
 interface CreateReportPayload {
+  id?: string;                    // Optional - backend generates
   type: ReportType;
   title: string;
-  user: string; // user_id
-  project?: string; // project_id
-  tasks?: string[]; // task_ids
-  status?: ReportStatus;
-  start_date: string;
-  end_date: string;
+  user: string;                   // user_id
+  project?: string;               // project_id (optional)
+  tasks?: string[];               // task_ids array (optional)
+  status?: ReportStatus;          // Default: DRAFT
+  start_date: string;             // YYYY-MM-DD
+  end_date: string;               // YYYY-MM-DD
+  submitted_date?: string | null; // ISO string or null
+  reviewed_date?: string | null;  // ISO string or null
+  reviewed_by?: string | null;    // user_id or null
   summary: string;
-  challenges?: string;
-  next_steps?: string;
+  challenges?: string;            // Optional
+  next_steps?: string;            // Optional
+  created_at?: string;            // Optional - backend sets
+  updated_at?: string;            // Optional - backend sets
 }
 
-interface UpdateReportPayload {
-  type?: ReportType;
-  title?: string;
-  user?: string;
-  project?: string;
-  tasks?: string[];
-  status?: ReportStatus;
-  start_date?: string;
-  end_date?: string;
-  summary?: string;
-  challenges?: string;
-  next_steps?: string;
+interface UpdateReportPayload extends Partial<CreateReportPayload> {
+  id?: string; // For updates
 }
 
 interface ReportTasksResponse {
   report_id: string;
   report_title: string;
   tasks_count: number;
-  tasks: Array<{ task_id: string; task_name: string; description?: string; status?: string; priority?: string; progress?: number; time_spent?: number }>;
+  tasks: Array<{ 
+    task_id: string; 
+    task_name: string; 
+    description?: string; 
+    status?: string; 
+    priority?: string; 
+    progress?: number; 
+    time_spent?: number; 
+  }>;
 }
 
 interface TaskActionResponse {
@@ -82,9 +87,10 @@ api.interceptors.response.use(
   }
 );
 
-// Normalize response data
+// ✅ Better response normalization
 const normalizeResponse = <T>(response: AxiosResponse): T => {
-  return response.data.data || response.data;
+  // Handle both paginated and direct responses
+  return response.data.data || response.data.results || response.data;
 };
 
 class ReportService {
@@ -96,14 +102,20 @@ class ReportService {
   async getUserReports(userId: string): Promise<WorkReport[]> {
     if (!userId) throw new Error('userId is required');
     const response = await api.get('/workreports/', { params: { user_id: userId } });
-    return normalizeResponse<WorkReport[]>(response) || [];
+    
+    // Handle both array and paginated response
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data.results) {
+      return data.results;
+    }
+    return data.data || [];
   }
 
   /**
-   * Get reports with filters and pagination
-   * @param userId User ID (optional)
-   * @param filters Filters and pagination options
-   * @returns Paginated response of WorkReport
+   * ✅ Fixed: Get reports with filters and pagination
+   * Handle both array and paginated responses from backend
    */
   async getUserReportsWithFilters(
     userId?: string,
@@ -114,7 +126,7 @@ class ReportService {
       page?: number;
       page_size?: number;
     }
-  ): Promise<PaginatedResponse<WorkReport>> {
+  ): Promise<WorkReport[] | PaginatedResponse<WorkReport>> {
     const params: Record<string, any> = {};
     if (userId) params.user_id = userId;
     if (filters?.status) params.status = filters.status;
@@ -124,7 +136,27 @@ class ReportService {
     if (filters?.page_size) params.page_size = filters.page_size;
 
     const response = await api.get('/workreports/', { params });
-    return normalizeResponse<PaginatedResponse<WorkReport>>(response);
+    
+    // Return the actual response format from backend
+    const data = response.data;
+    
+    // If it's a paginated response
+    if (data.results !== undefined) {
+      return {
+        count: data.count || 0,
+        next: data.next || null,
+        previous: data.previous || null,
+        results: data.results || []
+      };
+    }
+    
+    // If it's a simple array
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    // Fallback
+    return [];
   }
 
   /**
@@ -144,43 +176,60 @@ class ReportService {
   }
 
   /**
-   * Create a new report
-   * @param reportData Report data
-   * @returns Created WorkReport
+   * ✅ FIXED: Simplified createReport method
+   * Accept CreateReportRequest and send directly to API
    */
-  async createReport(
-    reportData: Omit<WorkReport, 'id' | 'created_at' | 'updated_at'> | CreateReportPayload
-  ): Promise<WorkReport> {
-    const createData: CreateReportPayload = 'user_id' in reportData
-      ? (reportData as CreateReportPayload)
-      : {
-          type: reportData.type,
-          title: reportData.title,
-          user: (reportData.user as any)?.user_id || reportData.user,
-          project: (reportData.project as any)?.project_id,
-          tasks: reportData.tasks?.map((task) => (task as any).task_id || task),
-          status: reportData.status || ReportStatus.DRAFT,
-          start_date: reportData.start_date,
-          end_date: reportData.end_date,
-          summary: reportData.summary,
-          challenges: reportData.challenges,
-          next_steps: reportData.next_steps,
-        };
-
+  async createReport(reportData: CreateReportRequest): Promise<WorkReport> {
     // Validate required fields
-    if (!createData.title || !createData.user || !createData.start_date || !createData.end_date || !createData.summary) {
-      throw new Error('Missing required fields: title, user, start_date, end_date, summary');
+    if (!reportData.title?.trim()) {
+      throw new Error('Title is required');
+    }
+    if (!reportData.user) {
+      throw new Error('User is required');
+    }
+    if (!reportData.start_date) {
+      throw new Error('Start date is required');
+    }
+    if (!reportData.end_date) {
+      throw new Error('End date is required');
+    }
+    if (!reportData.summary?.trim()) {
+      throw new Error('Summary is required');
     }
 
-    // Remove undefined/null values
-    Object.keys(createData).forEach((key) => {
-      if (createData[key as keyof CreateReportPayload] === undefined || createData[key as keyof CreateReportPayload] === null) {
-        delete createData[key as keyof CreateReportPayload];
-      }
-    });
+    // Clean the payload - remove undefined values
+    const cleanPayload: CreateReportPayload = {
+      ...reportData,
+      // Ensure required fields have default values
+      status: reportData.status || ReportStatus.DRAFT,
+    //   submitted_date: reportData.submitted_date || null,
+    //   reviewed_date: reportData.reviewed_date || null,
+    //   reviewed_by: reportData.reviewed_by || null,
+    };
 
-    const response = await api.post('/workreports/', createData);
-    return normalizeResponse<WorkReport>(response);
+    // Remove undefined/null fields except those that should be explicitly null
+    const finalPayload = Object.fromEntries(
+      Object.entries(cleanPayload).filter(([key, value]) => {
+        // Keep these fields even if null
+        const keepNullFields = ['submitted_date', 'reviewed_date', 'reviewed_by'];
+        if (keepNullFields.includes(key)) {
+          return true;
+        }
+        // Remove undefined values, but keep empty strings and 0
+        return value !== undefined;
+      })
+    );
+
+    console.log('📤 Sending to API:', finalPayload);
+
+    try {
+      const response = await api.post('/workreports/', finalPayload);
+      console.log('📥 API Response:', response.data);
+      return normalizeResponse<WorkReport>(response);
+    } catch (error: any) {
+      console.error('❌ API Error:', error.response?.data || error.message);
+      throw error;
+    }
   }
 
   /**
@@ -189,32 +238,15 @@ class ReportService {
    * @param reportData Partial report data
    * @returns Updated WorkReport
    */
-  async updateReport(reportId: string, reportData: Partial<WorkReport> | UpdateReportPayload): Promise<WorkReport> {
+  async updateReport(reportId: string, reportData: Partial<CreateReportRequest>): Promise<WorkReport> {
     if (!reportId) throw new Error('reportId is required');
-    const updateData: UpdateReportPayload = 'user_id' in reportData
-      ? (reportData as UpdateReportPayload)
-      : {
-          type: reportData.type,
-          title: reportData.title,
-          user: (reportData.user as any)?.user_id,
-          project: (reportData.project as any)?.project_id,
-          tasks: reportData.tasks?.map((task) => (task as any).task_id || task),
-          status: reportData.status,
-          start_date: reportData.start_date,
-          end_date: reportData.end_date,
-          summary: reportData.summary,
-          challenges: reportData.challenges,
-          next_steps: reportData.next_steps,
-        };
 
-    // Remove undefined/null values
-    Object.keys(updateData).forEach((key) => {
-      if (updateData[key as keyof UpdateReportPayload] === undefined || updateData[key as keyof UpdateReportPayload] === null) {
-        delete updateData[key as keyof UpdateReportPayload];
-      }
-    });
+    // Clean the payload
+    const cleanPayload = Object.fromEntries(
+      Object.entries(reportData).filter(([_, value]) => value !== undefined)
+    );
 
-    const response = await api.patch(`/workreports/${reportId}/`, updateData);
+    const response = await api.patch(`/workreports/${reportId}/`, cleanPayload);
     return normalizeResponse<WorkReport>(response);
   }
 
@@ -301,28 +333,60 @@ class ReportService {
   }
 
   /**
-   * Get user tasks for reporting
-   * @param userId User ID
-   * @param startDate Start date
-   * @param endDate End date
-   * @param projectId Optional project ID
-   * @returns Array of TaskForReporting
+   * ✅ UPDATED: Get user tasks for reporting
+   * Falls back to existing task service if report-specific endpoint doesn't exist
    */
-  async getUserTasksForReporting(userId: string, startDate: string, endDate: string, projectId?: string): Promise<TaskForReporting[]> {
-    if (!userId || !startDate || !endDate) throw new Error('userId, startDate, and endDate are required');
+  async getUserTasksForReporting(
+    userId: string, 
+    startDate: string, 
+    endDate: string, 
+    projectId?: string
+  ): Promise<TaskForReporting[]> {
+    if (!userId || !startDate || !endDate) {
+      throw new Error('userId, startDate, and endDate are required');
+    }
+
     const params: Record<string, any> = {
       user_id: userId,
       start_date: startDate,
       end_date: endDate,
-      project_id: projectId,
     };
+    if (projectId) params.project_id = projectId;
 
     try {
+      // Try the report-specific endpoint first
       const response = await api.get('/workreports/user_tasks_for_reporting/', { params });
       return normalizeResponse<TaskForReporting[]>(response) || [];
     } catch (error: any) {
-      if (error.response?.status === 404) return [];
-      throw error;
+      console.warn('Report-specific task endpoint not available, using fallback');
+      
+      // Fallback to generic task endpoint if available
+      try {
+        // This should match your existing task service
+        const fallbackResponse = await api.get('/tasks/', { params });
+        const tasks = normalizeResponse<any[]>(fallbackResponse) || [];
+        
+        // Transform generic tasks to TaskForReporting format
+        return tasks.map(task => ({
+          task_id: task.task_id || task.id,
+          task_name: task.task_name || task.name || task.title,
+          description: task.description || '',
+          status: task.status || 'TODO',
+          priority: task.priority || 'MEDIUM',
+          start_date: task.start_date || startDate,
+          due_date: task.due_date || endDate,
+          progress: task.progress || 0,
+          time_spent: task.time_spent || 0,
+          updated_at: task.updated_at || new Date().toISOString(),
+          project: {
+            project_id: task.project_id || projectId || '',
+            project_name: task.project_name || 'Unknown Project'
+          }
+        }));
+      } catch (fallbackError) {
+        console.error('Both task endpoints failed:', fallbackError);
+        return [];
+      }
     }
   }
 
@@ -370,14 +434,15 @@ class ReportService {
    */
   async removeTaskFromReport(reportId: string, taskId: string): Promise<TaskActionResponse> {
     if (!reportId || !taskId) throw new Error('reportId and taskId are required');
-    const response = await api.delete(`/workreports/${reportId}/tasks/`, { params: { task_id: taskId } });
+    const response = await api.delete(`/workreports/${reportId}/tasks/`, { 
+      params: { task_id: taskId } 
+    });
     return normalizeResponse<TaskActionResponse>(response);
   }
 
   /**
-   * Quick create report with simplified format
-   * @param data Simplified report data
-   * @returns Created WorkReport
+   * ✅ NEW: Quick create method with simplified interface
+   * Perfect for CreateReportForm usage
    */
   async quickCreateReport(data: {
     type: ReportType;
@@ -391,7 +456,7 @@ class ReportService {
     challenges?: string;
     next_steps?: string;
   }): Promise<WorkReport> {
-    return this.createReport({
+    const createRequest: CreateReportRequest = {
       type: data.type,
       title: data.title,
       user: data.user_id,
@@ -403,7 +468,12 @@ class ReportService {
       challenges: data.challenges,
       next_steps: data.next_steps,
       status: ReportStatus.DRAFT,
-    });
+    //   submitted_date: null,
+    //   reviewed_date: null,
+    //   reviewed_by: null,
+    };
+
+    return this.createReport(createRequest);
   }
 
   /**
@@ -452,6 +522,38 @@ class ReportService {
     } catch (error) {
       return { draft: 0, submitted: 0, reviewed: 0, total: 0 };
     }
+  }
+
+  /**
+   * ✅ NEW: Validate report data before submission
+   */
+  validateReportData(data: CreateReportRequest): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    if (!data.title?.trim()) errors.push('Title is required');
+    if (!data.user) errors.push('User is required');
+    if (!data.start_date) errors.push('Start date is required');
+    if (!data.end_date) errors.push('End date is required');
+    if (!data.summary?.trim()) errors.push('Summary is required');
+
+    // Date validation
+    if (data.start_date && data.end_date) {
+      const start = new Date(data.start_date);
+      const end = new Date(data.end_date);
+      if (start > end) {
+        errors.push('Start date cannot be after end date');
+      }
+    }
+
+    // Project validation for PROJECT type
+    if (data.type === ReportType.PROJECT && !data.project) {
+      errors.push('Project is required for PROJECT type reports');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   }
 }
 
