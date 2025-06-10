@@ -8,11 +8,14 @@ interface CreateChatModalProps {
   setShowNewChatModal: React.Dispatch<React.SetStateAction<boolean>>;
   newChatName: string;
   setNewChatName: React.Dispatch<React.SetStateAction<string>>;
-  selectedParticipants: number[];
-  setSelectedParticipants: React.Dispatch<React.SetStateAction<number[]>>;
+  selectedParticipants: string[];
+  setSelectedParticipants: React.Dispatch<React.SetStateAction<string[]>>;
   contacts: any[];
   handleCreateChatRoom: () => void;
-  handleParticipantToggle: (userId: number) => void;
+  handleParticipantToggle: (userId: string) => void;
+  isAdmin?: boolean; // Người dùng có phải admin không
+  projectMembers?: any[]; // Danh sách thành viên trong project
+  loadingMembers?: boolean; // Đang tải danh sách thành viên
 }
 
 const CreateChatModal: React.FC<CreateChatModalProps> = ({
@@ -24,6 +27,9 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
   contacts,
   handleCreateChatRoom,
   handleParticipantToggle,
+  isAdmin,
+  projectMembers,
+  loadingMembers
 }) => {
   if (!showNewChatModal) {
     return null;
@@ -51,9 +57,18 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
               placeholder="Nhập tên nhóm trò chuyện"
               className={styles.modalInput}
             />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Người tham gia</label>
+          </div>          <div className={styles.formGroup}>
+            <label>
+              Người tham gia
+              {isAdmin ? (
+                <span className={styles.labelNote}> (Bạn có thể thêm bất kỳ người dùng nào)</span>
+              ) : (
+                <span className={styles.labelNote}> (Bạn chỉ có thể thêm người trong cùng dự án)</span>
+              )}
+            </label>
+            {loadingMembers && (
+              <div className={styles.loadingMessage}>Đang tải danh sách người dùng...</div>
+            )}
             {selectedParticipants.length > 0 && (
               <div className={styles.selectedParticipants}>
                 {selectedParticipants.map((participantId) => {
@@ -81,9 +96,8 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
                 >
                   <input
                     type="checkbox"
-                    id={`contact-${contact.id}`}
-                    checked={selectedParticipants.includes(Number(contact.id))}
-                    onChange={() => handleParticipantToggle(Number(contact.id))}
+                    id={`contact-${contact.id}`}                    checked={selectedParticipants.includes(String(contact.id))}
+                    onChange={() => handleParticipantToggle(String(contact.id))}
                   />
                   <label htmlFor={`contact-${contact.id}`}>                    <Avatar
                       name={contact.name}

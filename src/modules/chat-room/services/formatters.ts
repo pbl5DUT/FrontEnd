@@ -19,32 +19,45 @@ export const formatContactFromResponse = (contact: any): ChatContact => {
  * Hàm format response từ API sang ChatRoom
  */
 export const formatChatRoomFromResponse = (room: any): ChatRoom => {
-  const participants = room.participants.map((user: any) => ({
-    id: user.user_id,
-    name: user.full_name,
-    avatar: user.avatar,
-    isOnline: user.is_online || false,
-    lastSeen: user.last_seen || 'Offline',
-  }));
+  // Ensure participants is an array and handle possible null/undefined values
+  const rawParticipants = Array.isArray(room.participants) ? room.participants : [];
+    const participants = rawParticipants
+    .filter((participant: any) => participant !== null && participant !== undefined)
+    .map((participant: any) => {
+      // Check for different participant data structures
+      // Some APIs return participant.user as the actual user data
+      const user = participant.user || participant;
+    
+      // Validate and provide fallbacks for each user property
+      return {
+        id: user.user_id || user.id || participant.user_id || participant.id || '',
+        name: user.full_name || user.name || participant.full_name || participant.name || 'Người dùng',
+        avatar: user.avatar || participant.avatar || null,
+        isOnline: user.is_online || user.isOnline || participant.is_online || participant.isOnline || false,
+        lastSeen: user.last_seen || user.lastSeen || participant.last_seen || participant.lastSeen || 'Offline',
+      };
+    });
 
   let lastMessage = undefined;
   if (room.last_message) {
+    // Safely access nested properties
+    const sentBy = room.last_message.sent_by || {};
+    
     lastMessage = {
-      id: room.last_message.message_id,
-      senderId: room.last_message.sent_by.user_id,
-      text: room.last_message.content,
-      timestamp: new Date(room.last_message.sent_at).toLocaleTimeString([], {
+      id: room.last_message.message_id || room.last_message.id || '',
+      senderId: sentBy.user_id || sentBy.id || '',
+      text: room.last_message.content || '',
+      timestamp: new Date(room.last_message.sent_at || Date.now()).toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
       }),
       status: room.last_message.is_read ? 'read' as MessageStatus : 'delivered' as MessageStatus,
     };
   }
-
   return {
-    id: room.chatroom_id,
-    name: room.name,
-    senderId: room.created_by?.user_id || '',
+    id: room.chatroom_id || room.id || '',
+    name: room.name || 'Chat Room',
+    senderId: room.created_by?.user_id || room.senderId || '',
     participants,
     isGroup: participants.length > 2,
     lastMessage,
@@ -85,15 +98,6 @@ export const formatMessageFromResponse = (message: any): ChatMessage => {
   if (!senderId && message.sender_id) {
     senderId = message.sender_id;
   }
-    // Log the structure to help debugging
-  console.log('Formatting message:', {
-    id: message.message_id || message.id,
-    senderId,
-    content: message.content,
-    sent_at: message.sent_at,
-    is_read: message.is_read,
-    fullMessage: JSON.stringify(message).substring(0, 200) // Show first 200 chars of full message
-  });
   
   return {
     id: message.message_id || message.id,

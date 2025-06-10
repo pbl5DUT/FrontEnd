@@ -32,11 +32,13 @@ export interface ChatRoom {
 }
 
 export interface ProjectUser {
-  id: number;
+  id: number | string;
   name: string;
   avatar?: string;
   isOnline?: boolean;
   projectName?: string;
+  email?: string;
+  projectId?: string | number;
 }
 
 export interface AttachmentUpload {

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectFormData } from '../types/project';
 import {
   fetchProjects,
-  createProject,
   updateProject as apiUpdateProject,
   deleteProject as apiDeleteProject,
   addProjectMembers,
@@ -13,6 +12,7 @@ import {
   updateProjectStatus,
   fetchUser_Projects
 } from '../services/project_service';
+import { createProjectWithChatRoom } from '../services/project_chat_service';
 
 import { getCurrentUser, isAuthenticated, UserRole } from '@/modules/auth/services/authService';
 
@@ -155,15 +155,14 @@ console.log(' Current user--------:3', data);
 
     return matchesSearch && matchesStatus;
   });
-
-  // Add new project function - cập nhật để phù hợp với body mới
+  // Add new project function - tạo cả project và chatroom
   const addProject = async (projectData: ProjectFormData): Promise<void> => {
     try {
       setLoading(true);
       
-      // Không cần chuyển đổi gì cả, trực tiếp gửi projectData đến API
-      // ProjectFormData đã được cập nhật để phù hợp với yêu cầu của API
-      const newProject = await createProject(projectData);
+      // Sử dụng createProjectWithChatRoom thay vì createProject
+      // Hàm này sẽ tạo cả project và chatroom tương ứng
+      const newProject = await createProjectWithChatRoom(projectData);
       
       // Refresh lại danh sách dự án sau khi thêm
       await refreshProjects();
