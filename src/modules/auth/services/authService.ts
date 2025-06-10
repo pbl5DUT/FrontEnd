@@ -9,7 +9,7 @@ export enum UserRole {
 
 // Interface cho dữ liệu người dùng
 export interface User {
-  user_id: number;
+  user_id: string;
   full_name: string;
   email: string;
   role: UserRole;
