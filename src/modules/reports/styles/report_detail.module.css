@@ -1,0 +1,603 @@
+
+/* Reports.module.css */
+
+/* Main wrapper */
+.reportsWrapper {
+    padding: 20px;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  /* Reports container */
+  .reportsContainer {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header section */
+  .reportsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .filterContainer {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .filterSelect,
+  .filterInput {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 120px;
+  }
+  
+  .filterSelect:focus,
+  .filterInput:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .createButton {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+  }
+  
+  .createButton:hover {
+    background: #2563eb;
+  }
+  
+  /* Table styles */
+  .reportsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+  
+  .reportsTable th {
+    background: #f9fafb;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+    color: #374151;
+  }
+  
+  .reportsTable td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #6b7280;
+  }
+  
+  .reportRow {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .reportRow:hover {
+    background-color: #f9fafb;
+  }
+  
+  .reportTitle {
+    font-weight: 500;
+    color: #111827;
+  }
+  
+  /* Status badges */
+  .statusBadge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  
+  .statusDraft {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .statusSubmitted {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .statusReviewed {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  
+  /* Modal styles */
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+  }
+  
+  .modalContent {
+    background: white;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalEnter 0.2s ease-out;
+  }
+  
+  @keyframes modalEnter {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  /* Report detail styles */
+  .reportDetailHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 0;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+  }
+  
+  .reportDetailContent {
+    padding: 0 24px 24px;
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  .closeButton:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+  
+  .sectionTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
+  }
+  
+  .sectionContent {
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+  }
+  
+  /* Report meta information */
+  .reportMeta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+  
+  .reportMetaItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .metaLabel {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .metaValue {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 500;
+  }
+  
+  /* Report stats */
+  .reportStats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .statCard {
+    padding: 20px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .statValue {
+    display: block;
+    font-size: 24px;
+    font-weight: 600;
+    color: #3b82f6;
+    margin-bottom: 4px;
+  }
+  
+  .statLabel {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  
+  /* Report sections */
+  .reportSection {
+    margin-bottom: 32px;
+  }
+  
+  /* Tasks table */
+  .tasksTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+  
+  .tasksTable th {
+    background: #f9fafb;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+    color: #374151;
+    font-size: 14px;
+  }
+  
+  .tasksTable td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+  }
+  
+  .taskNotes {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+    font-style: italic;
+  }
+  
+  /* Task status badges */
+  .taskStatusTodo {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  .taskStatusInProgress {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  .taskStatusDone {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  /* Progress bar */
+  .progressBar {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    transition: width 0.3s ease;
+  }
+  
+  .progressText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: 500;
+    color: #111827;
+  }
+  
+  /* Action buttons */
+  .actionButtons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 32px;
+  }
+  
+  .submitButton {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .submitButton:hover:not(:disabled) {
+    background: #059669;
+  }
+  
+  .submitButton:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+  
+  .deleteButton {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .deleteButton:hover:not(:disabled) {
+    background: #dc2626;
+  }
+  
+  .deleteButton:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+  
+  .retryButton {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .retryButton:hover {
+    background: #2563eb;
+  }
+  
+  /* Empty state */
+  .emptyState {
+    text-align: center;
+    padding: 48px 24px;
+    color: #6b7280;
+  }
+  
+  .emptyState p {
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+  
+  .emptyStateButton {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .emptyStateButton:hover {
+    background: #2563eb;
+  }
+  
+  /* Error state */
+  .errorContainer {
+    text-align: center;
+    padding: 48px 24px;
+  }
+  
+  .errorIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  
+  .errorMessage {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  
+  .errorMessage h3 {
+    color: #dc2626;
+    margin: 0 0 8px 0;
+  }
+  
+  .errorMessage p {
+    color: #7f1d1d;
+    margin: 0;
+  }
+  
+  /* Loading skeleton */
+  .loading {
+    padding: 24px;
+  }
+  
+  .skeletonHeader {
+    height: 40px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+  
+  .skeletonTable {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .skeletonRow {
+    height: 50px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton 1.5s infinite;
+    border-radius: 4px;
+  }
+  
+  @keyframes skeleton {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  /* Pagination */
+  .paginationInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .paginationControls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .paginationButton {
+    background: white;
+    border: 1px solid #d1d5db;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .paginationButton:hover:not(:disabled) {
+    background: #f9fafb;
+  }
+  
+  .paginationButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .paginationSelect {
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .reportsWrapper {
+      padding: 10px;
+    }
+    
+    .reportsContainer {
+      padding: 16px;
+    }
+    
+    .reportsHeader {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .filterContainer {
+      flex-direction: column;
+    }
+    
+    .modalContent {
+      max-width: 95vw;
+      max-height: 95vh;
+      margin: 10px;
+    }
+    
+    .reportMeta {
+      grid-template-columns: 1fr;
+    }
+    
+    .reportStats {
+      grid-template-columns: 1fr;
+    }
+    
+    .actionButtons {
+      flex-direction: column;
+    }
+    
+    .paginationInfo {
+      flex-direction: column;
+      align-items: center;
+    }
+  }

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import ReportsList from './components/reports_list';
 import ReportDetail from './components/report_detail';
-// import CreateReportForm from './components/create_report_form';
 import { WorkReport } from './types/report';
 import styles from './styles/Reports.module.css';
 
@@ -18,6 +17,7 @@ const Reports: React.FC = () => {
   const [refreshReports, setRefreshReports] = useState(0);
 
   const handleSelectReport = (report: WorkReport) => {
+    console.log('Selected report:', report); // Debug log
     setSelectedReport(report);
   };
 
@@ -35,6 +35,7 @@ const Reports: React.FC = () => {
 
   const handleReportUpdated = () => {
     setRefreshReports((prev) => prev + 1);
+    setSelectedReport(null); // Close modal after update
   };
 
   return (
@@ -46,11 +47,36 @@ const Reports: React.FC = () => {
         key={`reports-list-${refreshReports}`}
       />
 
+      {/* Modal for Report Detail */}
       {selectedReport && (
-        <div className={styles.modalOverlay} onClick={handleCloseDetail}>
+        <div 
+          className={styles.modalOverlay} 
+          onClick={handleCloseDetail}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
           <div
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '20px',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              position: 'relative',
+            }}
           >
             <ReportDetail
               report={selectedReport}
@@ -61,21 +87,45 @@ const Reports: React.FC = () => {
         </div>
       )}
 
-      {/* {isCreating && (
-        <div className={styles.modalOverlay} onClick={handleCloseCreateForm}>
+      {/* Modal for Create Report Form - if needed later */}
+      {isCreating && (
+        <div 
+          className={styles.modalOverlay} 
+          onClick={handleCloseCreateForm}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
           <div
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '20px',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              position: 'relative',
+            }}
           >
-            <CreateReportForm
-              userId={CURRENT_USER.id}
-              userName={CURRENT_USER.name}
-              onClose={handleCloseCreateForm}
-              onReportCreated={handleReportUpdated}
-            />
+            <div>
+              <h2>Tạo báo cáo mới</h2>
+              <p>Form tạo báo cáo sẽ được implement sau...</p>
+              <button onClick={handleCloseCreateForm}>Đóng</button>
+            </div>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

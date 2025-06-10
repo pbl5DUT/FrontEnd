@@ -11,7 +11,7 @@ interface ReportsListProps {
 }
 
 const ReportsList: React.FC<ReportsListProps> = ({ userId, onSelectReport, onCreateReport }) => {
-  // State initialization with default empty array to avoid undefined errors
+  // State initialization
   const [reports, setReports] = useState<WorkReport[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +28,15 @@ const ReportsList: React.FC<ReportsListProps> = ({ userId, onSelectReport, onCre
     next: string | null;
     previous: string | null;
     currentPage: number;
+    totalPages: number;
+    pageSize: number;
   }>({
-    count: 0, // Will be updated based on total items fetched
+    count: 0,
     next: null,
     previous: null,
     currentPage: 1,
+    totalPages: 1,
+    pageSize: 10,
   });
 
   // Fetch reports with memoized function
@@ -47,53 +51,89 @@ const ReportsList: React.FC<ReportsListProps> = ({ userId, onSelectReport, onCre
           status: filter.status !== 'ALL' ? filter.status : undefined,
           project_id: filter.projectId,
           page,
-          page_size: 10, // Adjusted for better initial load
+          page_size: pagination.pageSize,
         });
 
         // Handle raw array response from backend
         const fetchedReports = Array.isArray(response) ? response : [];
-        const totalItems = fetchedReports.length; // Assume total count is the length for now (adjust if backend provides total)
-        const hasNext = totalItems === 10; // Assume next page exists if exactly 10 items are returned
+        const totalItems = fetchedReports.length;
+        const hasNext = totalItems === pagination.pageSize;
         const hasPrevious = page > 1;
+        const estimatedTotal = page * pagination.pageSize;
 
         setReports((prev) => (append ? [...prev, ...fetchedReports] : fetchedReports));
-        setPagination({
-          count: totalItems, // Update with actual total if backend provides it
-          next: hasNext ? `/api/workreports/?user_id=${userId}&page=${page + 1}&page_size=10` : null,
-          previous: hasPrevious ? `/api/workreports/?user_id=${userId}&page=${page - 1}&page_size=10` : null,
+        setPagination((prev) => ({
+          ...prev,
+          count: estimatedTotal,
+          next: hasNext ? `/api/workreports/?user_id=${userId}&page=${page + 1}&page_size=${pagination.pageSize}` : null,
+          previous: hasPrevious ? `/api/workreports/?user_id=${userId}&page=${page - 1}&page_size=${pagination.pageSize}` : null,
           currentPage: page,
-        });
+          totalPages: Math.ceil(estimatedTotal / pagination.pageSize) || 1,
+        }));
       } catch (error: any) {
         const errorMessage =
           error.response?.data?.error || error.message || 'Không thể tải báo cáo. Vui lòng thử lại.';
         setError(errorMessage);
-        setReports([]); // Reset to empty array on error
+        setReports([]);
       } finally {
         setLoading(false);
       }
     },
-    [userId, filter]
+    [userId, filter, pagination.pageSize]
   );
 
-  // Fetch reports on mount or when filters/userId change
+  // Fetch reports on mount or when filters/userId/pageSize change
   useEffect(() => {
     if (userId) {
       fetchReports(1);
     }
-  }, [userId, filter, fetchReports]);
+  }, [userId, filter, pagination.pageSize, fetchReports]);
 
   // Handle pagination
+  const handlePageChange = (page: number) => {
+    if (page > 0 && page <= pagination.totalPages) {
+      fetchReports(page);
+    }
+  };
+
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPageSize = parseInt(e.target.value);
+    setPagination((prev) => ({
+      ...prev,
+      pageSize: newPageSize,
+      currentPage: 1,
+      next: null,
+      previous: null,
+    }));
+  };
+
   const handleLoadMore = () => {
     if (pagination.next) {
       const nextPage = new URL(pagination.next).searchParams.get('page');
-      if (nextPage) fetchReports(parseInt(nextPage), true);
+      if (nextPage) fetchReports(parseInt(nextPage), false);
     }
   };
 
   const handlePreviousPage = () => {
     if (pagination.previous) {
       const prevPage = new URL(pagination.previous).searchParams.get('page');
-      if (prevPage) fetchReports(parseInt(prevPage));
+      if (prevPage) fetchReports(parseInt(prevPage), false);
+    }
+  };
+
+  // Handle report selection with better event handling
+  const handleReportClick = (report: WorkReport, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Report clicked:', report.id); // Debug log
+    onSelectReport(report);
+  };
+
+  const handleReportKeyPress = (report: WorkReport, e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      console.log('Report selected via keyboard:', report.id); // Debug log
+      onSelectReport(report);
     }
   };
 
@@ -219,6 +259,16 @@ const ReportsList: React.FC<ReportsListProps> = ({ userId, onSelectReport, onCre
             className={styles.filterInput}
             aria-label="Lọc theo ID dự án"
           />
+          <select
+            value={pagination.pageSize}
+            onChange={handlePageSizeChange}
+            className={styles.filterSelect}
+            aria-label="Số mục trên trang"
+          >
+            <option value={5}>5 mục/trang</option>
+            <option value={10}>10 mục/trang</option>
+            <option value={20}>20 mục/trang</option>
+          </select>
         </div>
         <button className={styles.createButton} onClick={onCreateReport} aria-label="Tạo báo cáo mới">
           <span>+</span> Tạo mới
@@ -257,10 +307,11 @@ const ReportsList: React.FC<ReportsListProps> = ({ userId, onSelectReport, onCre
               <tr
                 key={report.id}
                 className={styles.reportRow}
-                onClick={() => onSelectReport(report)}
+                onClick={(e) => handleReportClick(report, e)}
                 role="button"
                 tabIndex={0}
-                onKeyPress={(e) => e.key === 'Enter' && onSelectReport(report)}
+                onKeyPress={(e) => handleReportKeyPress(report, e)}
+                style={{ cursor: 'pointer' }}
               >
                 <td className={styles.reportTitle}>{report.title || 'Chưa có tiêu đề'}</td>
                 <td>{getReportTypeName(report.type)}</td>
@@ -301,7 +352,18 @@ const ReportsList: React.FC<ReportsListProps> = ({ userId, onSelectReport, onCre
             >
               ←
             </button>
-            <span>Trang {pagination.currentPage}</span>
+            <select
+              value={pagination.currentPage}
+              onChange={(e) => handlePageChange(parseInt(e.target.value))}
+              className={styles.paginationSelect}
+              aria-label="Chọn trang"
+            >
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                <option key={page} value={page}>
+                  {page}
+                </option>
+              ))}
+            </select>
             <button
               onClick={handleLoadMore}
               disabled={!pagination.next}

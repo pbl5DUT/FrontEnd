@@ -1,5 +1,7 @@
 // modules/stacks/types/report.ts - ✅ Follow BE Format
 
+import { TaskStatus } from '../../stacks/types/stacks';
+
 
 export enum ReportType {
   DAILY = 'DAILY',
@@ -120,5 +122,12 @@ export interface TaskForReporting {
     project_name: string;
   };
 }
-
+export interface ReportTask {
+  task_id: string;
+  title: string;
+  status: TaskStatus;
+  progress: number;
+  time_spent: number;
+  notes?: string;
+}
 export { TaskStatus, type Project, type Task } from '../../stacks/types/stacks';

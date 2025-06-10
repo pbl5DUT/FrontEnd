@@ -1,6 +1,5 @@
-// modules/stacks/components/ReportDetail.tsx
 import React, { useState } from 'react';
-import reportService from '../services/report_service_mock';
+import reportService from '../services/report_service';
 import {
   WorkReport,
   ReportStatus,
@@ -8,7 +7,7 @@ import {
   ReportTask,
   TaskStatus,
 } from '../types/report';
-import styles from '../styles/Reports.module.css';
+import styles from '../styles/report_detail.module.css';
 
 interface ReportDetailProps {
   report: WorkReport;
@@ -16,13 +15,10 @@ interface ReportDetailProps {
   onReportUpdated: () => void;
 }
 
-const ReportDetail: React.FC<ReportDetailProps> = ({
-  report,
-  onClose,
-  onReportUpdated,
-}) => {
+const ReportDetail: React.FC<ReportDetailProps> = ({ report, onClose, onReportUpdated }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('vi-VN');
@@ -38,40 +34,21 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
         return 'Báo cáo tháng';
       case ReportType.PROJECT:
         return 'Báo cáo dự án';
-    }
-  };
-
-  const getStatusName = (status: ReportStatus) => {
-    switch (status) {
-      case ReportStatus.DRAFT:
-        return 'Nháp';
-      case ReportStatus.SUBMITTED:
-        return 'Đã gửi';
-      case ReportStatus.REVIEWED:
-        return 'Đã xem';
+      default:
+        return type;
     }
   };
 
   const getStatusBadge = (status: ReportStatus) => {
     switch (status) {
       case ReportStatus.DRAFT:
-        return (
-          <span className={`${styles.statusBadge} ${styles.statusDraft}`}>
-            Nháp
-          </span>
-        );
+        return <span className={`${styles.statusBadge} ${styles.statusDraft}`}>Nháp</span>;
       case ReportStatus.SUBMITTED:
-        return (
-          <span className={`${styles.statusBadge} ${styles.statusSubmitted}`}>
-            Đã gửi
-          </span>
-        );
+        return <span className={`${styles.statusBadge} ${styles.statusSubmitted}`}>Đã gửi</span>;
       case ReportStatus.REVIEWED:
-        return (
-          <span className={`${styles.statusBadge} ${styles.statusReviewed}`}>
-            Đã xem
-          </span>
-        );
+        return <span className={`${styles.statusBadge} ${styles.statusReviewed}`}>Đã xem</span>;
+      default:
+        return <span className={styles.statusBadge}>{status}</span>;
     }
   };
 
@@ -80,10 +57,12 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
 
     try {
       setIsSubmitting(true);
+      setError(null);
       await reportService.submitReport(report.id);
       onReportUpdated();
     } catch (error) {
       console.error('Error submitting report:', error);
+      setError('Không thể gửi báo cáo: ' + (error as Error).message);
     } finally {
       setIsSubmitting(false);
     }
@@ -92,44 +71,60 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
   const handleDeleteReport = async () => {
     if (report.status !== ReportStatus.DRAFT) return;
 
-    const confirmDelete = window.confirm(
-      'Bạn có chắc chắn muốn xóa báo cáo này không?'
-    );
+    const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa báo cáo này không?');
     if (!confirmDelete) return;
 
     try {
       setIsDeleting(true);
+      setError(null);
       await reportService.deleteReport(report.id);
       onClose();
       onReportUpdated();
     } catch (error) {
       console.error('Error deleting report:', error);
+      setError('Không thể xóa báo cáo: ' + (error as Error).message);
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const getTotalTimeSpent = () => {
-    return report.reportTasks.reduce(
-      (total, task) => total + task.timeSpent,
-      0
-    );
+  const getTotalTimeSpent = (tasks: ReportTask[]) => {
+    return tasks.reduce((total, task) => total + (task.time_spent || 0), 0);
   };
 
-  const getAverageProgress = () => {
-    if (report.reportTasks.length === 0) return 0;
-
-    const totalProgress = report.reportTasks.reduce(
-      (sum, task) => sum + task.progress,
-      0
-    );
-    return Math.round(totalProgress / report.reportTasks.length);
+  const getAverageProgress = (tasks: ReportTask[]) => {
+    if (tasks.length) return 0;
+    const totalProgress = tasks.reduce((sum, task) => sum + (task.progress || 0), 0);
+    return Math.round(totalProgress / tasks.length);
   };
+
+  if (!report) {
+    return (
+      <div className={styles.reportsContainer}>
+        <div className={styles.errorContainer}>
+          <span className={styles.errorIcon}>⚠️</span>
+          <h3 className={styles.sectionTitle}>Lỗi</h3>
+          <p className={styles.sectionContent}>Báo cáo không tồn tại</p>
+          <div className={styles.sectionActions}>
+            <button className={styles.retryButton} onClick={onClose}>
+              Quay lại
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className={styles.reportsContainer}>
+      {error && (
+        <div className={styles.errorContainer}>
+          <span className={styles.errorIcon}>⚠️</span>
+          <p className={styles.sectionContent}>{error}</p>
+        </div>
+      )}
       <div className={styles.reportDetailHeader}>
-        <h2 className={styles.reportDetailTitle}>{report.title}</h2>
+        <h2 className={styles.sectionTitle}>{report.title}</h2>
         <button className={styles.closeButton} onClick={onClose}>
           ×
         </button>
@@ -139,69 +134,63 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
         <div className={styles.reportMeta}>
           <div className={styles.reportMetaItem}>
             <span className={styles.metaLabel}>Loại báo cáo:</span>
-            <span className={styles.metaValue}>
-              {getReportTypeName(report.type)}
-            </span>
+            <span className={styles.metaValue}>{getReportTypeName(report.type)}</span>
           </div>
           <div className={styles.reportMetaItem}>
             <span className={styles.metaLabel}>Thời gian:</span>
             <span className={styles.metaValue}>
-              {new Date(report.startDate).toLocaleDateString('vi-VN')} -{' '}
-              {new Date(report.endDate).toLocaleDateString('vi-VN')}
+              {new Date(report.start_date).toLocaleDateString('vi-VN')} -{' '}
+              {new Date(report.end_date).toLocaleDateString('vi-VN')}
             </span>
           </div>
           <div className={styles.reportMetaItem}>
             <span className={styles.metaLabel}>Dự án:</span>
             <span className={styles.metaValue}>
-              {report.projectName || 'Tất cả dự án'}
+              {report.project?.project_name || 'Tất cả dự án'}
+            </span>
+          </div>
+          <div className={styles.reportMetaItem}>
+            <span className={styles.metaLabel}>Người tạo:</span>
+            <span className={styles.metaValue}>
+              {report.user?.full_name || 'Không xác định'}
             </span>
           </div>
           <div className={styles.reportMetaItem}>
             <span className={styles.metaLabel}>Trạng thái:</span>
-            <span className={styles.metaValue}>
-              {getStatusBadge(report.status)}
-            </span>
+            <span className={styles.metaValue}>{getStatusBadge(report.status)}</span>
           </div>
-          {report.status === ReportStatus.SUBMITTED && (
+          {report.status === ReportStatus.SUBMITTED && report.submitted_date && (
             <div className={styles.reportMetaItem}>
               <span className={styles.metaLabel}>Đã gửi lúc:</span>
-              <span className={styles.metaValue}>
-                {formatDate(report.submittedDate!)}
-              </span>
+              <span className={styles.metaValue}>{formatDate(report.submitted_date)}</span>
             </div>
           )}
-          {report.status === ReportStatus.REVIEWED && (
+          {report.status === ReportStatus.REVIEWED && report.reviewed_date && (
             <div className={styles.reportMetaItem}>
               <span className={styles.metaLabel}>Đã xem lúc:</span>
-              <span className={styles.metaValue}>
-                {formatDate(report.reviewedDate!)}
-              </span>
+              <span className={styles.metaValue}>{formatDate(report.reviewed_date)}</span>
             </div>
           )}
         </div>
 
         <div className={styles.reportStats}>
           <div className={styles.statCard}>
-            <span className={styles.statValue}>
-              {report.reportTasks.length}
-            </span>
+            <span className={styles.statValue}>{(report.tasks || []).length}</span>
             <span className={styles.statLabel}>Công việc</span>
           </div>
           <div className={styles.statCard}>
-            <span className={styles.statValue}>
-              {getTotalTimeSpent().toFixed(1)}h
-            </span>
+            {/* <span className={styles.statValue}>{getTotalTimeSpent(report.tasks || []).toFixed(1)}h</span> */}
             <span className={styles.statLabel}>Thời gian làm việc</span>
           </div>
           <div className={styles.statCard}>
-            <span className={styles.statValue}>{getAverageProgress()}%</span>
+            {/* <span className={styles.statValue}>{getAverageProgress(report.tasks || [])}%</span> */}
             <span className={styles.statLabel}>Tiến độ trung bình</span>
           </div>
         </div>
 
         <div className={styles.reportSection}>
           <h3 className={styles.sectionTitle}>Tổng quan</h3>
-          <p className={styles.sectionContent}>{report.summary}</p>
+          <p className={styles.sectionContent}>{report.summary || 'Chưa có nội dung'}</p>
         </div>
 
         {report.challenges && (
@@ -211,10 +200,10 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
           </div>
         )}
 
-        {report.nextSteps && (
+        {report.next_steps && (
           <div className={styles.reportSection}>
             <h3 className={styles.sectionTitle}>Kế hoạch tiếp theo</h3>
-            <p className={styles.sectionContent}>{report.nextSteps}</p>
+            <p className={styles.sectionContent}>{report.next_steps}</p>
           </div>
         )}
 
@@ -230,20 +219,18 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
               </tr>
             </thead>
             <tbody>
-              {report.reportTasks.map((task) => (
-                <tr key={task.taskId}>
+              {(report.tasks || []).map((task) => (
+                <tr key={task.task_id}>
                   <td>
-                    <div>{task.title}</div>
-                    <div className={styles.taskNotes}>{task.notes}</div>
+                    <div>{task.task_name}</div>
+                    {task.notes && <div className={styles.taskNotes}>{task.notes}</div>}
                   </td>
                   <td>
                     {task.status === TaskStatus.TODO && (
                       <span className={styles.taskStatusTodo}>Todo</span>
                     )}
                     {task.status === TaskStatus.IN_PROGRESS && (
-                      <span className={styles.taskStatusInProgress}>
-                        In Progress
-                      </span>
+                      <span className={styles.taskStatusInProgress}>In Progress</span>
                     )}
                     {task.status === TaskStatus.DONE && (
                       <span className={styles.taskStatusDone}>Done</span>
@@ -253,16 +240,21 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
                     <div className={styles.progressBar}>
                       <div
                         className={styles.progressFill}
-                        style={{ width: `${task.progress}%` }}
+                        style={{ width: `${task.progress || 0}%` }}
                       ></div>
-                      <span className={styles.progressText}>
-                        {task.progress}%
-                      </span>
+                      <span className={styles.progressText}>{task.progress || 0}%</span>
                     </div>
                   </td>
-                  <td>{task.timeSpent}h</td>
+                  <td>{task.time_spent || 0}h</td>
                 </tr>
               ))}
+              {(report.tasks || []).length === 0 && (
+                <tr>
+                  <td colSpan={4} className={styles.emptyState}>
+                    Không có công việc nào
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -286,7 +278,7 @@ const ReportDetail: React.FC<ReportDetailProps> = ({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
