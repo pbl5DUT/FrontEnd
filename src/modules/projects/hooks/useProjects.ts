@@ -155,14 +155,18 @@ console.log(' Current user--------:3', data);
 
     return matchesSearch && matchesStatus;
   });
-  // Add new project function - tạo cả project và chatroom
+
+  // Add new project function - cập nhật để phù hợp với body mới
   const addProject = async (projectData: ProjectFormData): Promise<void> => {
     try {
       setLoading(true);
       
-      // Sử dụng createProjectWithChatRoom thay vì createProject
-      // Hàm này sẽ tạo cả project và chatroom tương ứng
-      const newProject = await createProjectWithChatRoom(projectData);
+      // Get current user ID
+      const currentUser = getCurrentUser();
+      const currentUserId = currentUser ? currentUser.user_id : "0";
+      
+      // Create project and chat room together
+      const { project: newProject } = await createProjectWithChatRoom(projectData, currentUserId);
       
       // Refresh lại danh sách dự án sau khi thêm
       await refreshProjects();

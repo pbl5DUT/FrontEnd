@@ -25,9 +25,10 @@ export const useProjectMembers = (userId: string) => {
 
     try {
       setLoading(true);
-      
-      // 1. Lấy danh sách các project của người dùng
-      const response = await axios.get(`/users/${userId}/projects/`);
+        // 1. Lấy danh sách các project của người dùng
+      // Đảm bảo ID người dùng có định dạng "user-X"
+      const formattedUserId = userId.startsWith('user-') ? userId : `user-${userId}`;
+      const response = await axios.get(`/users/${formattedUserId}/projects/`);
       const projects = response.data.projects || [];
       
       if (!Array.isArray(projects) || projects.length === 0) {

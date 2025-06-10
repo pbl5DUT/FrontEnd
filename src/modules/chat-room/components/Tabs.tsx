@@ -16,14 +16,13 @@ const Tabs: React.FC<TabsProps> = ({ activeTab, setActiveTab }) => {
         onClick={() => setActiveTab('recent')}
       >
         Mới nhất
-      </button>
-      <button
+      </button>      <button
         className={`${styles.tabButton} ${
           activeTab === 'users' ? styles.activeTab : ''
         }`}
         onClick={() => setActiveTab('users')}
       >
-        Người dùng
+        Tất cả người dùng
       </button>
       <button
         className={`${styles.tabButton} ${

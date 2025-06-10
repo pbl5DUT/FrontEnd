@@ -8,6 +8,8 @@ import { useProjects } from '../../hooks/useProjects';
 import CreateProjectModal from '../modal/CreateProjectModal/CreateProjectModal';
 import { Employee } from '@/modules/employee/types/employee.types';
 import { employeeService } from '@/modules/employee/services/employeeService';
+import { getCurrentUser } from '@/modules/auth/services/authService';
+import { useChatService } from '@/modules/chat-room/services/useChatService';
 
 const ProjectList: React.FC = () => {
   const router = useRouter();
@@ -28,9 +30,13 @@ const ProjectList: React.FC = () => {
     addProject
   } = useProjects();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);  const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
   const [users, setUsers] = useState<{ user_id: string; full_name: string }[]>([]);
+  
+  // Get current user ID for chat service
+  const currentUser = getCurrentUser();
+  const userId = currentUser ? parseInt(currentUser.user_id, 10) : 0;
+  const { createChatRoom } = useChatService(userId);
   
   useEffect(() => {
     // Fetch managers và users khi component được mount
@@ -88,12 +94,13 @@ const ProjectList: React.FC = () => {
   const handleCloseModal = (): void => {
     setIsModalOpen(false);
   };
-
   // Cập nhật hàm này để sử dụng addProject từ useProjects hook
   const handleSubmitCreateProject = async (projectData: ProjectFormData): Promise<void> => {
     try {
       await addProject(projectData);
       setIsModalOpen(false); // Đóng modal sau khi tạo thành công
+      
+      console.log('Project and chat room created successfully');
       // Có thể hiển thị thông báo thành công nếu cần
     } catch (error) {
       console.error('Error creating project:', error);
