@@ -3,7 +3,7 @@ import { ChatRoom, ConnectionState } from './types';
 import { WS_URL, PING_INTERVAL } from './constants';
 
 interface UseWebSocketOptions {
-  userId: number;
+  userId: string;
   activeRoom: ChatRoom | null;
   onMessage: (data: any) => void;
   onError: (error: string) => void;

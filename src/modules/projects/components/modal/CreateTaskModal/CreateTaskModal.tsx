@@ -48,8 +48,8 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
       users.push({
         user_id: project.manager.user_id,
         full_name: project.manager.full_name,
-        position: project.manager.position || 'Manager',
-        role_in_project: 'Manager',
+        position: project.manager.position || 'Manage',
+        role_in_project: 'Manage',
         isManager: true,
         email: project.manager.email
       });

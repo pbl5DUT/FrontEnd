@@ -16,7 +16,7 @@ import axios from '@/services/axiosInstance';
  * Hook chính quản lý toàn bộ chức năng chat
  * @param userId User ID của người dùng hiện tại
  */
-export const useChatService = (userId: number) => {
+export const useChatService = (userId: string) => {
   // State
   const [contacts, setContacts] = useState<ChatContact[]>([]);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -335,33 +335,33 @@ export const useChatService = (userId: number) => {
     
     try {
       // Create optimistic message and add to messages state immediately
-      const optimisticMessage: ChatMessage = {
-        id: `temp-${finalTempId}`,
-        senderId: userId.toString(),
-        text: text,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        status: 'sent',
-        tempId: finalTempId
-      };
+      // const optimisticMessage: ChatMessage = {
+      //   id: `temp-${finalTempId}`,
+      //   senderId: userId.toString(),
+      //   text: text,
+      //   timestamp: new Date().toLocaleTimeString([], {
+      //     hour: '2-digit',
+      //     minute: '2-digit',
+      //   }),
+      //   status: 'sent',
+      //   tempId: finalTempId
+      // };
       
-      // Add optimistic message to UI immediately
-      setMessages(prevMessages => [...prevMessages, optimisticMessage]);
+      // // Add optimistic message to UI immediately
+      // setMessages(prevMessages => [...prevMessages, optimisticMessage]);
       
       // Update chat room with last message
-      setChatRooms(prevRooms => {
-        return prevRooms.map(room => {
-          if (room.id === activeRoom?.id) {
-            return {
-              ...room,
-              lastMessage: optimisticMessage
-            };
-          }
-          return room;
-        });
-      });
+      // setChatRooms(prevRooms => {
+      //   return prevRooms.map(room => {
+      //     if (room.id === activeRoom?.id) {
+      //       return {
+      //         ...room,
+      //         lastMessage: optimisticMessage
+      //       };
+      //     }
+      //     return room;
+      //   });
+      // });
       
       // Actually send the message via API
       const result = await sendMessageViaApi({ roomId, text, receiverId, tempId: finalTempId });
@@ -559,10 +559,12 @@ export const useChatService = (userId: number) => {
   const setTypingStatus = useCallback((isTyping: boolean) => {
     if (!activeRoom) return;
     
+    const userIdStr = String(userId);
+
     websocket.sendMessage({
       type: 'typing',
-      user_id: userId,
-      username: contacts.find(c => c.id === userId)?.name || 'User',
+      user_id: userIdStr,
+      username: contacts.find(c => c.id === userIdStr)?.name || 'User',
       is_typing: isTyping
     });
     

@@ -16,7 +16,7 @@ import { adaptServiceChatRoom } from './adapters';
 
 const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
   const userId = user?.user_id || '';
-  const userIdNumber = parseInt(String(userId).replace('user-', '')) || 0;
+  const userIdNumber = String(userId).replace('user-', '') || "0";
   
   const {
     contacts: apiContacts,
@@ -384,18 +384,18 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
     
     const tempId = Date.now().toString();
     // Thêm tin nhắn optimistic vào danh sách tin nhắn hiện tại
-    const optimisticMessage = {
-      id: `temp-${tempId}`,
-      senderId: userId.toString(),
-      text: message,
-      timestamp: new Date().toLocaleTimeString(),
-      status: 'sent',
-      tempId,
-      isOptimistic: true
-    };
+    // const optimisticMessage = {
+    //   id: `temp-${tempId}`,
+    //   senderId: userId.toString(),
+    //   text: message,
+    //   timestamp: new Date().toLocaleTimeString(),
+    //   status: 'sent',
+    //   tempId,
+    //   isOptimistic: true
+    // };
     
     // Thêm tin nhắn tạm thời vào UI ngay lập tức
-    setMessages(prevMessages => [...prevMessages, optimisticMessage]);
+    // setMessages(prevMessages => [...prevMessages, optimisticMessage]);
     try {
       // Find the receiver ID and convert it to a number if it's a string
       const receiverParticipant = activeRoom.participants.find(p => p.id !== userId);
@@ -538,7 +538,7 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
         projectUsers={allUsers.map(user => ({
           id: user.user_id,
           name: user.full_name || user.email?.split('@')[0] || 'Người dùng',
-          avatar: user.avatar || null,
+          avatar: user.avatar || undefined,
           isOnline: user.isOnline || false,
           email: user.email
         }))}

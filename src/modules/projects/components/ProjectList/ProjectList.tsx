@@ -35,7 +35,7 @@ const ProjectList: React.FC = () => {
   
   // Get current user ID for chat service
   const currentUser = getCurrentUser();
-  const userId = currentUser ? parseInt(currentUser.user_id, 10) : 0;
+  const userId = currentUser ? currentUser.user_id : "0"; // Keep as string
   const { createChatRoom } = useChatService(userId);
   
   useEffect(() => {

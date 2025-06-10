@@ -169,23 +169,6 @@ const ContactsList: React.FC<ContactsListProps> = ({
     }
       return (
       <div className={styles.contactsContainer}>
-        {onRefreshProjectUsers && (
-          <div style={{ padding: '10px 0', textAlign: 'center' }}>
-            <button 
-              onClick={onRefreshProjectUsers}
-              style={{ 
-                padding: '5px 10px', 
-                backgroundColor: '#4a76a8', 
-                color: 'white', 
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Làm mới danh sách người dùng
-            </button>
-          </div>
-        )}
         {projectUsers
           .filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()))
           .map((user) => {
@@ -208,9 +191,10 @@ const ContactsList: React.FC<ContactsListProps> = ({
                     console.error("Failed to create chat room: No room returned");
                   }
                 }
-              } catch (err) {
-                console.error("Lỗi khi tạo phòng chat:", err);
-                alert(`Không thể tạo phòng chat: ${err.message || 'Lỗi không xác định'}`);
+              } catch (error: unknown) {
+                console.error("Lỗi khi tạo phòng chat:", error);
+                const errorMessage = error instanceof Error ? error.message : 'Lỗi không xác định';
+                alert(`Không thể tạo phòng chat: ${errorMessage}`);
               }
             };
             
