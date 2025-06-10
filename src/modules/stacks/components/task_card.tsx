@@ -3,7 +3,8 @@ import React from 'react';
 import { useDrag } from 'react-dnd';
 
 import styles from '../styles/Stacks.module.css';
-import { Task, TaskPriority } from '../services/taskService';
+import { Task, TaskPriority } from '../types/stacks';
+
 
 interface TaskCardProps {
   task: Task;
@@ -93,7 +94,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
             styles[`priority${task.priority}`]
           }`}
         >
-          {getPriorityLabel(task.priority ?? TaskPriority.MEDIUM)}
+          {getPriorityLabel((task.priority as TaskPriority) ?? TaskPriority.LOW)}
         </div>
         <div className={styles.dateInfo} title="Ngày hết hạn">
           {formatDate(task?.due_date || '')}

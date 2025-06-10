@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import ReportsList from './components/reports_list';
 import ReportDetail from './components/report_detail';
-import CreateReportForm from './components/create_report_form';
+// import CreateReportForm from './components/create_report_form';
 import { WorkReport } from './types/report';
 import styles from './styles/Reports.module.css';
 
 // Trong ứng dụng thực tế, thông tin này sẽ được lấy từ context auth
 const CURRENT_USER = {
-  id: 'user1',
+  id: 'user-2',
   name: 'Nguyễn Văn A',
 };
 
@@ -61,7 +61,7 @@ const Reports: React.FC = () => {
         </div>
       )}
 
-      {isCreating && (
+      {/* {isCreating && (
         <div className={styles.modalOverlay} onClick={handleCloseCreateForm}>
           <div
             className={styles.modalContent}
@@ -75,7 +75,7 @@ const Reports: React.FC = () => {
             />
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

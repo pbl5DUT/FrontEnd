@@ -1,6 +1,6 @@
 // modules/admin/components/AdminReports.tsx
 import React, { useState, useEffect } from 'react';
-import { Task, TaskStatus, TaskPriority } from '../../stacks/types/task';
+import { Task, TaskStatus, TaskPriority } from '../../stacks/types/stacks';
 import styles from '../styles/Admin.module.css';
 
 import { UserRole } from '@/modules/auth/services/authService';

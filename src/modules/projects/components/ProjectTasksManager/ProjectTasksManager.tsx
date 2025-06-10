@@ -5,13 +5,13 @@ import CategoryTasks from './CategoryTasks';
 import TaskDetail from './TaskDetail';
 import CreateCategoryModal from '../modal/CreateCategoryModal/CreateCategoryModal';
 import CreateTaskModal from '../modal/CreateTaskModal/CreateTaskModal';
-import { Task, TaskCategory } from '../../types/Task';
+import { Task, TaskCategory, TaskWithDetails } from '../../types/Task';
 import { 
   getTaskCategories, 
   deleteTaskCategory,
   
 } from '../../services/taskService';
-import { TaskWithDetails } from '@/modules/stacks/services/taskService';
+// import { TaskWithDetails } from '@/modules/stacks/services/taskService';
 
 interface ProjectTasksManagerProps {
   projectId: string;

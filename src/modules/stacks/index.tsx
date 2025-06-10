@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import ProjectSelector from './components/project_selector';
+
 import TaskBoard from './components/task_board';
-import TaskList from './components/task_list';
-import TaskDetail from './components/task_detail';
+
 
 import styles from './styles/Stacks.module.css';
 import { getCurrentUser } from '../auth/services/authService';
-import { Task } from './types/task';
+import { Task } from './types/stacks';
 
 const TasksPage: React.FC = () => {
   // Trong ứng dụng thực tế, userId sẽ được lấy từ context authentication
@@ -69,10 +68,10 @@ const TasksPage: React.FC = () => {
             </button>
           </div>
 
-          <ProjectSelector
+          {/* <ProjectSelector
             onSelectProject={handleSelectProject}
             selectedProjectId={selectedProjectId}
-          />
+          /> */}
         </div>
 
         {userId && viewMode === 'board' && (

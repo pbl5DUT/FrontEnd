@@ -5,7 +5,7 @@ import { useDrop } from 'react-dnd';
 import TaskCard from './task_card';
 import styles from '../styles/Stacks.module.css';
 import { getTasksByProject, getUserTasks, updateTaskStatus } from '../services/taskService';
-import { Task, TaskStatus } from '../types/task';
+import { Task, TaskStatus } from '../types/stacks';
 
 interface TaskBoardProps {
   projectId: string | null;

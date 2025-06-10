@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Task, TaskAssignee, TaskAttachment,TaskWithDetails, TaskComment, TaskPriority, TaskStatus } from '../types/task';
+import { Task, TaskAssignee, TaskAttachment,TaskWithDetails, TaskComment, TaskPriority, TaskStatus } from '../types/stacks';
 import { TaskCategory } from '@/modules/projects/types/Task';
 // import { Task, TaskAssignee, TaskAttachment, TaskCategory, TaskComment, TaskPriority, TaskStatus } from '../types/stacks';
 

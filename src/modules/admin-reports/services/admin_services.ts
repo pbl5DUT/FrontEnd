@@ -1,5 +1,5 @@
 // modules/admin/services/admin_services.ts
-import { TaskStatus, TaskPriority } from '../../stacks/types/task';
+import { TaskStatus, TaskPriority } from '../../stacks/types/stacks';
 
 import { UserRole } from '@/modules/auth/services/authService';
 // Khai báo các types cần thiết
