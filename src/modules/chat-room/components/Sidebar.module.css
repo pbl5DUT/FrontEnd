@@ -1,39 +1,44 @@
+/* Thêm style cho phần footer của sidebar */
+.sidebarFooter {
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  margin-top: auto; /* Đẩy footer xuống cuối sidebar */
+  background-color: #f8f9fa;
+  border-top: 1px solid #eaeaea;
+}
+
+/* Sửa lại style cho nút để nó nằm trong sidebar */
+.floatingActionButton {
+  position: relative; /* Thay đổi từ fixed thành relative */
+  bottom: auto;      /* Xóa vị trí cố định */
+  right: auto;       /* Xóa vị trí cố định */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #0084ff;
+  color: white;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Đảm bảo sidebar có chiều cao đầy đủ */
 .sidebar {
   width: 320px;
   border-right: 1px solid #eaeaea;
   display: flex;
   flex-direction: column;
   background-color: #f8f9fa;
+  height: 100%; /* Đảm bảo sidebar chiếm toàn bộ chiều cao */
 }
 
-.sidebarFooter {
-  padding: 12px;
-  display: flex;
-  justify-content: center;
-  border-top: 1px solid #eaeaea;
-}
-
-.addChatButton {
-  background-color: #1a73e8;
-  color: white;
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s;
-}
-
-.addChatButton:hover {
-  background-color: #1765cc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.addChatButton:active {
-  transform: translateY(0);
+/* Đảm bảo phần danh sách có thể cuộn nếu cần thiết */
+.contactsList {
+  flex: 1;
+  overflow-y: auto;
 }

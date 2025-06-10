@@ -13,8 +13,14 @@ export type ChatUser = {
 };
 
 export type ChatContact = ChatUser & {
+  id: string;
+  name: string;
+  avatar: string | null;
+  isOnline: boolean;
+  lastSeen: string;
   unread: number;
   isActive: boolean;
+  email?: string;
 };
 
 export type MessageStatus = 'sent' | 'delivered' | 'read';
