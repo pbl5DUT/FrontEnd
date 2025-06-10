@@ -1,0 +1,119 @@
+.contactsList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.contactItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.contactMain {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.contactItem:hover {
+  background-color: #f5f5f5;
+}
+
+.activeContact {
+  background-color: #e8f0fe;
+}
+
+.contactInfo {
+  flex: 1;
+  min-width: 0; /* Ensures proper text truncation */
+}
+
+.contactName {
+  font-weight: 500;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lastSeen {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unreadBadge {
+  background-color: #1a73e8;
+  color: white;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.contactActions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.contactItem:hover .contactActions {
+  opacity: 1;
+}
+
+.callButton {
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.callButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #1890ff;
+  justify-content: center;
+  font-size: 11px;
+  padding: 0 4px;
+  margin-left: 8px;
+}
+
+.loading, .error, .noResults {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+/* Project Users Styling */
+.projectUserItem {
+  border-left: 3px solid transparent;
+}
+
+.projectUserItem:hover {
+  border-left-color: #1a73e8;
+  background-color: rgba(26, 115, 232, 0.05);
+}
+
+.projectInfo {
+  font-size: 11px;
+  color: #555;
+  margin-top: 2px;
+}

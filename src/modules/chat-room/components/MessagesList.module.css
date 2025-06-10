@@ -1,0 +1,69 @@
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background-color: #f5f5f5;
+}
+
+.messagesList {
+  display: flex;
+  flex-direction: column;
+}
+
+.messageItem {
+  margin-bottom: 12px;
+  max-width: 70%;
+  display: flex;
+}
+
+.incoming {
+  align-self: flex-start;
+}
+
+.outgoing {
+  align-self: flex-end;
+}
+
+.messageContent {
+  padding: 12px 16px;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.incoming .messageContent {
+  background-color: white;
+  border-top-left-radius: 4px;
+}
+
+.outgoing .messageContent {
+  background-color: #e3f2fd;
+  border-bottom-right-radius: 4px;
+}
+
+.messageText {
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.messageTime {
+  font-size: 11px;
+  opacity: 0.7;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.messageStatus {
+  margin-left: 4px;
+}
+
+.emptyMessages {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 14px;
+  padding: 20px;
+  text-align: center;
+}

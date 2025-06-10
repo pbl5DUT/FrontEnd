@@ -1,0 +1,25 @@
+.chatContainer {
+  display: flex;
+  height: calc(100vh - 10px);
+  max-height: 800px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background-color: #fff;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .chatContainer {
+    flex-direction: column;
+    height: auto;
+    max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatContainer {
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

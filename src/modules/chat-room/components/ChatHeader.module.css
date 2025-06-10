@@ -1,0 +1,49 @@
+.chatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eaeaea;
+  background-color: #fff;
+}
+
+.chatContact {
+  display: flex;
+  align-items: center;
+}
+
+.chatActions {
+  display: flex;
+  align-items: center;
+}
+
+.actionButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: #5f6368;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background-color 0.2s;
+}
+
+.actionButton:hover {
+  background-color: #f1f3f4;
+}
+
+.activeButton {
+  color: #1a73e8;
+  background-color: #e8f0fe;
+}
+
+.emptyChatHeader {
+  width: 100%;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
