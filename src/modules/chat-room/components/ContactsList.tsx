@@ -181,13 +181,17 @@ const ContactsList: React.FC<ContactsListProps> = ({
                 if (existingChatRoom) {
                   setActiveChatRoom(existingChatRoom);
                 } else {
+                  console.log(`Starting direct chat with user ID: ${user.id}`);
                   const newRoom = await startDirectChat(user.id);
                   if (newRoom) {
                     setActiveChatRoom(newRoom);
+                  } else {
+                    console.error("Failed to create chat room: No room returned");
                   }
                 }
               } catch (err) {
                 console.error("Lỗi khi tạo phòng chat:", err);
+                alert(`Không thể tạo phòng chat: ${err.message || 'Lỗi không xác định'}`);
               }
             };
             
