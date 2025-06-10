@@ -1,0 +1,84 @@
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  width: 300px;
+  padding: 15px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notificationContent {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.callInfo {
+  flex: 1;
+}
+
+.callerName {
+  font-weight: 500;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.callType {
+  font-size: 14px;
+  color: #666;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.actionButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.acceptButton {
+  background-color: #4caf50;
+  color: white;
+}
+
+.acceptButton:hover {
+  background-color: #3d8b40;
+}
+
+.rejectButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.rejectButton:hover {
+  background-color: #d32f2f;
+}

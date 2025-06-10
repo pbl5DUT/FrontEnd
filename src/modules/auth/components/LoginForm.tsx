@@ -143,10 +143,10 @@ const LoginForm = () => {
           </button>
         </form>
         {error && <p className={styles['error-text']}>{error}</p>}
-        <p className={styles['register-link']}>
+        {/* <p className={styles['register-link']}>
           Don't have an account?{' '}
           <Link href="/auth/register">Register here</Link>
-        </p>
+        </p> */}
       </div>
     </div>
   );

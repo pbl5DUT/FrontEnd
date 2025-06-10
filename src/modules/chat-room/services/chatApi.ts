@@ -73,13 +73,15 @@ export const sendMessageViaApi = async ({ roomId, text, receiverId, tempId }: Se
 /**
  * Tạo phòng chat mới
  */
-export const createNewChatRoom = async ({ name, participantIds }: CreateRoomParams): Promise<ChatRoom> => {
-  console.log('Creating chat room with API:', { name, participantIds });
+export const createNewChatRoom = async ({ name, participantIds, isDirectChat = false }: CreateRoomParams): Promise<ChatRoom> => {
+  console.log('Creating chat room with API:', { name, participantIds, isDirectChat });
   
   try {
     const response = await axiosInstance.post(CHATROOMS_ENDPOINT, {
       name,
-      participant_ids: participantIds
+      is_direct_chat: isDirectChat || participantIds.length === 2,
+      participant_ids: participantIds,
+      is_direct: isDirectChat || false
     });
     
     console.log('Chat room creation API response:', response.data);
@@ -104,12 +106,15 @@ export const createNewChatRoom = async ({ name, participantIds }: CreateRoomPara
 export const uploadFileAttachment = async ({ roomId, file, receiverId }: UploadAttachmentParams): Promise<ChatMessage> => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('chatroom_id', roomId.toString());
+  // If roomId starts with chat-, use it directly, otherwise ensure it has the chat- prefix
+  const chatroomId = typeof roomId === 'string' && roomId.startsWith('chat-') 
+    ? roomId 
+    : `chat-${roomId.toString()}`;
+  formData.append('chatroom_id', chatroomId);
   
   if (receiverId) {
     formData.append('receiver_id', receiverId.toString());
   }
-  
   const response = await axiosInstance.post(
     `/messages/upload_attachment/`, 
     formData,
