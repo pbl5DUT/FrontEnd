@@ -11,9 +11,10 @@ export const employeeService = {
     const response = await axiosInstance.get('/users/');
     return response.data;
   },
-
   getEmployeeById: async (id: number): Promise<Employee> => {
-    const response = await axiosInstance.get(`/users/${id}`);
+    // Đảm bảo ID có định dạng "user-X"
+    const formattedId = `user-${id}`;
+    const response = await axiosInstance.get(`/users/${formattedId}`);
     return response.data;
   },
 
@@ -21,13 +22,16 @@ export const employeeService = {
     const response = await axiosInstance.post('/users/', employee);
     return response.data;
   },
-
   updateEmployee: async (id: number, employee: Partial<Employee>): Promise<Employee> => {
-    const response = await axiosInstance.put(`/users/${id}`, employee);
+    // Đảm bảo ID có định dạng "user-X"
+    const formattedId = `user-${id}`;
+    const response = await axiosInstance.put(`/users/${formattedId}`, employee);
     return response.data;
   },
 
   deleteEmployee: async (id: number): Promise<void> => {
-    await axiosInstance.delete(`/users/${id}/`);
+    // Đảm bảo ID có định dạng "user-X"
+    const formattedId = `user-${id}`;
+    await axiosInstance.delete(`/users/${formattedId}/`);
   },
 };

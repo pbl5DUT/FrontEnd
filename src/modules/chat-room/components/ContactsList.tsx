@@ -47,13 +47,32 @@ const ContactsList: React.FC<ContactsListProps> = ({
   if (error) {
     return <div className={styles.error}>{error}</div>;
   }
-
   // Display recent chats
   if (activeTab === 'recent') {
+    // Filter rooms that have messages and match the search term
+    const roomsWithMessages = chatRooms.filter(
+      room => room.lastMessage && room.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // If no rooms with messages are found, show a message
+    if (roomsWithMessages.length === 0) {
+      return (
+        <div className={styles.contactsContainer}>
+          <div className={styles.noChats}>Không có cuộc trò chuyện nào gần đây</div>
+        </div>
+      );
+    }
+
     return (
       <div className={styles.contactsContainer}>
-        {chatRooms
-          .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        {roomsWithMessages
+          .sort((a, b) => {
+            // Sort by last message timestamp, newest first
+            if (a.lastMessage && b.lastMessage) {
+              return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime();
+            }
+            return 0;
+          })
           .map((room) => (
                        <div
               key={room.id}
@@ -254,14 +273,25 @@ const ContactsList: React.FC<ContactsListProps> = ({
       </div>
     );
   }
-
   // Display groups (if not users or recent)
-  return (
-    <div className={styles.contactsContainer}>
-      {chatRooms
-        .filter(room => room.isGroup)
-        .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        .map((room) => (
+  if (activeTab === 'groups') {
+    const groupRooms = chatRooms
+      .filter(room => room.isGroup)
+      .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    // If no group rooms are found, show a message
+    if (groupRooms.length === 0) {
+      return (
+        <div className={styles.contactsContainer}>
+          <div className={styles.noChats}>Không có nhóm chat nào</div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className={styles.contactsContainer}>
+        {groupRooms
+          .map((room) => (
           <div
             key={room.id}
             className={`${styles.contactItem} ${
@@ -281,9 +311,16 @@ const ContactsList: React.FC<ContactsListProps> = ({
             </div>
             {room.unreadCount > 0 && (
               <div className={styles.unreadBadge}>{room.unreadCount}</div>
-            )}
-          </div>
+            )}          </div>
         ))}
+      </div>
+    );
+  }
+  
+  // Default case - should not happen with proper tabs
+  return (
+    <div className={styles.contactsContainer}>
+      <div className={styles.noChats}>Vui lòng chọn một tab</div>
     </div>
   );
 };

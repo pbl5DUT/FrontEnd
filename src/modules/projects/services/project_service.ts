@@ -36,7 +36,9 @@ export const fetchProjects = async (): Promise<Project[]> => {
 
 export const fetchUser_Projects = async (userId: string): Promise<Project[]> => {
   try {
-    const response = await fetch(`${API_URL}/users/${userId}/projects/`, {
+    // Đảm bảo ID người dùng có định dạng "user-X"
+    const formattedUserId = userId.startsWith('user-') ? userId : `user-${userId}`;
+    const response = await fetch(`${API_URL}/users/${formattedUserId}/projects/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
