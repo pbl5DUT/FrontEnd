@@ -19,6 +19,19 @@
   padding-right: 4px; /* Thêm padding để tránh nội dung bị sát scrollbar */
 }
 
+/* Style for the "no chats" message */
+.noChats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 150px;
+  color: #666;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+}
+
 /* Style cho thanh cuộn */
 .contactsContainer::-webkit-scrollbar {
   width: 6px;

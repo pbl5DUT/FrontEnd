@@ -444,9 +444,28 @@ export const useChatService = (userId: number) => {
       const existingRoom = chatRooms.find(room => {
         // Direct chat should have exactly 2 participants
         if (room.participants.length === 2) {
-          // Chuyển đổi IDs sang chuỗi để so sánh chính xác
-          const hasCurrentUser = room.participants.some(p => String(p.id) === String(userId) || String(p.user_id) === String(userId));
-          const hasTargetUser = room.participants.some(p => String(p.id) === String(otherUserId) || String(p.user_id) === String(otherUserId));
+          // Chuẩn hóa ID để so sánh chính xác
+          const currentUserStr = String(userId);
+          const targetUserStr = String(otherUserId);
+          
+          // Kiểm tra cả định dạng có tiền tố và không có tiền tố
+          const normalizeId = (id: string) => {
+            if (id.startsWith('user-')) return id;
+            return `user-${id}`;
+          };
+          
+          const currentUserIds = [currentUserStr, normalizeId(currentUserStr)];
+          const targetUserIds = [targetUserStr, normalizeId(targetUserStr)];
+          
+          // Check if current user is in participants
+          const hasCurrentUser = room.participants.some(p => 
+            currentUserIds.includes(String(p.id)) || currentUserIds.includes(String(p.user_id))
+          );
+          
+          // Check if target user is in participants
+          const hasTargetUser = room.participants.some(p => 
+            targetUserIds.includes(String(p.id)) || targetUserIds.includes(String(p.user_id))
+          );
           
           return hasCurrentUser && hasTargetUser && !room.isGroup;
         }
@@ -460,18 +479,26 @@ export const useChatService = (userId: number) => {
       }
       
       console.log('No existing chat room found, creating new one with user ID:', otherUserId);
-      
-      // Otherwise, create a new 1-on-1 chat room
+        // Otherwise, create a new 1-on-1 chat room
       // First, fetch user info to get their name
-      // Định dạng ID người dùng cho API call
-      const apiUserId = String(otherUserId).replace('user-', '');
+      // Định dạng ID người dùng cho API call - đảm bảo ID có định dạng "user-X"
+      let apiUserId;
+      if (typeof otherUserId === 'string' && otherUserId.startsWith('user-')) {
+        // Nếu ID đã có định dạng "user-X", sử dụng trực tiếp
+        apiUserId = otherUserId;
+      } else {
+        // Nếu ID là số hoặc không có tiền tố, thêm tiền tố "user-"
+        apiUserId = `user-${otherUserId}`;
+      }
       console.log('Fetching user data with API ID:', apiUserId);
       
       const { data: userData } = await axios.get(`/users/${apiUserId}/`);
 
       if (!userData) {
         throw new Error('Could not fetch user information');
-      }      // Create a new room with a name based on the other user's name
+      }
+      
+      // Create a new room with a name based on the other user's name
       const roomName = userData.full_name || (userData.email?.split('@')[0]) || 'Người dùng';
 
       console.log('Creating new direct chat room with name:', roomName);
@@ -479,19 +506,29 @@ export const useChatService = (userId: number) => {
       // Sử dụng trực tiếp ID người dùng từ API để đảm bảo đúng định dạng
       // Giữ nguyên định dạng chuỗi như "user-1" cho cuộc gọi API
       const userIdString = String(userId);
+      console.log('Current user ID format:', userIdString);
       
       // Đảm bảo otherUserId được định dạng đúng (bảo toàn định dạng "user-X" nếu đã có)
       let otherUserIdString: string;
       if (typeof otherUserId === 'string') {
-        // Giữ nguyên định dạng chuỗi nếu đã là chuỗi
-        otherUserIdString = otherUserId;
+        if (otherUserId.startsWith('user-')) {
+          // Đã có định dạng user-X, giữ nguyên
+          otherUserIdString = otherUserId;
+          console.log('Using existing user-X format ID:', otherUserIdString);
+        } else {
+          // Chuỗi nhưng không có định dạng user-X, thêm vào
+          otherUserIdString = `user-${otherUserId}`;
+          console.log('Adding user- prefix to string ID:', otherUserIdString);
+        }
       } else {
         // Convert số thành định dạng chuỗi "user-X"
         otherUserIdString = `user-${otherUserId}`;
+        console.log('Converting numeric ID to user-X format:', otherUserIdString);
       }
       
       console.log(`User IDs for chat creation: ${userIdString} and ${otherUserIdString} (original: ${userId} and ${otherUserId})`);
-        // Create new chat room with just 2 participants
+      
+      // Create new chat room with just 2 participants
       // Use the string IDs for creation (API accepts string IDs)
       const newRoom = await createNewChatRoom({
         name: roomName,
@@ -504,9 +541,17 @@ export const useChatService = (userId: number) => {
       
       console.log('New direct chat room created:', newRoom.id);
       return newRoom;
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error starting direct chat:', err);
-      throw err;
+      // Provide more detailed error information for debugging
+      if (err.response) {
+        console.error('API Error Details:', {
+          status: err.response?.status,
+          data: err.response?.data,
+          url: err.config?.url,
+        });
+      }
+      throw new Error(`Không thể tạo cuộc trò chuyện: ${err.message || 'Lỗi không xác định'}`);
     }
   }, [chatRooms, userId, createNewChatRoom]);
 
