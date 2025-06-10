@@ -10,4 +10,11 @@ module.exports = {
       },
     ];
   },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'rc-util/es/Dom/canUseDom': require.resolve('./node_modules/rc-util/lib/Dom/canUseDom')
+    };
+    return config;
+  }
 };

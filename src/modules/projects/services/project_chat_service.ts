@@ -1,55 +1,79 @@
+import { ProjectFormData, Project } from '../types/project';
 import { createProject } from './project_service';
-import { createNewChatRoom } from '../../chat-room/services/chatApi';
-import { Project, ProjectFormData } from '../types/project';
+import { createNewChatRoom } from '@/modules/chat-room/services/chatApi';
+import { ChatRoom } from '@/modules/chat-room/services/types';
 
 /**
- * Tạo project và chatroom liên quan với cùng tên và thành viên
+ * Creates a project and an associated chat room with the same name and members
+ * @param projectData The project data
+ * @param currentUserId The ID of the current user
+ * @returns Object containing the created project and chat room
  */
-export const createProjectWithChatRoom = async (projectData: ProjectFormData): Promise<Project> => {
+export const createProjectWithChatRoom = async (
+  projectData: ProjectFormData,
+  currentUserId: string | number
+): Promise<{ project: Project; chatRoom: ChatRoom | null }> => {
   try {
-    console.log('🔄 Creating project with chat room...', projectData);
-    
-    // 1. Tạo project trước
-    const newProject = await createProject(projectData);
-    console.log('✅ Project created successfully:', newProject);
+    // Step 1: Create the project
+    const project = await createProject(projectData);
+    console.log('Project created successfully:', project);
 
-    // 2. Chuẩn bị danh sách người tham gia cho chatroom
-    // Bao gồm manager và tất cả thành viên của project
-    const participantIds: number[] = [];
+    // Step 2: Extract user IDs from project data
+    const participantIds: string[] = [];
     
-    // Thêm manager vào danh sách (chuyển string sang number)
-    const managerId = parseInt(projectData.manager_id, 10);
-    if (!isNaN(managerId)) {
-      participantIds.push(managerId);
+    // Extract numeric ID from string format like "user-1"
+    const extractUserId = (userId: string | number): string => {
+      if (typeof userId === 'string' && userId.startsWith('user-')) {
+        return userId; // Return in format "user-1", "user-2"
+      }
+      return typeof userId === 'number' ? `user-${userId}` : String(userId);
+    };
+    
+    // Add the project manager
+    if (project.manager && project.manager.user_id) {
+      const managerId = extractUserId(project.manager.user_id);
+      if (!participantIds.includes(managerId)) {
+        participantIds.push(managerId);
+      }
     }
-
-    // Thêm các thành viên khác vào danh sách (nếu có)
-    if (projectData.members && Array.isArray(projectData.members)) {
-      projectData.members.forEach(member => {
-        const memberId = parseInt(member.user_id, 10);
-        if (!isNaN(memberId) && !participantIds.includes(memberId)) {
-          participantIds.push(memberId);
+    
+    // Add project members
+    if (project.members && Array.isArray(project.members)) {
+      project.members.forEach(member => {
+        if (member.user && member.user.user_id) {
+          const memberId = extractUserId(member.user.user_id);
+          if (!participantIds.includes(memberId)) {
+            participantIds.push(memberId);
+          }
         }
       });
     }
-
-    // 3. Tạo chatroom với cùng tên và thành viên như project
-    if (participantIds.length > 0) {
-      await createNewChatRoom({
-        name: `Project: ${projectData.project_name}`,
-        participantIds: participantIds,
-        isDirectChat: false // Phòng chat nhóm, không phải chat riêng tư
-      });
-      
-      console.log(`Chat room created for project: ${projectData.project_name}`);
-    } else {
-      console.warn(`No participants found for project: ${projectData.project_name}`);
+    
+    // Add current user if not already included
+    const currentUserIdStr = extractUserId(currentUserId);
+    if (!participantIds.includes(currentUserIdStr)) {
+      participantIds.push(currentUserIdStr);
     }
 
-    // 4. Trả về thông tin project đã tạo
-    return newProject;
+    // Step 3: Create a chat room with the same name and members
+    try {
+      console.log('Creating chat room with participants:', participantIds);
+      
+      const chatRoom = await createNewChatRoom({
+        name: project.project_name,
+        participantIds: participantIds,
+        isDirectChat: false
+      });
+      
+      console.log('Chat room created successfully:', chatRoom);
+      return { project, chatRoom };
+    } catch (error) {
+      // If chat room creation fails, still return the project
+      console.error('Failed to create chat room:', error);
+      return { project, chatRoom: null };
+    }
   } catch (error) {
-    console.error('Error creating project with chat room:', error);
+    console.error('Error in createProjectWithChatRoom:', error);
     throw error;
   }
 };
