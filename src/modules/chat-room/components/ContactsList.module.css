@@ -1,6 +1,6 @@
 .contactsList {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 
 .contactItem {
@@ -12,11 +12,36 @@
   transition: background-color 0.2s;
   border-bottom: 1px solid #f0f0f0;
 }
+.contactsContainer {
+  height: 100%;
+  max-height: calc(100vh - 200px); /* Điều chỉnh để phù hợp với layout */
+  overflow-y: auto;
+  padding-right: 4px; /* Thêm padding để tránh nội dung bị sát scrollbar */
+}
 
+/* Style cho thanh cuộn */
+.contactsContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.contactsContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.contactsContainer::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.contactsContainer::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 .contactMain {
   display: flex;
   flex: 1;
   align-items: center;
+
 }
 
 .contactItem:hover {

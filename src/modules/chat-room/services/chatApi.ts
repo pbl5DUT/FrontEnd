@@ -10,10 +10,23 @@ export const fetchChatRooms = async () => {
   const response = await axiosInstance.get(CHATROOMS_ENDPOINT);
   const formattedRooms = response.data.map(formatChatRoomFromResponse);
   
-  const usersResponse = await axiosInstance.get('/users/');
-  const formattedContacts = usersResponse.data.map(formatContactFromResponse);
-  
-  return { rooms: formattedRooms, contacts: formattedContacts };
+  // Sử dụng API endpoint mới để lấy toàn bộ người dùng trong hệ thống
+  try {
+    const usersResponse = await axiosInstance.get('/users/');
+    console.log('Users fetched:', usersResponse.data.length);
+    
+    // Đảm bảo dữ liệu người dùng là một mảng
+    const users = Array.isArray(usersResponse.data) ? usersResponse.data : [];
+    
+    // Format từng người dùng theo cấu trúc contact
+    const formattedContacts = users.map(formatContactFromResponse);
+    
+    return { rooms: formattedRooms, contacts: formattedContacts };
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    // Trả về danh sách trống nếu có lỗi
+    return { rooms: formattedRooms, contacts: [] };
+  }
 };
 
 /**

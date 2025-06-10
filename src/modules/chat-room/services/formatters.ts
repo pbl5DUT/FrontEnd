@@ -4,9 +4,32 @@ import { ChatContact, ChatMessage, ChatRoom, MessageStatus } from './types';
  * Hàm format response từ API sang ChatContact
  */
 export const formatContactFromResponse = (contact: any): ChatContact => {
+  // Kiểm tra và xử lý dữ liệu người dùng
+  if (!contact) {
+    console.warn('Received null or undefined contact');
+    return {
+      id: `unknown-${Date.now()}`,
+      name: 'Người dùng không xác định',
+      avatar: null,
+      isOnline: false,
+      lastSeen: 'Offline',
+      unread: 0,
+      isActive: false,
+    };
+  }
+  
+  // Log để kiểm tra định dạng dữ liệu người dùng
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Format contact:', {
+      id: contact.user_id || contact.id,
+      name: contact.full_name || contact.name,
+    });
+  }
+  
   return {
-    id: contact.user_id,
-    name: contact.full_name,
+    id: contact.user_id || contact.id, // Lấy user_id hoặc id
+    name: contact.full_name || contact.name || 'Người dùng', // Lấy full_name hoặc name
+    email: contact.email, // Thêm email
     avatar: contact.avatar,
     isOnline: contact.is_online || false,
     lastSeen: contact.last_seen || 'Offline',

@@ -69,6 +69,6 @@ export interface UploadAttachmentParams {
 
 export interface CreateRoomParams {
   name: string;
-  participantIds: number[];
+  participantIds: (number | string)[];
   isDirectChat?: boolean;
 }

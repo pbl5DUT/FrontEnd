@@ -14,7 +14,6 @@ interface CreateChatModalProps {
   handleCreateChatRoom: () => void;
   handleParticipantToggle: (userId: string) => void;
   isAdmin?: boolean; // Người dùng có phải admin không
-  projectMembers?: any[]; // Danh sách thành viên trong project
   loadingMembers?: boolean; // Đang tải danh sách thành viên
 }
 
@@ -28,7 +27,6 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
   handleCreateChatRoom,
   handleParticipantToggle,
   isAdmin,
-  projectMembers,
   loadingMembers
 }) => {
   if (!showNewChatModal) {
@@ -60,11 +58,7 @@ const CreateChatModal: React.FC<CreateChatModalProps> = ({
           </div>          <div className={styles.formGroup}>
             <label>
               Người tham gia
-              {isAdmin ? (
-                <span className={styles.labelNote}> (Bạn có thể thêm bất kỳ người dùng nào)</span>
-              ) : (
-                <span className={styles.labelNote}> (Bạn chỉ có thể thêm người trong cùng dự án)</span>
-              )}
+              <span className={styles.labelNote}> (Bạn có thể thêm bất kỳ người dùng nào trong hệ thống)</span>
             </label>
             {loadingMembers && (
               <div className={styles.loadingMessage}>Đang tải danh sách người dùng...</div>

@@ -19,6 +19,8 @@ interface ContactsListProps {
   // Add these new props for call functionality
   onVoiceCallClick?: (userId: number | string, roomId: string | number) => void;
   onVideoCallClick?: (userId: number | string, roomId: string | number) => void;
+  // Add refresh callback
+  onRefreshProjectUsers?: () => void;
 }
 
 const ContactsList: React.FC<ContactsListProps> = ({
@@ -36,6 +38,7 @@ const ContactsList: React.FC<ContactsListProps> = ({
   setActiveChatRoom,
   onVoiceCallClick,
   onVideoCallClick,
+  onRefreshProjectUsers,
 }) => {
   if (loading) {
     return <div className={styles.loading}>Đang tải...</div>;
@@ -48,10 +51,11 @@ const ContactsList: React.FC<ContactsListProps> = ({
   // Display recent chats
   if (activeTab === 'recent') {
     return (
-      <>
+      <div className={styles.contactsContainer}>
         {chatRooms
           .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()))
-          .map((room) => (            <div
+          .map((room) => (
+                       <div
               key={room.id}
               className={`${styles.contactItem} ${
                 room.id === activeRoom?.id ? styles.activeContact : ''
@@ -103,47 +107,81 @@ const ContactsList: React.FC<ContactsListProps> = ({
               )}
             </div>
           ))}
-      </>
+      </div>
     );
   }
-
-  // Display users
+  
+  // Display users  
   if (activeTab === 'users') {
     if (loadingProjectUsers) {
-      return <div className={styles.loading}>Đang tải danh sách người dùng dự án...</div>;
+      return <div className={styles.loading}>Đang tải danh sách người dùng hệ thống...</div>;
     }
 
     if (projectUsersError) {
-      return <div className={styles.error}>{projectUsersError}</div>;
+      return (
+        <div>
+          <div className={styles.error}>{projectUsersError}</div>
+          {onRefreshProjectUsers && (
+            <button 
+              onClick={onRefreshProjectUsers}
+              style={{ padding: '8px 16px', margin: '10px 0', cursor: 'pointer' }}
+            >
+              Thử lại
+            </button>
+          )}
+        </div>
+      );
     }
 
     if (projectUsers.length === 0) {
-      return <div className={styles.noResults}>Không có người dùng nào trong dự án của bạn</div>;
+      return (
+        <div className={styles.contactsContainer}>
+          <div className={styles.noResults}>Không có người dùng nào để hiển thị</div>
+          {onRefreshProjectUsers && (
+            <button 
+              onClick={onRefreshProjectUsers}
+              style={{ padding: '8px 16px', margin: '10px 0', cursor: 'pointer' }}
+            >
+              Làm mới danh sách
+            </button>
+          )}
+        </div>
+      );
     }
-
-    return (
-      <>
+      return (
+      <div className={styles.contactsContainer}>
+        {onRefreshProjectUsers && (
+          <div style={{ padding: '10px 0', textAlign: 'center' }}>
+            <button 
+              onClick={onRefreshProjectUsers}
+              style={{ 
+                padding: '5px 10px', 
+                backgroundColor: '#4a76a8', 
+                color: 'white', 
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Làm mới danh sách người dùng
+            </button>
+          </div>
+        )}
         {projectUsers
           .filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()))
-          .map((projectUser) => {
+          .map((user) => {
             // Kiểm tra xem đã có phòng chat 1-1 với người dùng này chưa
             const existingChatRoom = chatRooms.find(room => {
               if (room.participants.length !== 2) return false;
-              return room.participants.some(p => String(p.id) === String(projectUser.id));
+              return room.participants.some(p => String(p.id) === String(user.id));
             });
             
-            const handleProjectUserClick = async () => {
+            const handleUserClick = async () => {
               try {
                 if (existingChatRoom) {
-                  // Nếu đã có phòng chat, mở phòng chat đó
                   setActiveChatRoom(existingChatRoom);
-                } else {                  // Nếu chưa có, tạo phòng chat mới
-                  // Chuyển đổi ID sang dạng số nếu là chuỗi
-                  const userId = typeof projectUser.id === 'string' ? 
-                    Number(projectUser.id.replace(/^\D+/g, '')) : 
-                    projectUser.id;
-                  
-                  const newRoom = await startDirectChat(userId);
+                } else {
+                  const newRoom = await startDirectChat(user.id);
                   if (newRoom) {
                     setActiveChatRoom(newRoom);
                   }
@@ -153,21 +191,22 @@ const ContactsList: React.FC<ContactsListProps> = ({
               }
             };
             
-            return (              <div
-                key={`project-user-${projectUser.id}`}
-                className={`${styles.contactItem} ${styles.projectUserItem}`}
+            return (
+              <div
+                key={`user-${user.id}`}
+                className={`${styles.contactItem} ${styles.userItem}`}
               >
-                <div className={styles.contactMain} onClick={handleProjectUserClick}>
+                <div className={styles.contactMain} onClick={handleUserClick}>
                   <Avatar
-                    name={projectUser.name}
-                    avatar={projectUser.avatar}
-                    isOnline={projectUser.isOnline}
+                    name={user.name}
+                    avatar={user.avatar}
+                    isOnline={user.isOnline}
                     isGroup={false}
                   />
                   <div className={styles.contactInfo}>
-                    <div className={styles.contactName}>{projectUser.name}</div>
-                    <div className={styles.projectInfo}>
-                      {projectUser.projectName ? `Dự án: ${projectUser.projectName}` : 'Cùng dự án với bạn'}
+                    <div className={styles.contactName}>{user.name}</div>
+                    <div className={styles.userInfo}>
+                      {user.isOnline ? 'Online' : 'Offline'}
                     </div>
                   </div>
                   {existingChatRoom && existingChatRoom.unreadCount > 0 && (
@@ -181,9 +220,12 @@ const ContactsList: React.FC<ContactsListProps> = ({
                       className={styles.callButton} 
                       onClick={(e) => {
                         e.stopPropagation();
-                        onVoiceCallClick(projectUser.id, existingChatRoom?.id || '');
+                        if (existingChatRoom?.id) {
+                          onVoiceCallClick(user.id, existingChatRoom.id);
+                        }
                       }}
                       title="Voice call"
+                      disabled={!existingChatRoom?.id}
                     >
                       <FiPhone size={16} />
                     </button>
@@ -191,9 +233,12 @@ const ContactsList: React.FC<ContactsListProps> = ({
                       className={styles.callButton} 
                       onClick={(e) => {
                         e.stopPropagation();
-                        onVideoCallClick(projectUser.id, existingChatRoom?.id || '');
+                        if (existingChatRoom?.id) {
+                          onVideoCallClick(user.id, existingChatRoom.id);
+                        }
                       }}
                       title="Video call"
+                      disabled={!existingChatRoom?.id}
                     >
                       <FiVideo size={16} />
                     </button>
@@ -202,13 +247,13 @@ const ContactsList: React.FC<ContactsListProps> = ({
               </div>
             );
           })}
-      </>
+      </div>
     );
   }
 
-  // Display groups
+  // Display groups (if not users or recent)
   return (
-    <>
+    <div className={styles.contactsContainer}>
       {chatRooms
         .filter(room => room.isGroup)
         .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -219,14 +264,15 @@ const ContactsList: React.FC<ContactsListProps> = ({
               room.id === activeRoom?.id ? styles.activeContact : ''
             }`}
             onClick={() => handleContactClick(room)}
-          >            <Avatar
+          >
+            <Avatar
               name={room.name}
               isGroup={true}
             />
             <div className={styles.contactInfo}>
               <div className={styles.contactName}>{room.name}</div>
               <div className={styles.lastSeen}>
-                {`${room.participants.length} participants`}
+                {`${room.participants.length} thành viên`}
               </div>
             </div>
             {room.unreadCount > 0 && (
@@ -234,7 +280,7 @@ const ContactsList: React.FC<ContactsListProps> = ({
             )}
           </div>
         ))}
-    </>
+    </div>
   );
 };
 
