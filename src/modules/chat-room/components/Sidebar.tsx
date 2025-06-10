@@ -76,7 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Floating Add Chat Button */}
       <div className={styles.sidebarFooter}>
         <button
-          className={styles.addChatButton}
+          className={styles.floatingActionButton}
           onClick={() => setShowNewChatModal(true)}
           title="Tạo cuộc trò chuyện mới"
         >
