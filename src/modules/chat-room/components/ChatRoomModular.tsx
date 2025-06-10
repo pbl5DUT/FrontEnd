@@ -3,6 +3,7 @@ import styles from './ChatRoomModular.module.css';
 import { useAuth } from '@/modules/auth/contexts/auth_context';
 import { useChatService } from '../services';
 import useProjectUsers from '../services/useProjectUsers';
+import { useProjectMembers } from '../hooks/useProjectMembers';
 
 // Component imports
 import Sidebar from './Sidebar';
@@ -12,10 +13,11 @@ import CreateChatModal from './CreateChatModal';
 import { Contact, ChatRoom } from './types';
 import { adaptServiceChatRoom } from './adapters';
 
-const ChatRoomModular: React.FC = () => {
-  const { user } = useAuth();
-  const userId = user?.user_id || 0;
-    const {
+const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
+  const userId = user?.user_id || '';
+  const userIdNumber = parseInt(String(userId).replace('user-', '')) || 0;
+  
+  const {
     contacts: apiContacts,
     chatRooms,
     messages: apiMessages,
@@ -30,24 +32,80 @@ const ChatRoomModular: React.FC = () => {
     loadMessages,
     startDirectChat,
     websocket
-  } = useChatService(userId);
+  } = useChatService(userIdNumber);
   
   // Lấy danh sách người dùng trong các dự án
   const { 
     projectUsers,
     loading: loadingProjectUsers,
     error: projectUsersError
-  } = useProjectUsers(userId);
+  } = useProjectUsers(String(userId));
+    // Lấy danh sách thành viên trong các project của người dùng
+  const {
+    members: projectMembers,
+    loading: loadingProjectMembers,
+    error: projectMembersError
+  } = useProjectMembers(String(userId));
+  // Hàm kiểm tra và làm sạch dữ liệu phòng chat
+  const validateParticipantsInRoom = (room: ChatRoom): ChatRoom => {
+    if (!room) return room;
+    
+    // Đảm bảo participants là một mảng hợp lệ
+    if (!Array.isArray(room.participants)) {
+      console.error('Room participants is not an array:', room);
+      room.participants = [];
+      return room;
+    }
+    
+    
+    // Lọc bỏ các phần tử null/undefined và làm sạch dữ liệu
+    const validatedParticipants = room.participants
+      .filter(participant => participant !== null && participant !== undefined)
+      .map(participant => {
+        // Check if participant has a nested user object which is the actual user data
+        const userData = participant.user || participant;
+        
+        return {
+          // Preserve original ID instead of generating a new one
+          id: userData.user_id || userData.id || participant.user_id || participant.id || '',
+          // Try to get the full name from various possible paths
+          name: userData.full_name || userData.name || participant.full_name || participant.name || 'Người dùng không xác định',
+          avatar: userData.avatar || participant.avatar || null,
+          isOnline: !!(userData.is_online || userData.isOnline || participant.is_online || participant.isOnline),
+          lastSeen: userData.last_seen || userData.lastSeen || participant.last_seen || participant.lastSeen || ''
+        };
+      });
+    
+    return {
+      ...room,
+      participants: validatedParticipants
+    };
+  };
+  
   // Component state
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [contacts, setContacts] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('recent');
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('recent');  const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [newChatName, setNewChatName] = useState('');
-  const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);  const [showParticipants, setShowParticipants] = useState<boolean>(false);
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);  
+  const [showParticipants, setShowParticipants] = useState<boolean>(false);
+  
+  // Kiểm tra người dùng có phải admin không
+  const isAdmin = user?.role === 'Admin';
+  
+  // Danh sách người dùng để hiển thị tùy theo quyền admin
+  const [availableContacts, setAvailableContacts] = useState<any[]>([]);
+  
+  // Reset modal state when closing
+  useEffect(() => {
+    if (!showNewChatModal) {
+      setNewChatName('');
+      setSelectedParticipants([]);
+    }
+  }, [showNewChatModal]);
   const [incomingCall, setIncomingCall] = useState<{
     callerId?: string | number; // Chấp nhận cả ID dạng chuỗi và số
     isAudioOnly: boolean;
@@ -82,13 +140,56 @@ const ChatRoomModular: React.FC = () => {
     } else {
       console.error('WebSocket not available for sending signals');
     }
-  }, [activeRoom, websocket, userId]);
-  // Update local state when API data changes
+  }, [activeRoom, websocket, userId]);  // Update local state when API data changes
   useEffect(() => {
     if (apiContacts && apiContacts.length > 0) {
       setContacts(apiContacts);
     }
-  }, [apiContacts]);  // Listen for WebRTC signals from WebSocket
+  }, [apiContacts]);
+  
+  // Ensure active room data updates properly when room changes
+  useEffect(() => {
+    if (activeRoom) {
+      
+      // Force refresh the active room data if there are problems with participants
+      if (!Array.isArray(activeRoom.participants) || activeRoom.participants.length === 0) {
+        console.warn('Active room has no participants or invalid participants array, attempting to refresh');
+        
+        // Trigger a refresh of the room's data if needed
+        const roomId = activeRoom.id;
+        if (roomId) {
+          loadMessages(roomId.toString()).catch(err => 
+            console.error('Error refreshing room messages:', err)
+          );
+        }
+      }
+    }
+  }, [activeRoom, loadMessages]);
+  
+  // Cập nhật danh sách người dùng có thể tạo nhóm chat dựa trên role
+  useEffect(() => {
+    // Nếu là Admin, hiển thị tất cả người dùng
+    if (isAdmin) {
+      setAvailableContacts(contacts);
+      return;
+    }
+    
+    // Nếu không phải Admin, chỉ hiển thị người dùng trong cùng project
+    if (projectMembers && projectMembers.length > 0) {
+      const formattedMembers = projectMembers.map(member => ({
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        avatar: member.avatar || null
+      }));
+      
+      setAvailableContacts(formattedMembers);
+    } else {
+      // Nếu không có thành viên project nào (người dùng không thuộc project nào)
+      // hoặc đang load, hiển thị danh sách trống
+      setAvailableContacts([]);
+    }
+  }, [isAdmin, contacts, projectMembers]);// Listen for WebRTC signals from WebSocket
   useEffect(() => {
     // Function to handle WebRTC signal events
     const handleWebRTCSignal = (event: CustomEvent) => {
@@ -99,9 +200,6 @@ const ChatRoomModular: React.FC = () => {
       const signalRoomId = data.roomId || data.chatroom_id;
       const currentRoomId = activeRoom?.id;
       
-      // Debug to see if IDs match
-      console.log('Signal room ID:', signalRoomId, 'Current room ID:', currentRoomId);
-      console.log('Signal user ID:', data.userId || data.user_id, 'Current user ID:', userId);
       
       // Only handle signals for the current room - more flexible comparison
       // Convert both to strings for comparison to handle number/string inconsistencies
@@ -293,51 +391,89 @@ const ChatRoomModular: React.FC = () => {
     
     // Thêm tin nhắn tạm thời vào UI ngay lập tức
     setMessages(prevMessages => [...prevMessages, optimisticMessage]);
-  
     try {
+      // Find the receiver ID and convert it to a number if it's a string
+      const receiverParticipant = activeRoom.participants.find(p => p.id !== userId);
+      let receiverId: number | undefined = undefined;
+      
+      if (receiverParticipant?.id) {
+        // Convert to number if it's a string
+        receiverId = typeof receiverParticipant.id === 'string' 
+          ? parseInt(receiverParticipant.id.replace(/\D/g, '') || '0', 10) || undefined
+          : receiverParticipant.id as number;
+      }
+      
       // Gửi tin nhắn qua API (không cần chờ đợi kết quả)
       sendMessage({
         roomId: activeRoom.id,
         text: message,
-        receiverId: activeRoom.participants.find(p => p.id !== userId)?.id,
+        receiverId: receiverId,
         tempId
       }).catch(err => console.error('Error in background message sending:', err));
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
-  
-  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => {
+    const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => {
     if (!e.target.files || !e.target.files[0] || !activeRoom) return;
     
-    const file = e.target.files[0];    const receiverId = activeRoom.isGroup 
-      ? undefined 
-      : activeRoom.participants.find(p => p.id !== userId)?.id;
+    const file = e.target.files[0];
+    
+    // Find receiver and convert ID to number properly
+    let receiverId: number | undefined = undefined;
+    if (!activeRoom.isGroup) {
+      const receiverParticipant = activeRoom.participants.find(p => p.id !== userId);
+      if (receiverParticipant?.id) {
+        // Use a more robust conversion that handles different ID formats
+        if (typeof receiverParticipant.id === 'string') {
+          // For IDs like 'user-123', extract only the numeric part
+          const numericPart = receiverParticipant.id.replace(/\D/g, '');
+          receiverId = numericPart ? parseInt(numericPart, 10) : undefined;
+        } else {
+          receiverId = receiverParticipant.id as number;
+        }
+      }
+    }
     
     // Use the full original room ID without modification
     uploadAttachment({
       roomId: activeRoom.id,
       file: file,
-      receiverId: receiverId ? Number(receiverId) : undefined
+      receiverId: receiverId
     });
+  };
+
+  // Chuyển đổi ID người dùng dạng chuỗi thành số
+  const convertUserIdsToNumber = (userIds: string[]): number[] => {
+    return userIds.map(id => {
+      // Nếu ID có dạng user-X, trích xuất số X
+      if (id.startsWith('user-')) {
+        return parseInt(id.replace('user-', ''), 10);
+      }
+      // Nếu ID đã là số hoặc có thể chuyển thành số
+      return parseInt(id, 10) || 0;
+    }).filter(id => id > 0); // Lọc các giá trị không hợp lệ
   };
 
   const handleCreateChatRoom = async () => {
     if (newChatName.trim() === '') {
-      alert('Please enter a chat room name');
+      alert('Vui lòng nhập tên nhóm trò chuyện');
       return;
     }
     
     if (selectedParticipants.length === 0) {
-      alert('Please select at least one participant');
+      alert('Vui lòng chọn ít nhất một người tham gia');
       return;
     }
     
     try {
+      // Chuyển đổi ID người dùng từ dạng chuỗi sang số
+      const numericParticipantIds = convertUserIdsToNumber(selectedParticipants);
+      
       // Create new chat room
       const newRoom = await createChatRoom({
         name: newChatName,
-        participantIds: selectedParticipants
+        participantIds: numericParticipantIds
       });
       
       // Close modal before updating active room to avoid unnecessary rendering
@@ -359,14 +495,31 @@ const ChatRoomModular: React.FC = () => {
       console.error('Failed to create chat room:', error);
       alert('Failed to create chat room. Please try again.');
     }
-  };
-  
-  const handleParticipantToggle = (userId: number) => {
-    if (selectedParticipants.includes(userId)) {
-      setSelectedParticipants(selectedParticipants.filter(id => id !== userId));
-    } else {
-      setSelectedParticipants([...selectedParticipants, userId]);
+  };  const handleParticipantToggle = (userId: string) => {
+    
+    // Nếu không phải admin, kiểm tra xem người dùng có trong danh sách projectMembers không
+    if (!isAdmin) {
+      const isInProject = projectMembers.some(member => String(member.id) === String(userId));
+      
+      if (!isInProject) {
+        console.log('Cannot add participant outside of projects:', userId);
+        alert('Bạn chỉ có thể thêm người dùng trong cùng dự án.');
+        return;
+      }
     }
+    
+    setSelectedParticipants(prev => {
+      // Kiểm tra xem userId đã có trong mảng chưa
+      const exists = prev.includes(userId);
+      
+      // Nếu đã có thì xóa khỏi mảng
+      if (exists) {
+        return prev.filter(id => id !== userId);
+      }
+      
+      // Nếu chưa có thì thêm vào mảng
+      return [...prev, userId];
+    });
   };
 
   return (
@@ -378,8 +531,15 @@ const ChatRoomModular: React.FC = () => {
         setActiveTab={setActiveTab}
         loading={loading}
         error={error}
-        chatRooms={chatRooms.map(room => adaptServiceChatRoom(room))}
-        projectUsers={projectUsers}
+        chatRooms={chatRooms.map(room => adaptServiceChatRoom(room))}        projectUsers={projectUsers.map(user => ({
+          id: user.id,
+          name: user.name,
+          avatar: user.avatar,
+          isOnline: user.isOnline || false,
+          projectName: user.projectName,
+          email: user.email,
+          projectId: user.projectId
+        }))}
         loadingProjectUsers={loadingProjectUsers}
         projectUsersError={projectUsersError}
         activeRoom={activeRoom ? adaptServiceChatRoom(activeRoom) : null}
@@ -405,13 +565,11 @@ const ChatRoomModular: React.FC = () => {
       />
 
       {/* Participants Panel Component */}      <ParticipantsPanel
-        activeRoom={activeRoom ? adaptServiceChatRoom(activeRoom) : null}
+        activeRoom={activeRoom ? validateParticipantsInRoom(adaptServiceChatRoom(activeRoom)) : null}
         showParticipants={showParticipants}
         setShowParticipants={setShowParticipants}
         userId={userId}
-      />
-
-      {/* Create Chat Modal Component */}
+      />{/* Create Chat Modal Component */}
       <CreateChatModal
         showNewChatModal={showNewChatModal}
         setShowNewChatModal={setShowNewChatModal}
@@ -419,9 +577,12 @@ const ChatRoomModular: React.FC = () => {
         setNewChatName={setNewChatName}
         selectedParticipants={selectedParticipants}
         setSelectedParticipants={setSelectedParticipants}
-        contacts={contacts}
+        contacts={availableContacts}
         handleCreateChatRoom={handleCreateChatRoom}
         handleParticipantToggle={handleParticipantToggle}
+        isAdmin={isAdmin}
+        projectMembers={projectMembers}
+        loadingMembers={loadingProjectMembers}
       />
     </div>
   );
