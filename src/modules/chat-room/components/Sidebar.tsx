@@ -16,7 +16,8 @@ interface SidebarProps {
   chatRooms: ChatRoom[];
   projectUsers: ProjectUser[];
   loadingProjectUsers: boolean;
-  projectUsersError: string | null;  activeRoom: ChatRoom | null;
+  projectUsersError: string | null;
+  activeRoom: ChatRoom | null;
   setActiveChatRoom: (room: ChatRoom) => void;
   startDirectChat: (userId: number | string) => Promise<any>;
   setShowNewChatModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,6 +25,8 @@ interface SidebarProps {
   // Add these new props for call functionality
   onVoiceCallClick?: (userId: number | string, roomId: string | number) => void;
   onVideoCallClick?: (userId: number | string, roomId: string | number) => void;
+  // Add refresh callback for user list
+  onRefreshProjectUsers?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -44,6 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   handleContactClick,
   onVoiceCallClick,
   onVideoCallClick,
+  onRefreshProjectUsers,
 }) => {
   return (
     <div className={styles.sidebar}>
@@ -63,9 +67,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           searchTerm={searchTerm}
           handleContactClick={handleContactClick}
           startDirectChat={startDirectChat}
-          setActiveChatRoom={setActiveChatRoom}
-          onVoiceCallClick={onVoiceCallClick}
+          setActiveChatRoom={setActiveChatRoom}          onVoiceCallClick={onVoiceCallClick}
           onVideoCallClick={onVideoCallClick}
+          onRefreshProjectUsers={onRefreshProjectUsers}
         />
       </div>
       

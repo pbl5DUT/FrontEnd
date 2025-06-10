@@ -2,6 +2,7 @@ import { ProjectFormData, Project } from '../types/project';
 import { createProject } from './project_service';
 import { createNewChatRoom } from '@/modules/chat-room/services/chatApi';
 import { ChatRoom } from '@/modules/chat-room/services/types';
+import EventEmitter from 'events';
 
 /**
  * Creates a project and an associated chat room with the same name and members
@@ -9,6 +10,9 @@ import { ChatRoom } from '@/modules/chat-room/services/types';
  * @param currentUserId The ID of the current user
  * @returns Object containing the created project and chat room
  */
+// Event emitter để thông báo khi có project mới được tạo
+export const projectEvents = new EventEmitter();
+
 export const createProjectWithChatRoom = async (
   projectData: ProjectFormData,
   currentUserId: string | number
@@ -63,9 +67,12 @@ export const createProjectWithChatRoom = async (
         name: project.project_name,
         participantIds: participantIds,
         isDirectChat: false
-      });
-      
+      });      
       console.log('Chat room created successfully:', chatRoom);
+      
+      // Emit event to notify that a project has been created
+      projectEvents.emit('project_created', { project, chatRoom });
+      
       return { project, chatRoom };
     } catch (error) {
       // If chat room creation fails, still return the project

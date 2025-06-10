@@ -4,6 +4,7 @@ import { useAuth } from '@/modules/auth/contexts/auth_context';
 import { useChatService } from '../services';
 import useProjectUsers from '../services/useProjectUsers';
 import { useProjectMembers } from '../hooks/useProjectMembers';
+import useAllUsers from '../hooks/useAllUsers';
 
 // Component imports
 import Sidebar from './Sidebar';
@@ -33,8 +34,7 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
     startDirectChat,
     websocket
   } = useChatService(userIdNumber);
-  
-  // Lấy danh sách người dùng trong các dự án
+    // Lấy danh sách người dùng trong các dự án
   const { 
     projectUsers,
     loading: loadingProjectUsers,
@@ -46,6 +46,14 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
     loading: loadingProjectMembers,
     error: projectMembersError
   } = useProjectMembers(String(userId));
+  
+  // Lấy danh sách tất cả người dùng trong hệ thống
+  const {
+    users: allUsers,
+    loading: loadingAllUsers,
+    error: allUsersError,
+    refresh: refreshAllUsers
+  } = useAllUsers();
   // Hàm kiểm tra và làm sạch dữ liệu phòng chat
   const validateParticipantsInRoom = (room: ChatRoom): ChatRoom => {
     if (!room) return room;
@@ -93,8 +101,6 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);  
   const [showParticipants, setShowParticipants] = useState<boolean>(false);
   
-  // Kiểm tra người dùng có phải admin không
-  const isAdmin = user?.role === 'Admin';
   
   // Danh sách người dùng để hiển thị tùy theo quyền admin
   const [availableContacts, setAvailableContacts] = useState<any[]>([]);
@@ -164,32 +170,31 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
         }
       }
     }
-  }, [activeRoom, loadMessages]);
-  
-  // Cập nhật danh sách người dùng có thể tạo nhóm chat dựa trên role
+  }, [activeRoom, loadMessages]);    // Cập nhật danh sách người dùng có thể tạo nhóm chat - hiển thị tất cả người dùng
   useEffect(() => {
-    // Nếu là Admin, hiển thị tất cả người dùng
-    if (isAdmin) {
-      setAvailableContacts(contacts);
-      return;
-    }
-    
-    // Nếu không phải Admin, chỉ hiển thị người dùng trong cùng project
-    if (projectMembers && projectMembers.length > 0) {
-      const formattedMembers = projectMembers.map(member => ({
-        id: member.id,
-        name: member.name,
-        email: member.email,
-        avatar: member.avatar || null
-      }));
+    // Kiểm tra xem có dữ liệu người dùng từ API không
+    if (allUsers && allUsers.length > 0) {
+      // Chuyển đổi định dạng từ API sang cấu trúc contact
+      const formattedUsers = allUsers.map(user => ({
+        id: user.user_id,
+        name: user.full_name || user.email?.split('@')[0] || 'Người dùng',
+        avatar: user.avatar,
+        isOnline: user.isOnline || false,
+        email: user.email,
+      })).filter(user => user.id !== userId); // Lọc bản thân ra khỏi danh sách
       
-      setAvailableContacts(formattedMembers);
+      setAvailableContacts(formattedUsers);
+      console.log('Đã tải tất cả người dùng cho chat:', formattedUsers.length);
+    } else if (contacts && contacts.length > 0) {
+      // Dùng contacts từ API chatroom nếu không có dữ liệu từ API users
+      setAvailableContacts(contacts);
+      console.log('Sử dụng danh sách contacts thay thế:', contacts.length);
     } else {
-      // Nếu không có thành viên project nào (người dùng không thuộc project nào)
-      // hoặc đang load, hiển thị danh sách trống
+      // Nếu không có dữ liệu từ cả hai nguồn, hiển thị danh sách trống
       setAvailableContacts([]);
+      console.warn('Không có dữ liệu người dùng để hiển thị');
     }
-  }, [isAdmin, contacts, projectMembers]);// Listen for WebRTC signals from WebSocket
+  }, [allUsers, contacts, userId]);// Listen for WebRTC signals from WebSocket
   useEffect(() => {
     // Function to handle WebRTC signal events
     const handleWebRTCSignal = (event: CustomEvent) => {
@@ -454,7 +459,6 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
       return parseInt(id, 10) || 0;
     }).filter(id => id > 0); // Lọc các giá trị không hợp lệ
   };
-
   const handleCreateChatRoom = async () => {
     if (newChatName.trim() === '') {
       alert('Vui lòng nhập tên nhóm trò chuyện');
@@ -467,13 +471,19 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
     }
     
     try {
-      // Chuyển đổi ID người dùng từ dạng chuỗi sang số
-      const numericParticipantIds = convertUserIdsToNumber(selectedParticipants);
+      console.log('Creating chat room with participants:', selectedParticipants);
+      
+      // Cho phép sử dụng trực tiếp ID dạng chuỗi (user-1, user-2...)
+      // hoặc chuyển đổi thành số nếu cần
+      const processedParticipantIds = selectedParticipants.map(id => {
+        console.log('Processing participant ID:', id);
+        return id; // Giữ nguyên ID dạng chuỗi
+      });
       
       // Create new chat room
       const newRoom = await createChatRoom({
         name: newChatName,
-        participantIds: numericParticipantIds
+        participantIds: processedParticipantIds
       });
       
       // Close modal before updating active room to avoid unnecessary rendering
@@ -496,17 +506,8 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
       alert('Failed to create chat room. Please try again.');
     }
   };  const handleParticipantToggle = (userId: string) => {
-    
-    // Nếu không phải admin, kiểm tra xem người dùng có trong danh sách projectMembers không
-    if (!isAdmin) {
-      const isInProject = projectMembers.some(member => String(member.id) === String(userId));
-      
-      if (!isInProject) {
-        console.log('Cannot add participant outside of projects:', userId);
-        alert('Bạn chỉ có thể thêm người dùng trong cùng dự án.');
-        return;
-      }
-    }
+    // Cho phép tất cả người dùng tham gia cuộc trò chuyện, không phân biệt có trong project hay không
+    console.log('Toggle participant:', userId);
     
     setSelectedParticipants(prev => {
       // Kiểm tra xem userId đã có trong mảng chưa
@@ -514,10 +515,12 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
       
       // Nếu đã có thì xóa khỏi mảng
       if (exists) {
+        console.log('Removing participant:', userId);
         return prev.filter(id => id !== userId);
       }
       
       // Nếu chưa có thì thêm vào mảng
+      console.log('Adding participant:', userId);
       return [...prev, userId];
     });
   };
@@ -531,17 +534,17 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
         setActiveTab={setActiveTab}
         loading={loading}
         error={error}
-        chatRooms={chatRooms.map(room => adaptServiceChatRoom(room))}        projectUsers={projectUsers.map(user => ({
-          id: user.id,
-          name: user.name,
-          avatar: user.avatar,
+        chatRooms={chatRooms.map(room => adaptServiceChatRoom(room))}
+        projectUsers={allUsers.map(user => ({
+          id: user.user_id,
+          name: user.full_name || user.email?.split('@')[0] || 'Người dùng',
+          avatar: user.avatar || null,
           isOnline: user.isOnline || false,
-          projectName: user.projectName,
-          email: user.email,
-          projectId: user.projectId
+          email: user.email
         }))}
-        loadingProjectUsers={loadingProjectUsers}
-        projectUsersError={projectUsersError}
+        loadingProjectUsers={loadingAllUsers}
+        projectUsersError={allUsersError}
+        onRefreshProjectUsers={refreshAllUsers}
         activeRoom={activeRoom ? adaptServiceChatRoom(activeRoom) : null}
         setActiveChatRoom={(room) => setActiveChatRoom(room as any)}
         startDirectChat={startDirectChat}
@@ -569,8 +572,7 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
         showParticipants={showParticipants}
         setShowParticipants={setShowParticipants}
         userId={userId}
-      />{/* Create Chat Modal Component */}
-      <CreateChatModal
+      />{/* Create Chat Modal Component */}      <CreateChatModal
         showNewChatModal={showNewChatModal}
         setShowNewChatModal={setShowNewChatModal}
         newChatName={newChatName}
@@ -580,9 +582,7 @@ const ChatRoomModular: React.FC = () => {  const { user } = useAuth();
         contacts={availableContacts}
         handleCreateChatRoom={handleCreateChatRoom}
         handleParticipantToggle={handleParticipantToggle}
-        isAdmin={isAdmin}
-        projectMembers={projectMembers}
-        loadingMembers={loadingProjectMembers}
+        loadingMembers={loadingAllUsers}
       />
     </div>
   );
