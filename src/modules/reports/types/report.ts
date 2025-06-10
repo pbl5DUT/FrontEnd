@@ -130,4 +130,11 @@ export interface ReportTask {
   time_spent: number;
   notes?: string;
 }
+// ✅ Helper functions
+export const generateReportId = (): string => {
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 5).toUpperCase();
+  return `WR${timestamp}${randomSuffix}`;
+};
+
 export { TaskStatus, type Project, type Task } from '../../stacks/types/stacks';

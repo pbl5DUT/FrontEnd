@@ -1,21 +1,27 @@
 // modules/stacks/Reports.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReportsList from './components/reports_list';
 import ReportDetail from './components/report_detail';
 import CreateReportForm from './components/create_report_form';
 import { WorkReport } from './types/report';
 import styles from './styles/Reports.module.css';
+import { getCurrentUser, User } from '../auth/services/authService';
 
 // Trong ứng dụng thực tế, thông tin này sẽ được lấy từ context auth
-const CURRENT_USER = {
-  id: 'user-2',
-  name: 'Nguyễn Văn A',
-};
+
 
 const Reports: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState<WorkReport | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [refreshReports, setRefreshReports] = useState(0);
+  const [user, setUser] = useState<User | null>(null); // Khởi tạo giá trị mặc định là null
+
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+    const userId = String(currentUser?.user_id || '');
+    // Có thể sử dụng userId tại đây nếu cần
+  }, []);
 
   const handleSelectReport = (report: WorkReport) => {
     console.log('Selected report:', report); // Debug log
@@ -50,7 +56,7 @@ const Reports: React.FC = () => {
   return (
     <div className={styles.reportsWrapper}>
       <ReportsList
-        userId={CURRENT_USER.id}
+        userId={user?.user_id || ''}
         onSelectReport={handleSelectReport}
         onCreateReport={handleCreateReport}
         // refreshTrigger={refreshReports}
@@ -133,8 +139,8 @@ const Reports: React.FC = () => {
             }}
           >
             <CreateReportForm
-              userId={CURRENT_USER.id}
-              userName={CURRENT_USER.name}
+              userId={user?.user_id || ''}
+              userName={user?.user_id || ''}
               onClose={handleCloseCreateForm}
               onReportCreated={handleReportCreated}
             />

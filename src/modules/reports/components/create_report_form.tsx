@@ -1,13 +1,13 @@
-// modules/stacks/components/CreateReportForm.tsx - Refactored & Improved
+// modules/stacks/components/CreateReportForm.tsx - Cải thiện hiển thị Tasks
 import React, { useState, useEffect, useCallback } from 'react';
 import reportService from '../services/report_service';
 import {
   ReportType,
   ReportStatus,
   TaskStatus,
-  
   ReportTask,
   CreateReportRequest,
+  generateReportId, // ✅ Import helper function
 } from '../types/report';
 import styles from '../styles/CreateReportForm.module.css';
 import { getTasksByProject } from '@/modules/stacks/services/taskService';
@@ -49,8 +49,17 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
 
   // UI states
   const [loading, setLoading] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState(false); // Riêng cho tasks
   const [isCreating, setIsCreating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [taskLoadError, setTaskLoadError] = useState<string>(''); // Lỗi riêng cho tasks
+
+  // Debug states
+  const [debugInfo, setDebugInfo] = useState<{
+    lastProjectTried?: string;
+    projectsAttempted?: string[];
+    taskLoadAttempts?: number;
+  }>({});
 
   // Constants
   const REPORT_TYPES = [
@@ -80,7 +89,7 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
       [TaskStatus.DONE]: 100,
       [TaskStatus.IN_PROGRESS]: 50,
       [TaskStatus.TODO]: 0,
-      [TaskStatus.CANCELLED]: 0, // Add mapping for CANCELLED status
+      [TaskStatus.CANCELLED]: 0,
     };
     return progressMap[status];
   };
@@ -101,9 +110,9 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
 
       case ReportType.WEEKLY:
         start = new Date(today);
-        start.setDate(today.getDate() - today.getDay() + 1); // Monday
+        start.setDate(today.getDate() - today.getDay() + 1);
         end = new Date(start);
-        end.setDate(start.getDate() + 6); // Sunday
+        end.setDate(start.getDate() + 6);
         break;
 
       case ReportType.MONTHLY:
@@ -161,28 +170,151 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
     setFormData(prev => ({ ...prev, title }));
   }, [formData.reportType, formData.startDate, formData.endDate, formData.selectedProject, projects]);
 
+  // Cải thiện hàm load tasks
+  const loadTasksForProject = async (projectId: string): Promise<Task[]> => {
+    console.log(`🔄 Loading tasks for project: ${projectId}`);
+    try {
+      const tasks = await getTasksByProject(projectId, userId);
+      console.log(`✅ Successfully loaded ${tasks.length} tasks from project ${projectId}`);
+      return tasks;
+    } catch (error) {
+      console.warn(`❌ Failed to load tasks from project ${projectId}:`, error);
+      throw error;
+    }
+  };
+
+  // Cải thiện logic load tasks
+  const fetchUserTasks = useCallback(async () => {
+    if (!formData.startDate || !formData.endDate || !userId) {
+      console.log('❌ Missing required data for task loading:', {
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        userId
+      });
+      return;
+    }
+
+    if (projects.length === 0) {
+      console.log('⏳ Projects not loaded yet, skipping task fetch');
+      return;
+    }
+
+    setLoadingTasks(true);
+    setTaskLoadError('');
+    setUserTasks([]);
+    setSelectedTasks([]);
+    setTaskDetails({});
+
+    const attempts: string[] = [];
+    let tasks: Task[] = [];
+    let lastError: any = null;
+
+    try {
+      console.log('🔍 Starting task fetch process:', {
+        reportType: formData.reportType,
+        selectedProject: formData.selectedProject,
+        userId,
+        dateRange: `${formData.startDate} to ${formData.endDate}`,
+        availableProjects: projects.map(p => ({ id: p.project_id, name: p.project_name }))
+      });
+
+      if (formData.reportType === ReportType.PROJECT) {
+        // Cho báo cáo dự án, yêu cầu phải có project được chọn
+        if (!formData.selectedProject) {
+          setTaskLoadError('Vui lòng chọn dự án để xem danh sách công việc');
+          return;
+        }
+        
+        attempts.push(formData.selectedProject);
+        tasks = await loadTasksForProject(formData.selectedProject);
+      } else {
+        // Cho các loại báo cáo khác, thử theo thứ tự ưu tiên
+        const projectsToTry: string[] = [];
+
+        // 1. Dự án được chọn (nếu có)
+        if (formData.selectedProject) {
+          projectsToTry.push(formData.selectedProject);
+        }
+
+        // 2. Dự án mặc định
+        if (!projectsToTry.includes('prj-10')) {
+          projectsToTry.push('prj-10');
+        }
+
+        // 3. Các dự án khác
+        projects.forEach(project => {
+          if (!projectsToTry.includes(project.project_id)) {
+            projectsToTry.push(project.project_id);
+          }
+        });
+
+        console.log('📋 Projects to try (in order):', projectsToTry);
+
+        // Thử từng project cho đến khi tìm thấy tasks
+        for (const projectId of projectsToTry) {
+          attempts.push(projectId);
+          try {
+            tasks = await loadTasksForProject(projectId);
+            if (tasks.length > 0) {
+              console.log(`🎯 Found tasks in project ${projectId}, auto-selecting it`);
+              // Auto-select project nếu chưa chọn
+              if (!formData.selectedProject) {
+                setFormData(prev => ({ ...prev, selectedProject: projectId }));
+              }
+              break;
+            }
+          } catch (error) {
+            lastError = error;
+            console.warn(`⚠️ Project ${projectId} failed:`, error);
+          }
+        }
+      }
+
+      // Update debug info
+      setDebugInfo({
+        lastProjectTried: attempts[attempts.length - 1],
+        projectsAttempted: attempts,
+        taskLoadAttempts: attempts.length
+      });
+
+      if (tasks.length === 0) {
+        const projectName = projects.find(p => p.project_id === formData.selectedProject)?.project_name;
+        if (formData.reportType === ReportType.PROJECT && formData.selectedProject) {
+          setTaskLoadError(`Không tìm thấy công việc nào trong dự án "${projectName}" cho khoảng thời gian đã chọn.`);
+        } else if (attempts.length > 0) {
+          setTaskLoadError(`Không tìm thấy công việc nào trong ${attempts.length} dự án đã thử. Thử chọn dự án khác hoặc thay đổi khoảng thời gian.`);
+        } else {
+          setTaskLoadError('Không có dự án nào để tải công việc.');
+        }
+      }
+
+      setUserTasks(tasks);
+      console.log(`✅ Final result: ${tasks.length} tasks loaded`);
+
+    } catch (error) {
+      console.error('❌ Task loading failed:', error);
+      setTaskLoadError(
+        lastError?.message || 
+        'Có lỗi xảy ra khi tải danh sách công việc. Vui lòng thử lại.'
+      );
+    } finally {
+      setLoadingTasks(false);
+    }
+  }, [userId, formData.startDate, formData.endDate, formData.selectedProject, formData.reportType, projects]);
+
   // Load initial data
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
         const currentUser = getCurrentUser();
-      const userId = String(currentUser?.user_id || '');
-      
-      // TODO: Replace with actual API call when available
-      const projectsData = await fetchUser_Projects(userId);
+        const userId = String(currentUser?.user_id || '');
         
-        // For now, use mock data - you can replace this with real API
-        // const mockProjects: Project[] = [
-        //   { id: 'proj-1', name: 'Dự án Website' },
-        //   { id: 'proj-2', name: 'Dự án Mobile App' },
-        //   { id: 'prj-10', name: 'Project Management System' },
-        //   { id: 'prj-11', name: 'E-commerce Platform' },
-        //   { id: 'prj-12', name: 'Mobile Banking App' },
-        // ];
+        console.log('🏢 Loading projects for user:', userId);
+        const projectsData = await fetchUser_Projects(userId);
         
         setProjects(projectsData);
-        // console.log('📂 Loaded projects:', mockProjects);
+        console.log('📂 Loaded projects:', projectsData.map(p => ({ id: p.project_id, name: p.project_name })));
         
         // Auto-select first project for PROJECT type reports
         if (formData.reportType === ReportType.PROJECT && projectsData.length > 0) {
@@ -193,7 +325,7 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
           console.log('🎯 Auto-selected project for PROJECT report:', projectsData[0].project_id);
         }
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error('❌ Error fetching projects:', error);
         setErrors(prev => ({ ...prev, general: 'Không thể tải danh sách dự án.' }));
       } finally {
         setLoading(false);
@@ -203,126 +335,10 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
     fetchProjects();
   }, [formData.reportType]);
 
-  // Load tasks when dates or project change
+  // Load tasks when dependencies change
   useEffect(() => {
-    if (!formData.startDate || !formData.endDate || !userId) return;
-
-    const fetchTasks = async () => {
-      try {
-        let tasks: Task[] = [];
-        
-        console.log('🔍 Fetching tasks for:', {
-          reportType: formData.reportType,
-          selectedProject: formData.selectedProject,
-          userId,
-          dateRange: `${formData.startDate} to ${formData.endDate}`
-        });
-        
-        if (formData.reportType === ReportType.PROJECT) {
-          // For project reports, require a selected project
-          if (!formData.selectedProject) {
-            console.log('⚠️ No project selected for PROJECT report');
-            setUserTasks([]);
-            return;
-          }
-          console.log('📋 Loading tasks from selected project:', formData.selectedProject);
-          tasks = await getTasksByProject(formData.selectedProject, userId);
-        } else {
-          // For other report types, try to get tasks
-          if (formData.selectedProject) {
-            console.log('📋 Loading tasks from selected project:', formData.selectedProject);
-            tasks = await getTasksByProject(formData.selectedProject, userId);
-          } else {
-            // Try to get tasks from default project first
-            try {
-              console.log('📋 Loading tasks from default project: prj-10');
-              tasks = await getTasksByProject('prj-10', userId);
-            } catch (error) {
-              console.warn('Could not load from default project, trying other projects...');
-              // If default project fails, try other available projects
-              for (const project of projects) {
-                try {
-                  console.log(`📋 Trying project: ${project.project_id} (${project.project_name})`);
-                  tasks = await getTasksByProject(project.project_id, userId);
-                  if (tasks.length > 0) {
-                    console.log(`✅ Found ${tasks.length} tasks in project ${project.project_id}`);
-                    // Auto-select this project since it has tasks
-                    setFormData(prev => ({ ...prev, selectedProject: project.project_id }));
-                    break;
-                  }
-                } catch (projectError) {
-                  console.warn(`❌ Failed to load tasks from project ${project.project_id}:`, projectError);
-                }
-              }
-              
-              // If no projects have tasks, create mock tasks for testing
-              if (tasks.length === 0) {
-                console.warn('⚠️ No tasks found from any project, creating mock tasks for testing...');
-                tasks = [
-                  {
-                    task_id: 'mock-task-1',
-                    task_name: 'Phát triển tính năng đăng nhập',
-                    description: 'Tạo form đăng nhập với validation',
-                    status: 'IN_PROGRESS',
-                    progress: 75,
-                    priority: 'HIGH',
-                    start_date: formData.startDate,
-                    due_date: formData.endDate,
-                    project_id: 'prj-10',
-                    assigned_to: userId,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                  },
-                  {
-                    task_id: 'mock-task-2',
-                    task_name: 'Thiết kế giao diện dashboard',
-                    description: 'Tạo layout và components cho dashboard',
-                    status: 'TODO',
-                    progress: 25,
-                    priority: 'MEDIUM',
-                    start_date: formData.startDate,
-                    due_date: formData.endDate,
-                    project_id: 'prj-10',
-                    assigned_to: userId,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                  },
-                  {
-                    task_id: 'mock-task-3',
-                    task_name: 'API integration cho báo cáo',
-                    description: 'Kết nối frontend với backend API',
-                    status: 'DONE',
-                    progress: 100,
-                    priority: 'HIGH',
-                    start_date: formData.startDate,
-                    due_date: formData.endDate,
-                    project_id: 'prj-10',
-                    assigned_to: userId,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                  },
-                ] as unknown as Task[];
-                console.log('✅ Created mock tasks for testing:', tasks);
-              }
-            }
-          }
-        }
-        
-        console.log(`✅ Successfully loaded ${tasks.length} tasks for user ${userId}`);
-        setUserTasks(tasks);
-        setSelectedTasks([]);
-        setTaskDetails({});
-      } catch (error) {
-        console.error('❌ Error fetching tasks:', error);
-        setUserTasks([]);
-      }
-    };
-
-    // Only fetch tasks if we have projects loaded
-    if (projects.length > 0) {
-      fetchTasks();
-    }
-  }, [userId, formData.startDate, formData.endDate, formData.selectedProject, formData.reportType, projects]);
+    fetchUserTasks();
+  }, [fetchUserTasks]);
 
   // Update dates when report type changes
   useEffect(() => {
@@ -398,11 +414,16 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
     }));
   };
 
+  // Retry loading tasks
+  const retryLoadTasks = () => {
+    console.log('🔄 Retrying task load...');
+    fetchUserTasks();
+  };
+
   // Validation
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Required field validation
     if (!formData.title.trim()) {
       newErrors.title = 'Vui lòng nhập tiêu đề báo cáo';
     }
@@ -433,11 +454,6 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
       newErrors.project = 'Vui lòng chọn dự án cho báo cáo dự án';
     }
 
-    // Task validation - only require tasks if some are available
-    if (userTasks.length > 0 && selectedTasks.length === 0) {
-      newErrors.tasks = 'Vui lòng chọn ít nhất một công việc';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -452,8 +468,12 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
       setIsCreating(true);
       setErrors({});
 
+      // Generate unique report ID using helper function
+      const reportId = generateReportId();
+
       // Prepare API payload
       const payload: CreateReportRequest = {
+        id: reportId, // ✅ Add required ID field
         type: formData.reportType,
         title: formData.title.trim(),
         user: userId,
@@ -605,7 +625,6 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
                 )}
               </div>
 
-              {/* Project Selection - Show for all report types but only require for PROJECT type */}
               <div className={styles.formGroup}>
                 <label htmlFor="project" className={styles.formLabel}>
                   Dự án {formData.reportType === ReportType.PROJECT ? '*' : '(tùy chọn)'}
@@ -641,41 +660,124 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
               </div>
             )}
 
-            {/* Task Selection */}
+            {/* Task Selection - Cải thiện phần này */}
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>
-                Các công việc {userTasks.length > 0 ? '*' : ''}
+                Các công việc
+                {loadingTasks && (
+                  <span style={{ marginLeft: '8px', color: '#3b82f6', fontSize: '12px' }}>
+                    (Đang tải...)
+                  </span>
+                )}
               </label>
-              {userTasks.length === 0 ? (
-                <div className={styles.noTasks}>
+
+              {/* Debug info trong development */}
+              {process.env.NODE_ENV === 'development' && debugInfo.taskLoadAttempts && (
+                <div style={{ 
+                  background: '#f3f4f6', 
+                  padding: '8px', 
+                  borderRadius: '4px', 
+                  fontSize: '12px', 
+                  color: '#374151',
+                  marginBottom: '8px'
+                }}>
+                  🔧 Debug: Đã thử {debugInfo.taskLoadAttempts} dự án: {debugInfo.projectsAttempted?.join(', ')}
+                </div>
+              )}
+
+              {loadingTasks ? (
+                <div className={styles.loading} style={{ padding: '20px', textAlign: 'center' }}>
+                  🔄 Đang tải danh sách công việc...
+                </div>
+              ) : taskLoadError ? (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  color: '#b91c1c'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                    ⚠️ Không thể tải công việc
+                  </div>
+                  <div style={{ marginBottom: '8px' }}>{taskLoadError}</div>
+                  <button
+                    type="button"
+                    onClick={retryLoadTasks}
+                    style={{
+                      background: '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🔄 Thử lại
+                  </button>
+                </div>
+              ) : userTasks.length === 0 ? (
+                <div style={{
+                  background: '#f9fafb',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  padding: '16px',
+                  textAlign: 'center',
+                  color: '#6b7280'
+                }}>
                   {!formData.selectedProject && formData.reportType === ReportType.PROJECT ? (
                     <>
                       📋 Vui lòng chọn dự án trước để xem danh sách công việc
                     </>
                   ) : !formData.selectedProject ? (
                     <>
-                      📋 Chọn dự án để xem công việc cụ thể hoặc hệ thống sẽ tự động tải công việc từ dự án mặc định
+                      📋 Hệ thống đã tự động tìm kiếm nhưng không tìm thấy công việc nào trong các dự án có sẵn.
+                      <br />
+                      <small>Thử chọn dự án cụ thể hoặc thay đổi khoảng thời gian</small>
                     </>
                   ) : (
                     <>
                       📋 Không có công việc nào trong dự án "{projects.find(p => p.project_id === formData.selectedProject)?.project_name || formData.selectedProject}" 
-                      trong khoảng thời gian từ {new Date(formData.startDate).toLocaleDateString('vi-VN')} 
-                      đến {new Date(formData.endDate).toLocaleDateString('vi-VN')}
+                      <br />
+                      <small>Khoảng thời gian: {new Date(formData.startDate).toLocaleDateString('vi-VN')} - {new Date(formData.endDate).toLocaleDateString('vi-VN')}</small>
                     </>
                   )}
+                  <div style={{ marginTop: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={retryLoadTasks}
+                      style={{
+                        background: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🔄 Tải lại
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
                   <div style={{ 
                     marginBottom: '12px', 
                     fontSize: '14px', 
-                    color: '#6b7280',
-                    background: '#f8fafc',
+                    color: '#16a34a',
+                    background: '#f0fdf4',
                     padding: '8px 12px',
                     borderRadius: '6px',
-                    border: '1px solid #e2e8f0'
+                    border: '1px solid #bbf7d0'
                   }}>
-                    📊 Tìm thấy {userTasks.length} công việc từ dự án "{projects.find(p => p.project_id === formData.selectedProject)?.project_name || 'Dự án mặc định'}"
+                    ✅ Tìm thấy {userTasks.length} công việc từ dự án "{projects.find(p => p.project_id === formData.selectedProject)?.project_name || 'Dự án mặc định'}"
+                    {selectedTasks.length > 0 && (
+                      <span style={{ marginLeft: '8px', fontWeight: 'bold' }}>
+                        - Đã chọn {selectedTasks.length} công việc
+                      </span>
+                    )}
                   </div>
                   <div className={styles.taskSelectionList}>
                     {userTasks.map((task) => {
@@ -702,6 +804,9 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
                                   {task.description}
                                 </div>
                               )}
+                              <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
+                                ID: {taskId} | Trạng thái: {task.status}
+                              </div>
                             </label>
                           </div>
 
@@ -753,9 +858,6 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
                       );
                     })}
                   </div>
-                  {errors.tasks && (
-                    <div className={styles.errorText}>{errors.tasks}</div>
-                  )}
                 </>
               )}
             </div>
@@ -823,7 +925,7 @@ const CreateReportForm: React.FC<CreateReportFormProps> = ({
               <button
                 type="submit"
                 className={styles.submitButton}
-                disabled={isCreating || loading}
+                disabled={isCreating || loading || loadingTasks}
               >
                 {isCreating ? 'Đang tạo...' : 'Tạo báo cáo'}
               </button>
