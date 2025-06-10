@@ -447,16 +447,17 @@ export const useChatService = (userId: number) => {
       
       // Otherwise, create a new 1-on-1 chat room
       // First, fetch user info to get their name
-      const { data: userData } = await axios.get(`/api/users/${otherUserId}/`);
-      
+      const { data: userData } = await axios.get(`/users/${otherUserId}/`);
+
       if (!userData) {
         throw new Error('Could not fetch user information');
       }
       
       // Create a new room with a name based on the other user's name
-      const roomName = userData.name || `Chat với ${userData.username || `Người dùng ${otherUserId}`}`;
-      
-      console.log('Creating new direct chat room with name:', roomName);      // Create new chat room with just 2 participants
+      const roomName = userData.full_name;
+
+      console.log('Creating new direct chat room with name:', roomName);
+      // Create new chat room with just 2 participants
       const newRoom = await createNewChatRoom({
         name: roomName,
         participantIds: [userId, otherUserId],

@@ -106,12 +106,15 @@ export const createNewChatRoom = async ({ name, participantIds, isDirectChat = f
 export const uploadFileAttachment = async ({ roomId, file, receiverId }: UploadAttachmentParams): Promise<ChatMessage> => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('chatroom_id', roomId.toString());
+  // If roomId starts with chat-, use it directly, otherwise ensure it has the chat- prefix
+  const chatroomId = typeof roomId === 'string' && roomId.startsWith('chat-') 
+    ? roomId 
+    : `chat-${roomId.toString()}`;
+  formData.append('chatroom_id', chatroomId);
   
   if (receiverId) {
     formData.append('receiver_id', receiverId.toString());
   }
-  
   const response = await axiosInstance.post(
     `/messages/upload_attachment/`, 
     formData,

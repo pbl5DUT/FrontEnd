@@ -310,18 +310,13 @@ const ChatRoomModular: React.FC = () => {
   const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'document') => {
     if (!e.target.files || !e.target.files[0] || !activeRoom) return;
     
-    const file = e.target.files[0];
-    const receiverId = activeRoom.isGroup 
+    const file = e.target.files[0];    const receiverId = activeRoom.isGroup 
       ? undefined 
       : activeRoom.participants.find(p => p.id !== userId)?.id;
     
-    // Ensure roomId is a number
-    const roomIdNumber = typeof activeRoom.id === 'string' 
-      ? parseInt(activeRoom.id.replace(/\D/g, ''), 10)
-      : activeRoom.id;
-      
+    // Use the full original room ID without modification
     uploadAttachment({
-      roomId: roomIdNumber,
+      roomId: activeRoom.id,
       file: file,
       receiverId: receiverId ? Number(receiverId) : undefined
     });
