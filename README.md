@@ -1,3 +1,23 @@
+# PBL5 - Frontend Application
+
+Ứng dụng frontend được xây dựng với Next.js cho dự án PBL5 - một nền tảng quản lý và giao tiếp tích hợp với video call.
+
+## 🚀 Công nghệ sử dụng
+
+- **Framework**: [Next.js 15.2.2](https://nextjs.org) - React framework với App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4, Material-UI (MUI), Ant Design
+- **Authentication**: Clerk
+- **Video Communication**: Stream.io Video SDK
+- **Real-time Communication**: Socket.io Client
+- **State Management & Data Visualization**: Chart.js, React Big Calendar
+- **HTTP Client**: Axios
+- **UI Components**: 
+  - Material-UI (@mui/material, @mui/icons-material)
+  - Ant Design (antd)
+  - Lucide React Icons
+  - React Icons
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
